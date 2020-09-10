@@ -52,7 +52,7 @@
 
    默认页面如图：
 
-   ![](D:\GitRepository\MyBook\软件安装手册\Image\Snipaste_2020-09-11_00-45-37.png)
+   ![](../软件安装手册/Image/Snipaste_2020-09-11_00-45-37.png)
 
 5. DNF安装NGINX后各个文件目录位置
 
