@@ -1,14 +1,14 @@
-#### DNF安装NGINX
+#### DNF安装Nginx
 
-1. 安装NGINX
+1. 安装Nginx
 
    ```shell
    [root@localhost /]# dnf install nginx -y
    ```
 
-   系统会自动解决相关依赖并安装NGINX。
+   系统会自动解决相关依赖并安装Nginx。
 
-2. NGINX基本命令
+2. Nginx基本命令
 
    ```shell
    [root@localhost /]# systemctl start nginx         启动nginx
@@ -33,7 +33,7 @@
    Removed /etc/systemd/system/multi-user.target.wants/nginx.service.
    ```
 
-3.  开放系统防火墙的80端口（NGINX默认已配置监听80端口）
+3.  开放系统防火墙的80端口（Nginx默认已配置监听80端口）
 
    ```shell
    [root@localhost /]# firewall-cmd --query-port=80/tcp                   查询80端口是否对外开放
@@ -44,7 +44,7 @@
    success
    ```
 
-4. NGINX启动后，登录网页查看NGINX配置的默认页面
+4. Nginx启动后，登录网页查看Nginx配置的默认页面
 
    ```http
    http://192.168.253.128/
@@ -52,9 +52,9 @@
 
    默认页面如图：
 
-   <p align='center'> <img src='../Image/Snipaste20200911004537.jpg' title='NGINX默认页面' style='max-width:600px'></img> </p>
+   <p align='center'> <img src='../Image/Snipaste_2020-09-11_00-45-37.jpg' title='Nginx默认页面' style='max-width:600px'></img> </p>
 
-5. DNF安装NGINX后各个文件目录位置
+5. DNF安装Nginx后各个文件目录位置
 
    - 安装位置：***/etc/nginx/***，各种配置文件，参数文件都在此目录下。
 
@@ -64,6 +64,6 @@
      default.d  fastcgi.conf.default  fastcgi_params.default  koi-win  mime.types.default  nginx.conf.default  scgi_params.default  uwsgi_params.default
      ```
 
-   - web服务器默认目录：***/usr/share/nginx/***，此目录下有一个html目录用来存放网页文件，其中的 index.html 即为 NGINX 配置的默认页面。
+   - web服务器默认目录：***/usr/share/nginx/***，此目录下有一个html目录用来存放网页文件，其中的 index.html 即为 Nginx 配置的默认页面。
    - 日志存放路径：***/var/log/nginx/***
    - 帮助文档存放路径：***/usr/share/doc/nginx/***
