@@ -52,7 +52,7 @@
 
    默认页面如图：
 
-   ![](../软件安装手册/Image/Snipaste_2020-09-11_00-45-37.png)
+   <p align='center'> <img src='../软件安装手册/Image/Snipaste_2020-09-11_00-45-37.png' title='NGINX默认页面' style='max-width:600px'></img> </p>
 
 5. DNF安装NGINX后各个文件目录位置
 
