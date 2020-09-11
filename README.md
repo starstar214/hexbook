@@ -20,9 +20,7 @@ Record My Knowledge
 - 算法基础
 
 Linux系统
-
 - [Linux常用命令]()
-
 - [文本编辑器vim]()
 - [软件包管理]()
 - [shell编程](Linux系统/shell编程.md)
