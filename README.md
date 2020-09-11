@@ -1,6 +1,6 @@
-<p align="center">
+<div align="center">
 	<img src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-3/logo - 副本.png" width=""/>
-</p>
+</div>
 
 Record My Knowledge
 <p align="center">
