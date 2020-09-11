@@ -12,43 +12,27 @@ Record My Knowledge
 </p>
 
 # 目录
-
 电脑硬件
-
 计算机基础
-
 - 算法基础
-
 Linux系统
 - [Linux常用命令]()
 - [文本编辑器vim]()
 - [软件包管理]()
 - [shell编程](Linux系统/shell编程.md)
-
 Java
-
 - Java基础
   - [Java8新特性]()
   - [Java9新特性]()
-
 - 中间件技术
-
 - 开源框架
-
 - 效率编程
-
 Python
-
 - Python基础
-
 - 爬虫
-
 - 机器学习
-
 软件架构
-
 软件安装手册
-
 - 常用软件安装
 - 中间件安装
   - [CentOS 8 下安装 Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
