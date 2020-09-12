@@ -4,7 +4,7 @@
 
 Record My Knowledge
 <p align="center">
-  <a href="README.md#目录"><img src="https://img.shields.io/badge/阅读-read-brightgreen.svg" alt="阅读"></a>
+  <a href="README.md#电脑硬件"><img src="https://img.shields.io/badge/%E7%A1%AC%E4%BB%B6-hardware-orange" alt="硬件"></a>
   <a href="#公众号"><img src="https://img.shields.io/badge/%E5%85%AC%E4%BC%97%E5%8F%B7-JavaGuide-lightgrey.svg" alt="公众号"></a>
   <a href="#公众号"><img src="https://img.shields.io/badge/PDF-Java面试突击-important.svg" alt="公众号"></a>
   <a href="#投稿"><img src="https://img.shields.io/badge/support-投稿-critical.svg" alt="投稿"></a>
@@ -12,7 +12,7 @@ Record My Knowledge
 </p>
 
 # 目录
-电脑硬件
+##### 电脑硬件
 
 计算机基础
 - 算法基础
