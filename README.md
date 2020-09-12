@@ -5,7 +5,7 @@ b4<div align="center">
 Record My Knowledge
 <div align="center">
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/%E7%A1%AC%E4%BB%B6-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-basics-orange?logo=GNU Bash&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/数据结构与算法-algorithm-orange?logo=GNU Bash&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux%E7%B3%BB%E7%BB%9F-linux-yellow?logo=Linux&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java-java-blue?logo=Java"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python-python-red?logo=Python&logoColor=white"></a>
