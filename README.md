@@ -9,8 +9,8 @@ Record My Knowledge
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux%E7%B3%BB%E7%BB%9F-linux-yellow?logo=Linux&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java-java-blue?logo=Java"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python-python-red?logo=Python&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件架构-architecture-green?logo=StackShare&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件安装-install-3ee0d7?logo=Indeed&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/架构-architecture-green?logo=StackShare&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件安装-installation-3ee0d7?logo=Indeed&logoColor=white"></a>
 </div>
 
 # 目录
