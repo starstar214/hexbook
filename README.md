@@ -1,8 +1,6 @@
 <div align="center">
 	<img src="Image/6874747073.png"/>
 </div>
-
-Record My Knowledge
 <div align="center">
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机硬件-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/数据结构与算法-algorithm-orange?logo=GNU Bash&logoColor=white"></a>
@@ -14,15 +12,14 @@ Record My Knowledge
 </div>
 
 # 目录
-#### 1.电脑硬件
+#### 电脑硬件
 
-#### 2.计算机基础
+#### 计算机基础
 
-​	2.1 数据结构
+1. 数据结构
+2. 算法导论
 
-​	2.2 算法导论
-
-#### 3.Linux系统
+#### Linux系统
 
 ​	3.1 [Linux常用命令]()
 
@@ -32,19 +29,19 @@ Record My Knowledge
 
 ​	3.4 [shell编程](Linux系统/shell编程.md)
 
-#### 4.Java
+#### Java
 
-##### 	4.1 Java基础
+1. Java基础
 
-​		4.1.1 [Java8新特性]()
+   - [Java8新特性]()
 
-​		4.1.2 [Java9新特性]()
+   - [Java9新特性]()
 
-​	4.2 Java中间件技术
+2. Java中间件技术
 
-​	4.3 开源框架
+3. 开源框架
 
-#### 5.Python
+#### Python
 
 ​	5.1 Python基础
 
@@ -54,9 +51,9 @@ Record My Knowledge
 
  	5.4 机器学习
 
-#### 6.软件架构
+#### 软件架构
 
-#### 7.软件安装手册
+#### 软件安装手册
 
 ​	7.1常用软件安装
 
