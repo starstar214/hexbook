@@ -1,14 +1,16 @@
-<div align="center">
+b4<div align="center">
 	<img src="https://my-blog-to-use.oss-cn-beijing.aliyuncs.com/2019-3/logo - 副本.png" width=""/>
 </div>
 
 Record My Knowledge
 <div align="center">
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/%E7%A1%AC%E4%BB%B6-hardware-orange" alt="电脑硬件"></a>
-  <a href="#公众号"><img src="https://img.shields.io/badge/%E5%85%AC%E4%BC%97%E5%8F%B7-JavaGuide-lightgrey.svg" alt="公众号"></a>
-  <a href="#公众号"><img src="https://img.shields.io/badge/PDF-Java面试突击-important.svg" alt="公众号"></a>
-  <a href="#投稿"><img src="https://img.shields.io/badge/support-投稿-critical.svg" alt="投稿"></a>
-  <a href="https://xiaozhuanlan.com/javainterview?rel=javaguide"><img src="https://img.shields.io/badge/Java-面试指南-important" alt="投稿"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/%E7%A1%AC%E4%BB%B6-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80-basics-orange?logo=GNU Bash&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux%E7%B3%BB%E7%BB%9F-linux-yellow?logo=Linux&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java-java-blue?logo=Java"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python-python-red?logo=Python&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件架构-architecture-green?logo=StackShare&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件安装-installation-3ee0d7?logo=Indeed&logoColor=white"></a>
 </div>
 
 # 目录
