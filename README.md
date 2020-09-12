@@ -21,21 +21,21 @@
 
 #### Linux系统
 
-​	3.1 [Linux常用命令]()
+1. [Linux常用命令]()
 
-​	3.2 [文本编辑器vim]()
+2. [文本编辑器vim]()
 
-​	3.3 [软件包管理]()
+3. [软件包管理]()
 
-​	3.4 [shell编程](Linux系统/shell编程.md)
+4. [shell编程](Linux系统/shell编程.md)
 
 #### Java
 
 1. Java基础
 
-   - [Java8新特性]()
+   [Java8新特性]()
 
-   - [Java9新特性]()
+   [Java9新特性]()
 
 2. Java中间件技术
 
@@ -43,24 +43,24 @@
 
 #### Python
 
-​	5.1 Python基础
+1. Python基础
 
-​	5.2 爬虫
+2. 爬虫
 
-​	5.3 数据挖掘
+3. 数据挖掘
 
- 	5.4 机器学习
+4. 机器学习
 
 #### 软件架构
 
 #### 软件安装手册
 
-​	7.1常用软件安装
+1. 常用软件安装
 
-​	7.2 中间件安装
+2. 中间件安装
 
-​		7.2.1 [CentOS 8 下安装 Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
+    [CentOS 8 下安装 Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
 
-​	7.3数据库安装
+3. 数据库安装
 
-​		7.3.1 [CentOS 8 下安装 MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
+   [CentOS 8 下安装 MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
