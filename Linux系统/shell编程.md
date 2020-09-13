@@ -88,13 +88,13 @@ exit                          exit 退出当前 Shell
 脚本格式：建议将脚本文件以 sh 作为后缀名，方便区分
 
 ```shell
-#!/bin/Bash
+#!/bin/bash
 #The first program
 # Author: Niko
 echo -e "Hello World"
 ```
 
-***#!/bin/Bash***：第一行的此部分标志下面的内容为 Shell 脚本，不写此语句一般不会对脚本执行造成影响，但是可能会引发某些更为复杂的报错。
+***#!/bin/bash***：第一行的此部分标志下面的内容为 Shell 脚本，不写此语句一般不会对脚本执行造成影响，但是可能会引发某些更为复杂的报错。
 
 在 Shell 脚本的其他位置， # 后面的内容均为注释。
 
