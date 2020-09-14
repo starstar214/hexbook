@@ -26,7 +26,7 @@
 
    ```shell
    [root@localhost ~]# redis-server              启动Redis，非后台启动，退出命令行后服务停止
-   [root@localhost ~]# redis-server &            后台启动启动Redis
+   [root@localhost ~]# redis-server &            后台启动Redis
    [root@localhost redis]# redis-cli             进入Redis客户端
    127.0.0.1:6379> ping
    PONG
