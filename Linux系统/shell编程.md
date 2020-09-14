@@ -7,6 +7,7 @@
 5. [数值运算](5数值运算)
 6. [环境配置文件](6环境配置文件)
 7. [正则表达式](#7正则表达式)
+8. [字符截取命令](#8字符截取命令)
 
 ---
 
@@ -756,15 +757,45 @@ star
 正则表达式和通配符：
 
 - 正则表达式：用来在文件中匹配符合条件的字符串，grep、awk、sed 等命令可以支持正则表达式。
-- 通配符（*，?，[]）：用来匹配符合条件的文件名，ls、find、cp 这些命令不支持正则表达式，所以只能使用 shell 自己的通配符来进行匹配。
+- 通配符（*，?，[]）：用来匹配符合条件的 **文件名**，ls、find、cp 这些命令不支持正则表达式，所以只能使用 shell 自己的通配符来进行匹配。（3种符号的功能说明在第3节中）
 
 示例文件：
 
-~~~
-
+~~~txt
+one day a crow stood on a branch near his nest and felt very happy
+with the meat in his mouth.
+At that time, a fox saw the crow with the meat, so he swallowed
+and eagerly thought of a plan to get the meat.
+However, whatever the fox said to the crow, the crow just kept silent.
+Until the fox thought highly of the crow’s beautiful voice, the crow
+felt flattered and opened his mouth to sing.
+As soon as the meat fell down to the ground, the fox took the meat
+and went into his hole.
 ~~~
 
 基础正则表达式：
 
-- \*：前一个字符匹配0次或任意多次。
-- .：匹配除换行符外的任意一个字母。
+- \*：前一个字符匹配 0 次或任意多次；`a*` 表示 a 重复 0 次或多次。
+- . ：匹配除换行符外的任意一个字母。
+- \^：匹配行首；^hello 会匹配以 hello 开头的行。
+- $：匹配行尾；hello& 会匹配以 hello 结尾的行。
+- []：匹配中括号中指定的任意一个字符，只匹配一个字符；如 [aoeiu] 匹配任意一个元音字母，[0-9] 匹配任意一位数字， [a-z]匹配一个小写字母。
+- [\^]：匹配除中括号的字符以外的任意一个字符；\[^0-9] 匹配任意一位非数字字符，\[^a-z] 表示任意一位非小写字母。
+- \ ：转义符。用于取消讲特殊符号的含义取消。 
+- \\{n\\}：表示其前面的字符恰好出现n次；[0-9]\\{4\\} 匹配4位数字，\[1]\[3-8][0-9]\\{9\\} 匹配手机号码。 
+- \\{n,\\}：表示其前面的字符出现不小于 n 次；[0-9]\\{2,\\} 表示两位及以上的数字。 
+- \\{n,m\\}：表示其前面的字符至少出现 n 次，最多出现 m 次； [a-z]\\{6,8\\} 匹配 6 到 8 位小写字母。
+
+> 注意：正则表达式中使用大括号时需要使用转义符 \\ 。
+
+正则表达式匹配示例（以示例文件为匹配文件）：
+
+<div align="center">
+	<img src="Image/Snipaste_2020-09-15_00-16-12.png"/>
+</div>
+
+
+
+---
+
+#### 8.字符截取命令
