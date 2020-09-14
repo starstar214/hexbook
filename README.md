@@ -3,11 +3,11 @@
 </div>
 <div align="center">
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机硬件-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机基础-basics-orange?logo=GNU Bash&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机基础-basics-orange?logo=Cliqz&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux系统-linux-yellow?logo=Linux&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java语言-java-blue?logo=Java"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python语言-python-red?logo=Python&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/项目工具与开发技巧-development-green?logo=Photocrowd&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/项目工具与开发技巧-development-green?logo=Steam&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/系统架构-architecture-pink?logo=StackShare&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件安装-installation-3ee0d7?logo=Indeed&logoColor=white"></a>
 </div>
