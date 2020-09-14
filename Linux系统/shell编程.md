@@ -31,7 +31,7 @@ Shell 的两种主要语法类型有 Bourne 和 C，这两种语法彼此不兼�
 
 
 
-==***bash***： bash与 sh 兼容，现在使用的 Linux 就是使用 bash 作为用户的基本 Shell。==
+***bash***： bash与 sh 兼容，现在使用的 Linux 就是使用 bash 作为用户的基本 Shell。
 
 
 
