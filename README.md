@@ -3,7 +3,7 @@
 </div>
 <div align="center">
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机硬件-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/数据结构与算法-algorithm-orange?logo=GNU Bash&logoColor=white"></a>
+  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机基础-basics-orange?logo=GNU Bash&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux系统-linux-yellow?logo=Linux&logoColor=white"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java-java-blue?logo=Java"></a>
   <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python-python-red?logo=Python&logoColor=white"></a>
