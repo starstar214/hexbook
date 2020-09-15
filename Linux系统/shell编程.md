@@ -8,6 +8,7 @@
 6. [环境配置文件](6环境配置文件)
 7. [正则表达式](#7正则表达式)
 8. [字符截取命令](#8字符截取命令)
+9. [字符处理命令](#9字符处理命令)
 
 ---
 
@@ -799,3 +800,270 @@ and went into his hole.
 ---
 
 #### 8.字符截取命令
+
+命令：***grep*** [选项] 字符串 文件名，按照指定字符串提取文件中的相关行。
+
+常用选项：
+
+- -n：显示行号。
+- -i：不区分关键词的大小写。
+
+- -v：反向查找，`grep -v “xxx” test.txt` 显示文件中所有不包含 xxx 字符串的行。
+- -w：严格匹配关键字（默认只要包含关键字即为匹配）。
+- -d：查询对象是目录时，使用此选项，切其后应该跟一个 action（read/skip/recurse）
+  - `grep -d read “oo” /root/*`：遍历 /root 目录下的所有文件和文件夹，并作出读取操作，然后提取文件中的包含 oo 的行，此时当读取到 /root 目录下的目录时，会抛出相应提示。
+  - `grep -d skip “oo” /root/*`：遍历 /root 目录下的所有文件和文件夹，如果是文件夹进行跳过，如果是文件则进行读取操作，然后提取文件中包含 oo 的行。
+  - `grep -d recurse “oo” /root/*`：遍历 /root 目录下的所有文件和文件夹，如果是文件则进行读取操作，提取文件中包含 oo 的行，如果是文件夹则进行递归处理。
+- -r：与 `-d recurse` 的作用一致，递归查找目录下的所有文件，此时文件名应该为目录。
+
+使用示例：
+
+~~~shell
+[root@localhost ~]# grep "ooo" test.txt 
+                                   -- edit by Nikooooo
+[root@localhost ~]# grep -n "ooo" test.txt 
+10:                                   -- edit by Nikooooo
+[root@localhost ~]# grep -w "ooo" test.txt 
+[root@localhost ~]# grep -w "Nikooooo" test.txt 
+                                   -- edit by Nikooooo
+[root@localhost ~]# grep -i "nikooooo" test.txt 
+                                   -- edit by Nikooooo
+[root@localhost ~]# grep -d skip "ooo" ./*
+./test.txt:                                   -- edit by Nikooooo
+[root@localhost ~]# grep -r "ooo" ./
+./test.txt:                                   -- edit by Nikooooo
+~~~
+
+
+
+命令：***cut*** [选项] 文件名，按列提取文件中的内容，默认使用制表符进行分列。
+
+常用选项：
+
+- -f 列号：指定提取第几列，此时默认的分隔符为制表符。
+- -d 分隔符：按照指定分隔符分格列。
+
+使用示例：
+
+~~~shell
+[root@localhost ~]# cat student.txt 
+ID	GENDER	NAME	SUBJECT:GRADE
+1	Male	Niko	English:86
+2	Female	Jacy	Math:92
+3	Male	Ray	Language:78
+4	Male	Niko	Math:88
+[root@localhost ~]# cut -f 2,3 student.txt               提取文件第2,3列
+GENDER	NAME
+Male	Niko
+Female	Jacy
+Male	Ray
+Male	Niko
+[root@localhost ~]# cut -d ":" -f 2 student.txt          提取文件按:分割的第二列
+GRADE
+86
+92
+78
+88
+[root@localhost ~]# cat student.txt | grep "Female" | cut -f 3       按照规律提取文件中性别为Female的名字
+Jacy
+~~~
+
+> cut 命令的局限性：不能很好的分割连续空格的文件内容。
+
+
+
+命令：***printf*** 格式 内容，按照格式输出内容。
+
+常用格式：
+
+- %s：输出字符串。
+
+- %ns：输出字符串，n 为数字，表示输出的字符个数，不足的在前面补空格。
+- %ni：输出整数，不足字符个数的在前面补空格，将 n 写为 0n 可以在前面补 0。
+- %m.nf：输出浮点数。
+- \n：输出换行符。
+- \t：输出制表符。
+
+使用示例：
+
+~~~shell
+[root@localhost ~]# printf %s a b c d e f                         将内容直接拼接输出
+abcdef[root@localhost ~]# printf '%s%s%s\n' a b c d e f           将内容每3个拼接为一行输出
+abc
+def
+[root@localhost ~]# printf '%s%2s%s\n' a b c d e f                将内容每3个拼接为一行输出，每第二个参数输出2个字符
+a bc
+d ef
+[root@localhost ~]# printf '%4i' 123                              以整数形式输出 123，使用空格补齐
+ 123[root@localhost ~]# printf '%04i' 123                         以整数形式输出 123，使用 0 补齐
+0123[root@localhost ~]# 
+~~~
+
+
+
+命令：***awk*** ‘条件1{动作1}条件2{动作2}条件3{动作3}’ 文件名，根据规则条件提取文件中的列（列默认以制表符或空格分割）。
+
+条件：一般使用关系表达式作为条件，如：x>10 等，也有一些
+
+动作：
+
+- 格式化输出：在动作中输出内容。
+
+- 流程控制语句：在动作中可以写入流程执行语句进行输出。
+
+使用示例：
+
+~~~shell
+[root@localhost ~]# cat student.txt 
+ID	GENDER	NAME	SUBJECT:GRADE
+1	Male	Niko	English:86
+2	Female	Jacy	Math:92
+3	Male	Ray		Language:78
+4	Male	Niko	Math:88
+[root@localhost ~]# awk '{printf $3"\t"$4"\n"}' student.txt   不带条件，直接格式化输出文件的第3,4列
+NAME	SUBJECT:GRADE
+Niko	English:86
+Jacy	Math:92
+Ray		Language:78
+Niko	Math:88
+[root@localhost ~]# df -h
+文件系统             容量  已用  可用 已用% 挂载点
+devtmpfs             3.8G     0  3.8G    0% /dev
+tmpfs                3.9G     0  3.9G    0% /dev/shm
+/dev/sda1            976M  139M  771M   16% /boot
+[root@localhost ~]# df -h | awk '{print $1"\t"$5}'   识别空格进行分列输出 “df -h” 命令的第1,5列
+文件系统	已用%
+devtmpfs	0%
+tmpfs	0%
+/dev/sda1	16%
+[root@localhost ~]# cat grade.txt 
+Id	Name	Java	Python	Scala
+1	James	76	80	68
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# awk '$3>$4{print $2}' grade.txt  输出 Java 成绩大于 Python 成绩的人的姓名
+Lane
+~~~
+
+> Linux 中没有 print 命令，而在 awk 中可使用 print 命令（每一次输出都会自动加上换行符）
+
+特殊条件关键字：
+
+- BEGIN{动作}：在读取数据之前执行动作。
+
+  > awk 内置变量 FS：分隔符，可以自己指定 FS 进行分割
+
+  ~~~shell
+  [root@localhost ~]# cat student.txt 
+  ID	GENDER	NAME	SUBJECT:GRADE
+  1	Male	Niko	English:86
+  2	Female	Jacy	Math:92
+  3	Male	Ray		Language:78
+  4	Male	Niko	Math:88
+  [root@localhost ~]# awk 'BEGIN{FS=":"}{print $2}' student.txt   在读取数据前，指定分隔符，然后再提取列
+  GRADE
+  86
+  92
+  78
+  88
+  ~~~
+
+- END{动作}：在所有数据读取完成后执行动作。
+
+  ~~~shell
+  [root@localhost ~]# cat student.txt 
+  ID	GENDER	NAME	SUBJECT:GRADE
+  1	Male	Niko	English:86
+  2	Female	Jacy	Math:92
+  3	Male	Ray		Language:78
+  4	Male	Niko	Math:88
+  [root@localhost ~]# awk 'END{print "The End!"}{print $3}' student.txt 
+  NAME
+  Niko
+  Jacy
+  Ray
+  Niko
+  ~~~
+
+  
+
+命令：***sed*** [选项] [动作] 文件名，主要用来将数据进行选取、替换、删除、新增等**行操作**，可以直接对命令结果进行操作，支持管道符操作。
+
+选项：
+
+- -n：一般sed命令会把所有数据都输出到屏幕 ，如果加入此选择，则只会把经过sed命令处理的行输出到屏幕。
+- -e：允许对输入数据应用多个 sed 动作进行编辑，多个动作之间使用 ; 进行分割。
+- -i：直接修改读取数据的文件，而不是输出到屏幕。
+
+动作：
+
+- a \： 追加，在当前行后添加一行或多行。添加多行时，除最后 一行外，每行末尾需要用 “\ ”代表数据未完结。
+- c \： 行替换，用 c 后面的字符串替换原数据行，替换多行时，除最后一行外，每行末尾需用 “\” 代表数据未完结。
+- i \： 插入，在当期行前插入一行或多行。插入多行时，除最后 一行外，每行末尾需要用“\”代表数据未完结。
+- d： 删除，删除指定的行。
+- p： 打印，输出指定的行。
+- s： 字串替换，用一个字符串替换另外一个字符串。格式为 “行范围s/旧字串/新字串/g ”（和vim中的替换格式类似）。
+
+使用示例：
+
+~~~shell
+[root@localhost ~]# cat grade.txt 
+Id	Name	Java	Python	Scala
+1	James	76	80	68
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed '2p' grade.txt    打印第2行
+Id	Name	Java	Python	Scala
+1	James	76	80	68                    #未加 -n 选项，整个文件也会输出，第2行打印2次。
+1	James	76	80	68
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed -n '2p' grade.txt  #只打印第2行
+1	James	76	80	68
+[root@localhost ~]# df -h | sed -n '2p'    打印 df -h 命令的第2行
+devtmpfs             3.8G     0  3.8G    0% /dev
+[root@localhost ~]# sed '2,4d' grade.txt   删除文件2-4行后输出，未加"-i"选项，原文件未更改。
+Id	Name	Java	Python	Scala
+[root@localhost ~]# sed '2a append' grade.txt  在第2行后追加行
+Id	Name	Java	Python	Scala
+1	James	76	80	68
+append
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed '2a append\
+test' grade.txt                            #在第2行后一次追加2行内容
+Id	Name	Java	Python	Scala
+1	James	76	80	68
+append
+test
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed '2i insert' grade.txt  插入行
+Id	Name	Java	Python	Scala
+insert
+1	James	76	80	68
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed '2c 无效成绩' grade.txt  替换第2行的内容
+Id	Name	Java	Python	Scala
+无效成绩
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed '2s/80/0/g' grade.txt  将第2行的 89 改为 0
+Id	Name	Java	Python	Scala
+1	James	76	0	68
+2	Jerry	82	89	97
+3	Lane	80	67	62
+[root@localhost ~]# sed 's/J//g;s/a/e/g' grade.txt  同时替换所有行的'J'字母和'a'字母
+Id	Neme	eve	Python	Scele
+1	emes	76	80	68
+2	erry	82	89	97
+3	Lene	80	67	62
+~~~
+
+
+
+---
+
+#### 9.字符处理命令
+
