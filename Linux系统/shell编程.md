@@ -1068,3 +1068,4 @@ Id	Neme	eve	Python	Scele
 
 #### 9.字符处理命令
 
+<a href="javascript:scroll(0,0)">返回顶部</a> 
