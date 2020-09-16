@@ -40,6 +40,8 @@
 
 2. Java中间件技术
 
+   [负载均衡中间件-Nginx](Java语言/Java中间件技术/负载均衡中间件-Nginx.md)
+
 3. 开源框架
 
 #### Python语言
