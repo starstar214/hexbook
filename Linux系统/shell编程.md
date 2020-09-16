@@ -918,7 +918,7 @@ d ef
 ID	GENDER	NAME	SUBJECT:GRADE
 1	Male	Niko	English:86
 2	Female	Jacy	Math:92
-3	Male	Ray		Language:78
+3	Male	Ray	Language:78
 4	Male	Niko	Math:88
 [root@localhost ~]# awk '{printf $3"\t"$4"\n"}' student.txt   不带条件，直接格式化输出文件的第3,4列
 NAME	SUBJECT:GRADE
@@ -958,7 +958,7 @@ Lane
   ID	GENDER	NAME	SUBJECT:GRADE
   1	Male	Niko	English:86
   2	Female	Jacy	Math:92
-  3	Male	Ray		Language:78
+  3	Male	Ray	Language:78
   4	Male	Niko	Math:88
   [root@localhost ~]# awk 'BEGIN{FS=":"}{print $2}' student.txt   在读取数据前，指定分隔符，然后再提取列
   GRADE
@@ -975,7 +975,7 @@ Lane
   ID	GENDER	NAME	SUBJECT:GRADE
   1	Male	Niko	English:86
   2	Female	Jacy	Math:92
-  3	Male	Ray		Language:78
+  3	Male	Ray	Language:78
   4	Male	Niko	Math:88
   [root@localhost ~]# awk 'END{print "The End!"}{print $3}' student.txt 
   NAME
@@ -1067,5 +1067,3 @@ Id	Neme	eve	Python	Scele
 ---
 
 #### 9.字符处理命令
-
-<a href="#目录">返回顶部</a> 
