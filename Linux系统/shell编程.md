@@ -981,6 +981,16 @@ Lane
   ~~~
 
 
+> 应用实例：获取正在运行的Java程序的进行ID
+> ~~~shell
+> [root@localhost ~]# ps -ef |grep java
+> root      58316      1  0 Sep14 ?        00:08:57 java -jar ymes-analysis-0.0.1-SNAPSHOT.jar
+> root      92422  92306  0 15:27 pts/0    00:00:00 grep --color=auto java
+> [root@localhost ~]# ps -ef | grep java | grep -v grep | awk '{print $2}'
+> 58316
+> ~~~
+> 此命令可直接获取到应用程序进程号，然后可以根据进程号作相应操作。
+
 
 
 命令：***sed*** [选项] [动作] 文件名，主要用来将数据进行选取、替换、删除、新增等**行操作**，可以直接对命令结果进行操作，支持管道符操作。
