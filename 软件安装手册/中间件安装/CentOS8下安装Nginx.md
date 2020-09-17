@@ -52,7 +52,7 @@
 
    默认页面如图：
 
-   <p align='center'> <img src='../Image/Snipaste_2020-09-11_00-45-37.jpg' title='Nginx默认页面' style='max-width:600px'></img> </p>
+   <p align='center'> <img src='Image/Snipaste_2020-09-11_00-45-37.jpg' title='Nginx默认页面' style='max-width:600px'></img> </p>
 
 5. DNF安装Nginx后各个文件目录位置
 
