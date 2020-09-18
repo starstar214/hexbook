@@ -1,4 +1,3 @@
-
 安装 Nginx：[CentOS 8 下安装 Nginx](../../软件安装手册/中间件安装/CentOS8下安装Nginx.md)
 
 Nginx 官网：https://www.nginx.com/
@@ -44,7 +43,7 @@ Nginx 官方文档：https://www.nginx.cn/doc/
 </div>
 
 
-在使用 DNF 软件包管理器安装 Nginx 后，我们可以使用 systemctl 命令管理 Nginx 的启动，停止等行为，官方的二进制命令文件的位置在 */usr/sbin/nginx*，我们也可以通过命令行参数和控制信号运行脚本文件使 Nginx 作出不同的行为。
+在使用 DNF 软件包管理器安装 Nginx 后，官方的二进制命令文件的位置在 */usr/sbin/nginx*，我们可以通过命令行参数和控制信号运行脚本文件使 Nginx 作出不同的行为（也可以使用 systemctl 命令管理 Nginx 服务）。
 
 *Nginx* 常用命令行参数：
 
@@ -54,7 +53,7 @@ Nginx 官方文档：https://www.nginx.cn/doc/
 
 - -t：不运行 Nginx，而仅仅测试配置文件。nginx 将检查配置文件的语法的正确性，并尝试打开配置文件中所引用到的文件。
 
-- -v，-V：查看 Nginx 的版本（编译器版本和配置参数）。
+- -v，-V：查看 Nginx 的版本（以及编译器版本和配置参数）。
 
 - -s signal：向主进程发送信号，quit（正常停止），stop（强制停止），reload（重新加载），reopen（重新打开日志文件，日志切割时使用）。
 
