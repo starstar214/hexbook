@@ -2,7 +2,7 @@
 
 Nginx 官网：https://www.nginx.com/
 
-Nginx 官方文档：https://www.nginx.cn/doc/
+Nginx 官方文档：http://nginx.org/en/docs/
 
 
 
@@ -99,11 +99,103 @@ Nginx 官方文档：https://www.nginx.cn/doc/
 
 ---
 
-#### 2.Nginx配置
+#### 2.Nginx基本配置
+
+*Nginx* 主配置文件：*/etc/nginx/nginx.conf*
+
+全局段配置：
+
+~~~shell
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+events {
+    worker_connections 1024;
+}
+~~~
+
+- ***user***：后面可以跟用户（及用户组），定义 Nginx 运行的用户和用户组，当 Nginx 主线程启动后会使用此处配置的用户启动 worker 进程。
+
+  ~~~shell
+  user nginx xxx;    # 以 xxx 用户组，nginx 用户的身份启动 work 线程
+  ~~~
+
+- ***worker_processes***：工作进程的数量，一般设置为机器的核心数量（CPU数*每个CPU的核心数），当设置为 *auto* 时，nginx 会根据核心数生成对应数量的 worker 进程。
+
+- ***error_log***：错误日志的存放路径，可以同时定义日志级别（debug<info<notice<warn<error<crit<alert<emerg），默认为 ***crit***。
+
+  ~~~shell
+  error_log /var/log/nginx/error.log error;   #指定日志及日志级别
+  ~~~
+
+- ***pid***：nginx 启动后进程 pid 文件的存放位置。
+
+- ***events***：配置 nginx 工作进程的连接属性
+
+  - *worker_connections*：一个 worker 进程同一时间允许的最大连接数。
+
+
+
+http 服务段配置：
+
+~~~shell
+http {
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log  /var/log/nginx/access.log  main;
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+    include /etc/nginx/conf.d/*.conf;
+    server {
+        ......
+    }
+}
+~~~
+
+- ***log_format***：日志格式。
+- ***keepalive_timeout*** ：一个请求完成之后保持连接的时间（防止过度频繁的创建连接）。
 
 
 
 
+
+虚拟主机配置段（包含在 http 之内）：
+
+~~~shell
+server {
+        listen       80 default_server;
+        listen       [::]:80 default_server;
+        server_name  _;
+        root         /usr/share/nginx/html;
+        include /etc/nginx/default.d/*.conf;
+        location / {
+        }
+        error_page 404 /404.html;
+            location = /40x.html {
+        }
+        error_page 500 502 503 504 /50x.html;
+            location = /50x.html {
+        }
+    }
+~~~
+
+- ***listen***：定义要监听的端口。
+  - `listen 80;`：监听所有的 ipv4 地址的 80 端口。
+  - `listen [::]:80;`：监听所有的 ipv6 地址的 80 端口。
+  - `listen 192.168.1.6:80;`：只监听 192.168.1.6 的 ipv4 地址下的 80 端口。
+  - `listen [fe80::919c:9a57:127f:5a8a]:80;`：只监听 *fe80::919c:9a57:127f:5a8a* 的 ipv6 地址下的 80 端口。
+  - *default_server*：将此 server 定义为默认的 server（一个 http 块中可以配置多个 server 模块），当请求的域名未匹配到任何 server_name 时，nginx 将会使用 default_server 来处理请求，如果均未配置 default_server，使用第一个 server 进行请求处理。
+- ***server_name***：定义域名，可以定义多个，使用空格隔开，也可以使用正则表达式。配置 server_name 后，就可以在浏览器中直接输入域名进行访问而不需要输入 ip 地址（ _ 为官方随意指定的一个无效域名，无任何意义）。
+- ***root***：定义根目录，后续路径配置可以使用相对路径。
 
 
 
