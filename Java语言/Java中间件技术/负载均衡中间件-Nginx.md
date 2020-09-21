@@ -10,7 +10,7 @@ Nginx 官方文档：http://nginx.org/en/docs/
 
 1. [Nginx 介绍及基本使用](#1nginx介绍及基本使用)
 
-2. [Nginx 配置](#2nginx配置)
+2. [Nginx 基本配置](#2nginx基本配置)
 
 3. [Nginx 日志](#3nginx日志)
 
@@ -103,7 +103,7 @@ Nginx 官方文档：http://nginx.org/en/docs/
 
 *Nginx* 主配置文件：*/etc/nginx/nginx.conf*
 
-全局段配置：
+全局段配置：配置一些全局参数。
 
 ~~~shell
 user nginx;
@@ -139,7 +139,7 @@ events {
 
 
 
-http 服务段配置：
+http 服务段配置：配置 http 协议的相关参数。
 
 ~~~shell
 http {
@@ -162,9 +162,19 @@ http {
 ~~~
 
 - ***log_format***：日志格式。
+- ***access_log***：指定日志文件的位置及名字，也可以同时指定一些相关参数如：缓存区大小，刷新时间等。
+
+> 在 log_format 和 access_log 中的 main 指的是日志记录格式，如果没有填写默认为 combined，这里沿用官方默认配置的 main 即可。
+
+- ***sendfile***：是否使用 *sendfile* 系统来传输文件（on/off），*sendfile* 可实现零拷贝文件传输。
+- ***tcp_nopush***：在使用 sendfile 的时候开启才有效，可以提高网络传输 bits 时的效率。
+- ***tcp_nodelay***：在长连接中需要开启此选项，即使是很小的数据包也不会做延迟发送。
 - ***keepalive_timeout*** ：一个请求完成之后保持连接的时间（防止过度频繁的创建连接）。
+- ***types_hash_max_size***：Nginx 使用散列表来存储 *MIME type* 与文件扩展名，此值设置了每个散列桶占用的内存大小，值越大，占用内存越大，匹配效率越高，使用默认值即可。
+- ***include***：nginx 支持将其他位置的配置文件引入到主配置文件中，这样即使配置复杂主配置文件也不会显得十分臃肿。
+- ***server***：配置具体的虚拟主机，一个 http 中可以配置多个虚拟主机。
 
-
+> 除上诉配置外，http 配置段还可以配置负载均衡，gzip，编码等。
 
 
 
@@ -189,23 +199,32 @@ server {
 ~~~
 
 - ***listen***：定义要监听的端口。
+  
   - `listen 80;`：监听所有的 ipv4 地址的 80 端口。
   - `listen [::]:80;`：监听所有的 ipv6 地址的 80 端口。
   - `listen 192.168.1.6:80;`：只监听 192.168.1.6 的 ipv4 地址下的 80 端口。
   - `listen [fe80::919c:9a57:127f:5a8a]:80;`：只监听 *fe80::919c:9a57:127f:5a8a* 的 ipv6 地址下的 80 端口。
   - *default_server*：将此 server 定义为默认的 server（一个 http 块中可以配置多个 server 模块），当请求的域名未匹配到任何 server_name 时，nginx 将会使用 default_server 来处理请求，如果均未配置 default_server，使用第一个 server 进行请求处理。
+  
 - ***server_name***：定义域名，可以定义多个，使用空格隔开，也可以使用正则表达式。配置 server_name 后，就可以在浏览器中直接输入域名进行访问而不需要输入 ip 地址（ _ 为官方随意指定的一个无效域名，无任何意义）。
-- ***root***：定义根目录，后续路径配置可以使用相对路径。
 
+- ***root***：定义根目录，nginx 会根据该目录进行文件映射，例如：nginx 配置 `root /usr/share/nginx/html;`，用户访问 /project/xxx.html 时，nginx 则会返回 /usr/share/nginx/html/project/xxx.html 文件。
 
+- ***include***：将其他配置文件包含进来。
 
+- ***location***：指定路径匹配规则，/ 为匹配任何路径。
 
+- ***error_page***：定义发生错误的时候需要显示一个的定义的 uri。
 
+  ~~~shell
+  error_page 500 502 503 504 /50x.html;
+  location = /50x.html {
+  }
+  ~~~
 
+  当发生 500，502，503，504 错误时转到 /50x.html，使用 `location = /50x.html` 匹配该路径然后再 location 块中作具体配置。
 
-
-
-
+> server 中还可以配置 index（缺省为 nginx 根目录下的 index.html），代理服务响应时间，缓存等多种参数。
 
 
 
