@@ -1143,7 +1143,7 @@ ID	GENDER	NAME	SUBJECT:GRADE
 - -s 文件：判断该文件是否存在，并且是否为非空（非空为真） 
 - -S 文件：判断该文件是否存在，并且是否为套接字文件（是套接字文件为真） 
 
-使用方法：
+使用方法：使用 test 命令或 [] 进行条件判断
 
 ~~~shell
 [root@localhost ~]# test -e student.txt 
@@ -1243,3 +1243,70 @@ yes               # $name 有值且为 niko
 ---
 
 #### 11.流程控制
+
+***if*** 语句：使用 if 加条件判断语句进行流程控制。
+
+- 单分支 if 条件语句：
+
+  第一种写法：
+
+  ~~~shell
+  if [ 条件判断语句 ];then
+  	程序
+  fi
+  ~~~
+
+  第二种写法：
+
+  ~~~shell
+  if [ 条件判断语句 ]
+  	then
+  		程序
+  fi
+  ~~~
+
+  > 注意：[] 的首位空格不能省略。
+
+- 双分支 id 条件语句：
+
+  ~~~shell
+  if [ 条件判断式 ]
+  	then
+  		条件成立时，执行的程序
+  	else
+  		条件不成立时，执行的另一个程序
+  fi
+  ~~~
+
+- 多分支 if 语句：
+
+  ~~~shell
+  if [ 条件判断式1 ]
+  	then
+  		当条件判断式1成立时，执行程序1
+  elif [ 条件判断式2 ]
+  	then
+  		当条件判断式2成立时，执行程序2
+  ......
+  	else
+  		当所有条件都不成立时，最后执行此程序
+  fi
+  ~~~
+
+使用示例：
+
+~~~shell
+#!/bin/bash
+#判断Redis服务是否启动
+#Author Star
+pid=$(ps -ef | grep redis | grep -v grep | awk '{print $2}')
+if [ -z "$pid" ]
+	then
+		echo “未启动Redis服务!”
+	else
+		echo "Redis服务已启动，进程ID:$pid"
+fi
+~~~
+
+
+
