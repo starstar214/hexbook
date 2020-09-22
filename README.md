@@ -39,9 +39,9 @@
 
     Linux 权限管理
 
-	3. Linux高级应用
+3. Linux高级应用
 
-    [Shell 编程](Linux系统/Linux高级应用/Shell编程.md)
+   [Shell 编程](Linux系统/Linux高级应用/Shell编程.md)
 
 #### Java语言
 
