@@ -17,13 +17,31 @@
 
 #### 计算机基础
 
-	1. 数据结构
- 	2. 算法导论
+ 1. 数据结构
+
+    数据结构的数学知识
+
+ 2. 算法导论
 
 #### Linux系统
 
-	1. [Shell编程](Linux系统/Shell编程.md) 
- 	2. [文本编辑器Vim](Linux系统/文本编辑器Vim.md)
+ 1. Linux基础
+
+    初识 Linux
+
+    Linux 常用命令
+
+    [文本编辑器 Vim](Linux系统/文本编辑器Vim.md)
+
+ 2. Linux系统管理
+
+    用户及用户组管理
+
+    Linux 权限管理
+
+	3. Linux高级应用
+
+    [Shell 编程](Linux系统/Linux高级应用/Shell编程.md)
 
 #### Java语言
 
