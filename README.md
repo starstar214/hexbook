@@ -31,7 +31,7 @@
 
     Linux 常用命令
 
-    [文本编辑器 Vim](Linux系统/文本编辑器Vim.md)
+    [文本编辑器 Vim](Linux系统/Linux基础/文本编辑器Vim.md)
 
  2. Linux系统管理
 
