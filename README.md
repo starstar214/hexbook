@@ -22,10 +22,8 @@
 
 #### Linux系统
 
-1. Linux常用命令
-2. 软件包管理
-4. [Shell编程](Linux系统/Shell编程.md)
-4. [文本编辑器Vim](Linux系统/文本编辑器Vim.md)
+1. [Shell编程](Linux系统/Shell编程.md)
+2. [文本编辑器Vim](Linux系统/文本编辑器Vim.md)
 
 #### Java语言
 
