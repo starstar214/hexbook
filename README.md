@@ -86,3 +86,6 @@
 3. 数据库安装
 
    [CentOS 8 下安装 MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
+
+<div style="height:50px;background-image:linear-gradient(to top, #09203f 0%, #537895 100%);"></div>
+
