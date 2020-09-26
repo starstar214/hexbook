@@ -8,8 +8,9 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 
 **目录**
 
-1. [NoSQL与Redis](#1nosql与redis)
-2. [Redis基础知识与命令](#2redis基础知识与命令)
+1. [NoSQL 与 Redis](#1nosql与redis)
+2. [Redis 基础知识与命令](#2redis基础知识与命令)
+3. [Redis 数据结构](#3redis数据结构)
 
 
 
@@ -100,11 +101,87 @@ Redis 安装：[CentOS 8 下安装 Redis](../../软件安装手册/中间件安�
 
 
 
-Redis 基本操作：
+Redis 服务相关命令：
+
+- 启动 Redis 服务：
+
+  - 直接输入 `redis-server`：此时 Redis 服务会以非后台的方式运行，退出命令行后服务停止， 并且由于没有指定配置文件，Redis 会将 当前目录视为工作目录，RDB 文件将会放置在当前目录下。
+
+  - 输入 `redis-server /etc/redis.conf & `：服务以后台的方式运行，并且指定 etc 下的 redis.conf 为配置文件。
+  - 输入 `redis-server /etc/redis.conf --daemonize yes`：指定配置文件启动 Redis 服务，同时修改配置项 daemonize 为 yes 以后台运行 Redis 服务。除此之外，redis-server 启动时可以同时指定任意配置项，指定的配置项将会覆盖配置文件中的内容。
+  - 修改配置文件 `daemonize  yes`，然后以 `redis-server /etc/redis.conf` 启动。
+
+- 使用 redis-cli 客户端连接 Redis 服务：
+
+  - `redis-cli`：连接 Redis 服务器，默认连接的地址为 ***127.0.0.1***，连接端口为 ***6379***。
+
+  - `redis-cli -h 192.168.253.128 -p 6380`：指定 IP 和端口连接 Redis 服务。
+
+    ~~~shell
+    [root@localhost ~]# redis-cli
+    127.0.0.1:6379> 
+    ~~~
+
+    执行 `redis-cli` 命令后会进入交互界面，在交互界面可以执行 redis-cli 内部命令，使用 *quit/exit* 退出交互界面。
+
+  - 也可以不进入交互界面执行相关内部命令：
+
+    ~~~shell
+    [root@localhost ~]# redis-cli set key value
+    OK
+    ~~~
+
+- 关闭 Redis 服务：
+  - `redis-cli shutdown`：关闭 Redis 服务，也可以指定 ***-h*** 和 ***-p***。
+
+> ***redis-cli*** 命令的参数和选项非常多，可以使用 `redis-cli --help` 进行查看。
 
 
 
+***redis-benchmark*** 性能测试：*redis-benchmark* 是官方自带的性能测试工具。
 
+使用示例：
+
+~~~shell
+[root@localhost ~]# redis-benchmark
+~~~
+
+直接使用 redis-benchmark 即可进行压力测试，默认以 50 并发数发起 100,000 次请求（get、set、lpush......）
+
+> redis-benchmark 可以使用选项对性能测试的各种参数进行调整，详细选项可以通过 `redis-benchmark --help` 进行查询。
+
+
+
+Redis 数据库：Redis 默认共有 16 个数据库，默认使用第 0 个数据库，在一个数据库中设置的值不能在另一个数据库中进行使用。
+
+- 切换数据库：	
+
+  ~~~shell
+  [root@localhost ~]# redis-cli
+  127.0.0.1:6379> select 2
+  OK
+  ~~~
+
+- 清空数据库：
+
+  ~~~shell
+  127.0.0.1:6379> DBSIZE                #查看当前数据库的 key 的数量
+  (integer) 5
+  127.0.0.1:6379[2]> FLUSHDB            #清空当前数据库
+  OK
+  127.0.0.1:6379[2]> FLUSHALL           #清空所有数据库
+  OK
+  127.0.0.1:6379> DBSIZE
+  (integer) 0
+  ~~~
+
+
+
+> 由于 Redis 是很快的，而且是基于内存操作，CPU 不是 Redis 的性能瓶颈，所以 Redis 被设计为单线程的。Redis 的瓶颈是机器的内存和网络带宽。
+>
+>  Redis 为什么这么快？
+>
+> Redis 的数据都是放在内存中的，绝大部分都是内存操作，使用单线程避免了不必要的 CPU 上下文切换，并且使用了非阻塞IO以保证其性能。
 
 
 
@@ -112,7 +189,7 @@ Redis 基本操作：
 
 ---
 
-3.Redis数据结构
+#### 3.Redis数据结构
 
 
 

@@ -25,9 +25,9 @@
 4. Redis 基本命令
 
    ```shell
-   [root@localhost ~]# redis-server /ect/redis.conf     启动Redis，非后台启动，退出命令行后服务停止
-   [root@localhost ~]# redis-server /ect/redis.conf &   后台启动Redis
-   [root@localhost redis]# redis-cli                    进入Redis客户端
+   [root@localhost ~]# redis-server /ect/redis.conf           启动Redis，非后台启动，退出命令行后服务停止
+   [root@localhost ~]# redis-server /ect/redis.conf &         后台启动Redis
+   [root@localhost redis]# redis-cli     进入Redis客户端,默认连接localhost的6379端口
    127.0.0.1:6379> ping
    PONG
    127.0.0.1:6379> exit
@@ -45,5 +45,3 @@
    > 启动时须指定配置文件，否则 Redis 会使用默认配置（非默认配置文件），某些配置项会不同于默认配置文件。
 
 
-
-5. 使用 systemctl 管理 Redis 服务
