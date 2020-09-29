@@ -299,6 +299,8 @@ string
    127.0.0.1:6379> get user:1:name
    "star"
    ~~~
+   
+   
 
 > Redis 设置对象的方式：
 >
@@ -323,3 +325,56 @@ string
 
 
 
+2. List 类型
+
+   在 Redis 中，我们可以使用 List 数据结构实现栈，队列等，List 的本质是一个链表结构。
+
+   *List* 常用命令：
+
+   ~~~shell
+   127.0.0.1:6379> LPUSH list one                #向 list 中从左边放入一个值
+   (integer) 1
+   127.0.0.1:6379> LPUSH list three four         #向 list 中从左边依次放入两个值
+   (integer) 4
+   127.0.0.1:6379> LRANGE list 0 -1              #查看 list 的所有值
+   1) "four"
+   2) "three"
+   3) "two"
+   4) "one"
+   127.0.0.1:6379> LRANGE list 0 1               #查看 list 的前两个值(从左边开始)
+   1) "four"
+   2) "three"
+   127.0.0.1:6379> RPUSH list zero               #向 list 中从右边放入一个值
+   (integer) 5
+   127.0.0.1:6379> LPOP list                     #移除 list 最左边的元素
+   "four"
+   127.0.0.1:6379> RPOP list                     #移除 list 最右边的元素
+   "zero"
+   127.0.0.1:6379> LINDEX list 1                 #通过下表获取 list 的某一个值
+   "two"
+   127.0.0.1:6379> LLEN list                     #返回 list 的长度
+   (integer) 3
+   127.0.0.1:6379> LREM list 1 three             #从 list 中移除 1 个 three
+   (integer) 1
+   127.0.0.1:6379> ltrim list 0 1                #截取 list 中 0-1 下标的数据
+   OK
+   127.0.0.1:6379> RPOPLPUSH list queue          #将 list 最右边的元素取出放在 queue 的左边
+   "three"
+   127.0.0.1:6379> LSET list 0 two               #将 list 的 0 号下标的元素更改为 two
+   OK
+   127.0.0.1:6379> LRANGE list 0 -1
+   1) "two"
+   2) "one"
+   3) "two"
+   4) "three"
+   127.0.0.1:6379> LINSERT list BEFORE two zero  #在 list 中 two 这个元素的前面插入 zero(只会插入到最左边的第一个指定元素前)
+   (integer) 5
+   127.0.0.1:6379> LRANGE list 0 -1
+   1) "zero"
+   2) "two"
+   3) "one"
+   4) "two"
+   5) "three"
+   ~~~
+
+   
