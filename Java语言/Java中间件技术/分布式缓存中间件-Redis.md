@@ -10,7 +10,7 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 
 1. [NoSQL 与 Redis](#1nosql与redis)
 2. [Redis 基础知识与命令](#2redis基础知识与命令)
-3. [Redis 数据结构](#3redis数据结构)
+3. [Redis 五大数据类型](#3Redis五大数据类型)
 
 
 
@@ -219,7 +219,7 @@ string
 
 ---
 
-#### 3.Redis数据结构
+#### 3.Redis五大数据类型
 
 1. 字符串类型
 
@@ -325,7 +325,7 @@ string
 
 
 
-2. List 类型
+2. List 类型数据
 
    在 Redis 中，我们可以使用 List 数据结构实现栈，队列等，List 的本质是一个链表结构。
 
@@ -334,7 +334,7 @@ string
    ~~~shell
    127.0.0.1:6379> LPUSH list one                #向 list 中从左边放入一个值
    (integer) 1
-   127.0.0.1:6379> LPUSH list three four         #向 list 中从左边依次放入两个值
+   127.0.0.1:6379> LPUSH list three four         #向 list 中从左边依次放入 three、four 两个值
    (integer) 4
    127.0.0.1:6379> LRANGE list 0 -1              #查看 list 的所有值
    1) "four"
@@ -377,4 +377,95 @@ string
    5) "three"
    ~~~
 
+
+
+
+3. Set 类型数据
+
+   Redis 的 Set 类似于 List，Set 中的值无序不重复。
+
+   *Set* 常用命令：
+
+   ~~~shell
+   127.0.0.1:6379> sadd students Jack Nacy        #从左边向 Set 中依次放入 Jack、Nacy 两个值
+   (integer) 2
+   127.0.0.1:6379> SMEMBERS students              #查看 Set 的所有值
+   1) "Nacy"
+   2) "Jack"
+   127.0.0.1:6379> SISMEMBER students James       #判断 James 是否在 Set 中
+   (integer) 0
+   127.0.0.1:6379> SCARD students                 #查看 Set 的元素个数
+   (integer) 2
+   127.0.0.1:6379> SREM students Jack             #移除 Set 中的指定元素
+   (integer) 1
+   127.0.0.1:6379> SRANDMEMBER students           #从 Set 中随机抽取一个成员
+   "Rose"
+   127.0.0.1:6379> SRANDMEMBER students 2         #从 Set 中随机抽取两个成员
+   1) "James"
+   2) "Jack"
+   127.0.0.1:6379> spop students                  #从 Set 中随机删除一个成员并返回该成员的值
+   "Rose"
+   127.0.0.1:6379> SMOVE students teachers Lucky  #从 Set 中随机移动一个成员到另一个 Set
+   (integer) 1
+   127.0.0.1:6379> SDIFF students teachers        #求两个或多个 Set 的差集
+   1) "James"
+   2) "Tom"
+   3) "LiMei"
+   4) "Jack"
+   5) "Nacy"
+   127.0.0.1:6379> SINTER students teachers       #求两个或多个 Set 的交集
+   1) "Lucy"
+   2) "Niko"
+   127.0.0.1:6379> SUNION students teachers       #求两个或多个 Set 的并集
+    1) "Tom"
+    2) "Lucy"
+    3) "Niko"
+    4) "Nacy"
+    5) "LiMei"
+   ~~~
+
    
+
+4. Hash 类型数据
+
+   Redis 中的 Hash 类似于 Java 中的 Map 结构，存放的 key - value 键值对（value 为字符串或数字）。
+
+   *Hash* 常用命令：
+
+   ~~~shell
+   127.0.0.1:6379> hset user name Niko            #设置一个 Hash 数据的键值对 name - Niko
+   (integer) 1
+   127.0.0.1:6379> HSETNX user age 25             #当 Hash 中不存在键时设置一个键值对
+   (integer) 1
+   127.0.0.1:6379> hget user name                 #获取 user 中 name 键对应的值
+   "Niko"
+   127.0.0.1:6379> hmset user age 25 gender male  #同时设置多个键值对
+   OK
+   127.0.0.1:6379> hmget user age gender
+   1) "25"
+   2) "male"
+   127.0.0.1:6379> hgetall user
+   1) "name"
+   2) "Niko"
+   3) "age"
+   4) "25"
+   127.0.0.1:6379> hdel user age gender           #删除 Hash 中指定键值对
+   (integer) 2
+   127.0.0.1:6379> hlen user                      #查看 Hash 中的键值对个数
+   (integer) 1
+   127.0.0.1:6379> HEXISTS user name              #判断 Hash 中指定键是否存在
+   (integer) 1
+   127.0.0.1:6379> HKEYS user                     #查看 Hash 中所有的键
+   1) "name"
+   127.0.0.1:6379> HVALS user                     #查看 Hash 中所有的值
+   1) "Niko"
+   127.0.0.1:6379> HINCRBY user age 1             #将 Hash 中某个键的值加上一个值(如果不存在该键则会创建)
+   (integer) 1
+   
+   ~~~
+
+   Hash 适合用来存储简单对象。
+
+
+
+5. Zset 数据类型
