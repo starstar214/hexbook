@@ -10,8 +10,8 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 
 1. [NoSQL 与 Redis](#1nosql与redis)
 2. [Redis 基础知识与命令](#2redis基础知识与命令)
-3. [Redis 五大数据类型](#3Redis五大数据类型)
-4. [Redis 其他数据类型](#4Redis其他数据类型)
+3. [Redis 五大数据类型](#3redis五大数据类型)
+4. [Redis 其他数据类型](#4redis其他数据类型)
 
 
 
