@@ -11,6 +11,7 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 1. [NoSQL 与 Redis](#1nosql与redis)
 2. [Redis 基础知识与命令](#2redis基础知识与命令)
 3. [Redis 五大数据类型](#3Redis五大数据类型)
+4. [Redis 其他数据类型](#4Redis其他数据类型)
 
 
 
@@ -469,3 +470,57 @@ string
 
 
 5. Zset 数据类型
+
+   在 Set 的基础上增加了一个分值，可以根据分值进行排序，所以 Zset 也可以看成一个有序不重复集合（分值可以重复，元素不能重复）。
+
+   *Zset* 常用命令：
+
+   ~~~shell
+   127.0.0.1:6379> ZADD numbers 1 one 2 two        #向 Zset 中加入元素 [分值 元素]
+   (integer) 2
+   127.0.0.1:6379> ZADD numbers 5 five 3 three
+   (integer) 2
+   127.0.0.1:6379> ZRANGE numbers 0 -1             #按下标获取 Zset 中的元素(加入 Zset 中的元素会按照分值进行排序)
+   1) "one"
+   2) "two"
+   3) "three"
+   4) "five"
+   127.0.0.1:6379> ZREVRANGE numbers 0 1           #翻转 Zset 后获取其中指定范围的元素
+   1) "five"
+2) "two"
+   127.0.0.1:6379> ZRANGEBYSCORE numbers 0 2       #获取 Zset 中分数在 0-2 之间的元素
+   1) "one"                                        
+   2) "two"                                        #ZRANGEBYSCORE key min max [WITHSCORES] [limit offset count]
+   127.0.0.1:6379> ZRANGEBYSCORE numbers 0 3 withscores limit 2 1
+   1) "three"                                      #获取 Zset 中分数在 0-3 之间的元素同时展示分数，偏移值为 2 ，只展示一个元素
+   2) "3"
+   127.0.0.1:6379> ZRANGEBYSCORE numbers -inf +inf #获取 Zset 中分数在 负无穷(-inf)-正无穷(+inf) 之间的元素
+   1) "one"
+   2) "two"
+   3) "three"
+   4) "five"
+   127.0.0.1:6379> ZREM numbers three              #移除 Zset 中的指定元素
+   (integer) 1
+   127.0.0.1:6379> ZCARD numbers                   #查看 Zset 中元素个数
+   (integer) 3
+   127.0.0.1:6379> zcount numbers 0 3              #查看 Zset 中分数在 0-3 之间的元素个数
+   (integer) 2
+   127.0.0.1:6379> ZINCRBY numbers 2 two           #给元素 “two” 的分数加 2
+   "4"
+   127.0.0.1:6379> ZPOPMAX numbers 1               #移除 Zset 中分数最大的 1 个元素
+   1) "five"
+   2) "5"
+   127.0.0.1:6379> ZPOPMIN numbers 1               #移除 Zset 中分数最小的 1 个元素
+   1) "one"
+   2) "1" 
+   127.0.0.1:6379> ZRANK numbers ten               #查看元素 “ten” 的排名(从 0 开始)
+   (integer) 1
+   ~~~
+   
+   应用：排行榜，成绩表等统计类功能实现。
+
+
+
+---
+
+#### 4.Redis其他数据类型
