@@ -487,7 +487,7 @@ string
    4) "five"
    127.0.0.1:6379> ZREVRANGE numbers 0 1           #翻转 Zset 后获取其中指定范围的元素
    1) "five"
-2) "two"
+   2) "two"
    127.0.0.1:6379> ZRANGEBYSCORE numbers 0 2       #获取 Zset 中分数在 0-2 之间的元素
    1) "one"                                        
    2) "two"                                        #ZRANGEBYSCORE key min max [WITHSCORES] [limit offset count]
