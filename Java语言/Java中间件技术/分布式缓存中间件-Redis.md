@@ -822,21 +822,24 @@ public class TransactionDemo {
     public static void main(String[] args) {
         Jedis jedis = new Jedis("192.168.253.128",6379);
         jedis.set("money","100");
-        int sub = 20;
-        jedis.watch("money");
+        jedis.set("debt","20");
+        jedis.watch("money","debt");
         int balance = Integer.parseInt(jedis.get("money"));
+        int debt = Integer.parseInt(jedis.get("debt"));
         try {
-            if (balance < sub){
+            if (balance < debt){
                 jedis.unwatch();
                 System.out.println("余额不足!");
             }else {
                 Thread.sleep(15000L);
                 Transaction multi = jedis.multi();
-                multi.decrBy("money",sub);
+                multi.decrBy("money",debt);
+                multi.decrBy("debt",debt);
                 List<Object> exec = multi.exec();
                 if (exec == null){
                     int newBalance = Integer.parseInt(jedis.get("money"));
-                    System.out.println("执行失败，余额已发生变化，余额为：" + newBalance);
+                    int newDebt = Integer.parseInt(jedis.get("money"));
+                    System.out.println("执行失败，余额或欠款已发生变化，余额为：" + newBalance + "欠款为" + newDebt);
                 }
             }
         }catch (Exception e){
