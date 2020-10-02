@@ -601,7 +601,7 @@ string
 
  
 
-数据结构 ***Hyperloglog***：在 Redis 2.8.9 版本添加，用来做基数统计的算法，HyperLogLog 的优点是：在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定并且是很小的（接受一定误差 0.81%），在 2^64^  的数据量下统计基数只需要 12KB 的内存。
+数据结构 ***Hyperloglog***：在 Redis 2.8.9 版本添加，用来做基数统计的算法，HyperLogLog 的优点是：在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定并且是很小的（接受一定误差 0.81%），在 2 的 64 次方的数据量下统计基数只需要 ***12KB*** 的内存。
 
 基数：数据集 {1,3,5,7,5,7,8,9}， 那么这个数据集的基数集为 {1,3,5,7,8,9}，数据集的基数(不重复元素个数)为 6 个。
 
@@ -756,14 +756,14 @@ Redis 事务执行的 3 个阶段：
 
 
 
-Redis 可以使用 ***watch*** 监视一个(或多个) key ，如果在事务执行之前这个(或这些) key 被其他命令所改动，那么事务将被打断（回滚）。
+Redis 可以使用 ***watch***（乐观锁） 监视一个(或多个) key ，如果在事务执行之前这个(或这些) key 被其他命令所改动，那么事务将被打断（回滚）。
 
 ~~~shell
 127.0.0.1:6379> watch money
 OK
 127.0.0.1:6379> multi 
 OK
-127.0.0.1:6379> decrby money 20            #在事务执行之前使用另一个客户端改变 money 的值
+127.0.0.1:6379> decrby money 20            #在 watch 之后，事务 exec 之前使用另一个客户端改变 money 的值
 QUEUED
 127.0.0.1:6379> incrby cost 20
 QUEUED
@@ -782,4 +782,75 @@ QUEUED
 ---
 
 #### 6.使用Jedis操作Redis
+
+Jedis 是 Redis 官方推荐的 Java 连接开发工具，使用 Java 来操作 Redis，Redis 所有命令都可以通过 Jedis 执行。
+
+导入依赖：
+
+~~~xml
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>3.1.0</version>
+</dependency>
+~~~
+
+注意：使用非本机的其他客户端连接 Redis 时，需要先进行检查：
+
+1. Redis 服务端机器的防火墙是否开放了 6379 端口。
+2. redis.conf 配置文件中的 `bind 127.0.0.1` 是否注释掉或者修改为 `bind 0.0.0.0`（允许所有主机连接到 Redis）
+3. *protected-mode* 修改为 no，即非保护模式运行，允许非本机的客户端连接 Redis。
+
+Jedis 连接测试：
+
+~~~java
+public class PingDemo {
+    public static void main(String[] args) {
+        //连接 Redis
+        Jedis jedis = new Jedis("192.168.253.128",6379);
+        String response = jedis.ping();
+        System.out.println(response);
+        jedis.close();
+    }
+}
+~~~
+
+Jedis 实现事务实例：
+
+~~~java
+public class TransactionDemo {
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("192.168.253.128",6379);
+        jedis.set("money","100");
+        int sub = 20;
+        jedis.watch("money");
+        int balance = Integer.parseInt(jedis.get("money"));
+        try {
+            if (balance < sub){
+                jedis.unwatch();
+                System.out.println("余额不足!");
+            }else {
+                Thread.sleep(15000L);
+                Transaction multi = jedis.multi();
+                multi.decrBy("money",sub);
+                List<Object> exec = multi.exec();
+                if (exec == null){
+                    int newBalance = Integer.parseInt(jedis.get("money"));
+                    System.out.println("执行失败，余额已发生变化，余额为：" + newBalance);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            jedis.close();
+        }
+    }
+}
+~~~
+
+使用 JedisPool：
+
+~~~java
+
+~~~
 
