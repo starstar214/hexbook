@@ -14,6 +14,7 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 4. [Redis 特殊数据类型](#4redis特殊数据类型)
 5. [Redis 事务及 WATCH 锁](#5redis事务及watch锁)
 6. [使用 Jedis 操作 Redis](#6使用jedis操作redis)
+7. [SpringBoot 整合 Redis](#7springboot整合redis)
 
  
 
@@ -851,9 +852,204 @@ public class TransactionDemo {
 }
 ~~~
 
-使用 JedisPool：
+在实际开发中，为配合多线程一般我们使用 ***JedisPool***：
 
 ~~~java
-
+JedisPool jedisPool = new JedisPool("192.168.253.128", 6379);
+Jedis jedis = jedisPool.getResource();
+jedis.set("demo","demo");
 ~~~
 
+*JedisPool* 的默认配置：
+
+~~~java
+public class JedisPoolConfig extends GenericObjectPoolConfig {
+    public JedisPoolConfig() {
+        this.setTestWhileIdle(true);
+        this.setMinEvictableIdleTimeMillis(60000L);
+        this.setTimeBetweenEvictionRunsMillis(30000L);
+        this.setNumTestsPerEvictionRun(-1);
+    }
+}
+~~~
+
+我们也可以 `new JedisPoolConfig();` 自定义配置设置到 *JedisPool* 中。
+
+
+
+---
+
+#### 7.SpringBoot整合Redis
+
+新建 *SpringBoot* 项目，选择 
+
+- ***Spring Boot DevTools***：支持 SpringBoot 项目热部署。
+- ***Lombok***：通过注解方式生成 Java 实体类。
+- ***Spring Configuration Processor***：Spring 默认使用 yml 配置，此注解是项目支持传统的 xml 或 properties 配置（与配置文件相关的几个注解依赖）。
+- ***Spring Web***：标记项目为 web 项目并加入 mvc 依赖。
+- ***Spring Data Redis（Access + Driver）***：加入 Redis 相关依赖。
+
+这 5 个模块。
+
+
+
+> 在 ***SpringBoot 2.x*** 之后，连接 Redis 服务器不在使用 Jedis 框架，而是采用了 ***Lettuce*** 框架！
+>
+> *Jedis*：采用的是直连，使用 Jedis Pool 用来支撑高并发情况下的连接请求，类似于 BIO 的模式。
+>
+> *Lettuce*：使用 netty 连接 Redis 服务，连接实例可以在多个线程当中进行共享，性能极高，类似于 NIO 的模式。
+
+
+
+编写配置文件 ***application.properties***：
+
+~~~properties
+#应用程序端口
+server.port=8080
+#配置 Redis
+spring.redis.host=192.168.253.128
+spring.redis.port=6379
+#热部署生效
+spring.devtools.restart.enabled=true
+#设置重启的目录
+spring.devtools.restart.additional-paths=src/main/java
+~~~
+
+
+
+> 在 IDEA 中修改项目后，按下 ***Ctrl + F9*** 可以使项目重新编译，触发 SpringBoot 热部署自动重启。
+
+
+
+SpringBoot 的 Redis 自动配置类 ***RedisAutoConfiguration***：
+
+~~~java
+@Configuration(proxyBeanMethods = false)
+@ConditionalOnClass(RedisOperations.class)
+@EnableConfigurationProperties(RedisProperties.class)
+@Import({ LettuceConnectionConfiguration.class, JedisConnectionConfiguration.class })
+public class RedisAutoConfiguration {
+	@Bean
+	@ConditionalOnMissingBean(name = "redisTemplate")
+	public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory)
+			throws UnknownHostException {
+		RedisTemplate<Object, Object> template = new RedisTemplate<>();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
+	}
+	@Bean
+	@ConditionalOnMissingBean
+	public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory redisConnectionFactory)
+			throws UnknownHostException {
+		StringRedisTemplate template = new StringRedisTemplate();
+		template.setConnectionFactory(redisConnectionFactory);
+		return template;
+	}
+}
+~~~
+
+SpringBoot 为我们提供了 2 个用来操作 Redis 的模板类：
+
+- ***redisTemplate***：可以用来操作 Redis 的所有命令，默认没有过多配置（对象序列化等），我们可以自定义 *redisTemplate* 覆盖掉 SpringBoot 提供的模板类。
+
+  使用方法：
+
+  - *redisTemplate.opsForXxx()*：操作 xxx 类型的数据，如：`opsForValue` 操作字符串，`opsForHash` 操作 hash 类型数据。
+  - *redisTemplate.getConnectionFactory().getConnection()*：获取 Redis 连接对象，直接使用连接执行命令。
+  - *redisTemplate.execute()*：直接传入 Redis 命令通过 Redis 连接对象执行。
+  - *redisTemplate.xxx()*：直接执行一些常用的命令，如事务相关操作 *watch*，*multi*，*exec*，*discard* 等，元素操作 *type*，*delete*，*move*，*expire* 等。
+
+- ***stringRedisTemplate***：由于String 类型最常使用，所以提供了此模板专门用来操作 Redis 字符串。
+
+测试 *redisTemplate*：
+
+~~~java
+@SpringBootTest
+class RedisBootApplicationTests {
+	@Autowired
+	private RedisTemplate<String,String> redisTemplate;
+	@Test
+	void contextLoads() {
+		redisTemplate.opsForValue().set("myName","地球人");
+		System.out.println(redisTemplate.opsForValue().get("myName"));
+	}
+}
+~~~
+
+在 SpringBoot 默认的 RedisTemplate 中，默认使用 ***JdkSerializationRedisSerializer*** 进行序列化：
+
+```java
+if (defaultSerializer == null) {
+    defaultSerializer = new JdkSerializationRedisSerializer(
+        classLoader != null ? classLoader : this.getClass().getClassLoader());
+}
+```
+
+在不进行特殊配置时，直接在 Redis 客户端查看 *Lettuce* 储存的对象类型的键值时会出现乱码，我们可以自定义 *RedisTemplate* 使用 *json* 来实现序列化。
+
+自定义 ***RedisTemplate***：
+
+~~~java
+@Configuration
+public class RedisConfiguration {
+    @Bean
+    public RedisTemplate<String,Object> redisTemplate(RedisConnectionFactory factory){
+        //在开发中，一般使用字符串作为键
+        RedisTemplate<String,Object> template = new RedisTemplate<>();
+        //字符串序列化器
+        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        template.setKeySerializer(stringSerializer);
+        template.setHashKeySerializer(stringSerializer);
+        //Redis对象序列化器
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
+        template.setValueSerializer(jsonSerializer);
+        template.setHashValueSerializer(jsonSerializer);
+        template.setConnectionFactory(factory);
+        //应用设置
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+~~~
+
+SpringBoot 内置了几种序列化器，直接将适合的序列化器设置到 *redisTemplate* 即可。
+
+
+
+> 使用 Java 设值中文内容时，如果直接使用客户端查询会出现中文乱码，此时可以加启动参数以查看正常的中文显示：
+>
+> ~~~shell
+> [root@localhost ~]# redis-cli --raw
+> 27.0.0.1:6379> get myName
+> "地球人啊"
+> ~~~
+
+
+
+设置 SpringBoot 项目启动检查 Redis 连接：
+
+~~~java
+@Slf4j
+@Component
+public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> {
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Value("${spring.redis.host}")
+    private String redisHost;
+    @Value("${spring.redis.port}")
+    private int port;
+    @Override
+    public void onApplicationEvent(ApplicationStartedEvent applicationStartedEvent) {
+        //测试Redis连接，连接不成功时，此方法抛出异常，容器中止启动
+        String result = (String) redisTemplate.execute(RedisConnection::ping);
+        log.info(result);
+        log.info("Redis连接成功，主机地址："+ redisHost + "，端口号：" + port);
+    }
+}
+~~~
+
+
+
+---
+
+#### 使用Redis实现分布式锁
