@@ -886,7 +886,7 @@ public class JedisPoolConfig extends GenericObjectPoolConfig {
 新建 *SpringBoot* 项目，选择 
 
 - ***Spring Boot DevTools***：支持 SpringBoot 项目热部署。
-- ***Lombok***：通过注解方式生成 Java 实体类。
+- ***Lombok***：通过注解方式生成 Java 实体类结构。
 - ***Spring Configuration Processor***：Spring 默认使用 yml 配置，此注解是项目支持传统的 xml 或 properties 配置（与配置文件相关的几个注解依赖）。
 - ***Spring Web***：标记项目为 web 项目并加入 mvc 依赖。
 - ***Spring Data Redis（Access + Driver）***：加入 Redis 相关依赖。
@@ -1106,6 +1106,7 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
       @Autowired
       private RedisLock redisLock;
       public boolean spike(){
+          //生成UUID，保证后续解锁时只解锁自己的锁
           String uuid = UUID.randomUUID().toString();
           try {
               boolean result = redisLock.tryLock(LOCK_ID, uuid, 5);
