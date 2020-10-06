@@ -15,6 +15,8 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 5. [Redis 事务及 WATCH 锁](#5redis事务及watch锁)
 6. [使用 Jedis 操作 Redis](#6使用jedis操作redis)
 7. [SpringBoot 整合 Redis](#7springboot整合redis)
+8. [使用 Redis 实现分布式锁](#8使用redis实现分布式锁)
+9. [Redis 配置文件](#9redis配置文件)
 
  
 
@@ -1052,4 +1054,98 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 
 ---
 
-#### 使用Redis实现分布式锁
+#### 8.使用Redis实现分布式锁
+
+为了防止分布式系统中的多个进程之间相互干扰，我们需要一种分布式协调技术来对这些进程进行调度，而这个分布式协调技术的核心就是分布式锁。
+
+分布式锁应该具备的条件：
+
+1. 互斥性：在分布式系统环境下，在同一时间只有一个客户端能持有锁。
+2. 高可用：只要大部分的 Redis 节点正常运行，客户端就可以加锁和解锁。
+3. 防死锁：即使有一个客户端在持有锁的期间崩溃而没有主动解锁，也能保证后续其他客户端能加锁。
+4. 非阻塞：没有获取到锁时将直接返回获取锁失败。
+5. 解锁必须是解除自己加上的锁。
+
+实现简单的分布式锁：
+
+- 定义 Redis 锁：
+
+  ~~~java
+  @Slf4j
+  @Component
+  public class RedisLock {
+      @Autowired
+      private RedisTemplate<String,Object> redisTemplate;
+  
+      public boolean tryLock(String key, String value, int seconds){
+          //如果能够设值成功，则获取锁成功，否则直接返回 false
+          return Optional.ofNullable(redisTemplate.opsForValue()
+          	.setIfAbsent(key, value, seconds, TimeUnit.SECONDS)).orElse(false);
+      }
+  
+      public void unLock(String key,String value){
+          try {
+              String str = (String) redisTemplate.opsForValue().get(key);
+              //如果存在值且值为加锁时候的值，才进行解锁
+              if (!StringUtils.isEmpty(str) && str.equals(value)){
+                  redisTemplate.delete(key);
+              }
+          }catch (Exception e){
+              log.error("Redis分布式锁解锁异常：{}",e.getMessage());
+          }
+      }
+  }
+  ~~~
+
+- 业务代码：
+
+  ~~~java
+  @Service
+  public class DemoService {
+      private static final String LOCK_ID = "LOCK_01";
+      @Autowired
+      private RedisLock redisLock;
+      public boolean spike(){
+          String uuid = UUID.randomUUID().toString();
+          try {
+              boolean result = redisLock.tryLock(LOCK_ID, uuid, 5);
+              if (result){
+                  //拿到锁后，模拟中间处理过程
+                  Thread.sleep(3000L);
+                  return true;
+              }else {
+                  return false;
+              }
+          }catch (Exception e){
+              e.printStackTrace();
+          }finally {
+              //总是进行解锁操作
+              redisLock.unLock(LOCK_ID,uuid);
+          }
+          return false;
+      }
+  }
+  ~~~
+
+  多个不同客户端上的线程同时调用 spike 方法时，能够保证同一时间只有一个客户端持有锁。
+
+
+
+在 SpringBoot 中，推荐我们使用 ***Redisson*** 分布式锁！
+
+引入依赖：
+
+~~~xml
+<dependency>
+    <groupId>org.redisson</groupId>
+    <artifactId>redisson-spring-boot-starter</artifactId>
+</dependency>
+~~~
+
+*Redisson* 适应集群模式或单机模式，效率高，更安全，可以实现分布式锁更多的相关功能（可重入锁、自动延期等）。
+
+
+
+---
+
+#### 9.Redis配置文件
