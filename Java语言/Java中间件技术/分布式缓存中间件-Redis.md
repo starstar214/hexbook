@@ -221,7 +221,20 @@ OK
 string
 ~~~
 
- 
+
+
+使用客户端配置服务器：`config set xxx xxx`
+
+~~~shell
+127.0.0.1:6379> config set requirepass "950920"    #直接配置密码
+OK
+127.0.0.1:6379> auth 950920            			   #验证密码
+OK
+~~~
+
+ 除密码外，通过 ***config*** 命令可以配置 *redis.conf* 中的任意配置。
+
+
 
 ---
 
@@ -860,6 +873,8 @@ public class TransactionDemo {
 JedisPool jedisPool = new JedisPool("192.168.253.128", 6379);
 Jedis jedis = jedisPool.getResource();
 jedis.set("demo","demo");
+//归还连接至连接池
+jedis.close();
 ~~~
 
 *JedisPool* 的默认配置：
@@ -875,7 +890,7 @@ public class JedisPoolConfig extends GenericObjectPoolConfig {
 }
 ~~~
 
-我们也可以 `new JedisPoolConfig();` 自定义配置设置到 *JedisPool* 中。
+我们也可以 `new JedisPoolConfig();` 自定义配置设置到 *JedisPool* 中，在开发中，我们需要使用单例模式保证 *JedisPool* 只会产生一个。
 
 
 
@@ -1150,3 +1165,314 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 ---
 
 #### 9.Redis配置文件
+
+默认安装的 Redis 的配置文件位于 ***/etc/redis.conf***。
+
+redis.conf 默认单位介绍：单位大小写不敏感。
+
+~~~shell
+# 1k => 1000 bytes
+# 1kb => 1024 bytes
+# 1m => 1000000 bytes
+# 1mb => 1024*1024 bytes
+# 1g => 1000000000 bytes
+# 1gb => 1024*1024*1024 bytes
+#
+# units are case insensitive so 1GB 1Gb 1gB are all the same.
+~~~
+
+1. ***INCLUDES***：引入外部配置文件。
+
+   ~~~shell
+   # include /path/to/local.conf
+   # include /path/to/other.conf
+   ~~~
+
+2. ***MODULES***：加载一些 *so* 文件用以扩展 Redis 的功能。
+
+   ~~~shell
+   # loadmodule /path/to/my_module.so
+   # loadmodule /path/to/other_module.so
+   ~~~
+
+3. ***NETWORK***：网络模块，配置连接 Redis 服务的相关参数。
+
+   - 网络地址绑定：绑定一个或多个 IP 地址，使 Redis 服务只监听来自目标 IP 的连接请求。
+
+     ~~~shell
+     # Examples:
+     bind 192.168.1.100 10.0.0.1
+     bind 127.0.0.1 ::1
+     ~~~
+
+     不使用 bind 配置或 `bind 0.0.0.0` 时，Redis 会监听来自所有地址的连接请求（公网条件下不建议）。
+
+   - 保护模式：启用保护模式后，只有主机能够连接到 Redis 服务。
+
+     ~~~shell
+     protected-mode no
+     ~~~
+
+   - Redis 启动端口：
+
+     ~~~shell
+     port 6379
+     ~~~
+
+   - tcp 连接的队列大小，当请求量巨大时，允许最大 511 个 tcp 请求在队列中等待响应。
+
+     ~~~shell
+     tcp-backlog 511
+     ~~~
+
+   - 客户端连接超时：当客户端空闲 n 秒后，主动断开与客户端的连接。
+
+     ~~~shell
+     timeout 0
+     ~~~
+
+     设置为 0 时，表示不启动连接超时功能。
+
+   - 每 300 秒向客户端发送 ACK 信息以保持连接活跃。
+
+     ~~~shell
+     tcp-keepalive 300
+     ~~~
+
+4. ***GENERAL***：一些通用配置项。
+
+   - 守护进程模式：修改为 yes 允许 Redis 服务后台运行。
+
+     ~~~shell
+     daemonize yes
+     ~~~
+
+   - 是否通过 *upstart* 和 *systemd* 管理 Redis 服务，保持默认的 no 即可。
+
+     ~~~shell
+     supervised no
+     ~~~
+
+   - Redis 服务启动后的 *pid* 文件：
+
+     ~~~shell
+     pidfile /var/run/redis_6379.pid
+     ~~~
+
+   - 日志信息：Redis 服务的日志级别和日志地址
+
+     ~~~bash
+     loglevel notice      
+     logfile /var/log/redis/redis.log
+     ~~~
+
+   - 数据库个数：默认为 16 个数据库。
+
+     ~~~bash
+     databases 16
+     ~~~
+
+   - 启动时是否打印 logo：
+
+     ~~~bash
+     always-show-logo yes
+     ~~~
+
+5. ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节：[持久化之 RDB](#10持久化之rdb)
+
+6. ***REPLICATION***：主从复制相关配置，详情见 [主从复制](主从复制)。
+
+7. ***SECURITY***：安全相关配置。
+
+   - 设置密码：
+
+     ~~~bash
+     requirepass 950920
+     ~~~
+
+     除了配置文件，也可以在命令行设置密码，将密码注释或者设置为 "" 即为取消密码。
+
+   - 禁用或重命名危险命令（***flushdb***，***flushall***，***config***，***shutdown*** 等）
+
+     ~~~bash
+     rename-command FLUSHALL ""                       #禁用 FLUSHALL 命令
+     rename-command CONFIG FRaqbC8wSA1XvpFVjCRGry     #将 CONFIG 命令重命名为其他名字，保证不会轻易执行
+     ~~~
+
+8. ***CLIENTS***：客户端限制参数配置，同一时间允许最多 n 个客户端进行连接。
+
+   ~~~bash
+   maxclients 10000
+   ~~~
+
+9. ***MEMORY MANAGEMENT***：内存管理相关配置。
+
+   - 最大使用内存：一般不做配置，有默认使用大小。
+
+     ~~~bash
+     maxmemory <bytes>
+     ~~~
+
+   - 内存达到最大时采取的策略：
+
+     ~~~bash
+      maxmemory-policy noeviction         #默认策略
+     ~~~
+
+     Redis 清除 Key 的算法：
+
+     - *LRU*：Least Recently Used，最近最少使用算法。
+     - *LFU*：Least Frequently Used，最近最不常使用算法。
+     - *TTL*：Time To Live，最少存活时间算法。
+
+     此配置项的策略共有 8 种：
+
+     - *volatile-lru*：从设置了过期时间的 key 中通过 LRU 算法移除一个 key。
+
+     - *allkeys-lru*：从所有 key 中通过 LRU 算法移除一个 key。
+
+     - *volatile-lfu*：从设置了过期时间的 key 中通过 LFU 算法移除一个 key。
+
+     - *allkeys-lfu*： 从所有 key 中通过 LFU 算法移除一个 key。
+
+     - *volatile-random*：从设置了过期时间的 key 当中移除一个随机的 key。
+
+     - *allkeys-random*：随机从所有 key 当中移除 key。
+
+     - *volatile-ttl*：从设置了过期时间的 key 当中移除最快要过期的那个 key。
+
+     - *noeviction*：不做任何操作，直接返回错误。
+
+   - LRU 算法的样本数量设置：Redis 的 LRU 算法为近似算法，增大样本数量可提高精确度但是会凶耗更多的 CPU，保持默认 5 个样本数量即可。
+
+     ~~~bash
+     maxmemory-samples 5      #样本数量
+     ~~~
+
+   - 是否忽略从库的内存配置：
+
+     ~~~bash
+     replica-ignore-maxmemory yes
+     ~~~
+
+     当使用主从配置时，Redis 默认会忽略从库的 maxmemory 相关配置，但是如果从库是可写的并且你希望从库有一些不同的内存设置，可更改此选项。
+
+10. ***LAZY FREEING***：
+
+    ~~~bash
+    lazyfree-lazy-eviction no
+    lazyfree-lazy-expire no
+    lazyfree-lazy-server-del no
+    replica-lazy-flush no
+    ~~~
+
+11. ***APPEND ONLY MODE***：AOF相关配置，详情见第 11 章节：[持久化之 AOF](#11持久化之aof)
+
+12. ***LUA SCRIPTING***：Lua 脚本的相关配置，允许 Lua 脚本执行的的最大好毫秒数
+
+    ~~~bash
+    lua-time-limit 5000
+    ~~~
+
+    设置为 0 或负值时，Lua 脚本可以无警告的无限执行。
+
+13. ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[aaa](#)
+
+14. CLUSTER DOCKER/NAT support：
+
+15. ***SLOW LOG***：Redis 慢日志功能相关配置，在 Redis 中可以将超过指定执行时间的查询命令记录下来，此模块对此功能的参数进行控制。
+
+    ~~~bash
+    slowlog-log-slower-than 10000   #将超过 10000 微秒(10毫秒)的查询记录下来
+    slowlog-max-len 128             #允许做多记录 128 个命令(当纪录达到 128 时，记录新命令时会删除最老的一个命令)
+    								# slowlog-max-len设置为负数时该功能禁用，设置为 0 时可以无限制的记录慢日志
+    ~~~
+
+    Redis 慢日志相关命令：
+
+    ~~~shell
+    127.0.0.1:6379> SLOWLOG len       #获取慢日志记录的个数
+    (integer) 2
+    127.0.0.1:6379> SLOWLOG get       #获取所有慢日志记录
+    1) 1) (integer) 14                #1)慢日志 ID
+       2) (integer) 1309448221        #2)命令执行的 UNIX 时间戳
+       3) (integer) 15                #3)命令执行的微秒数
+       4) 1) "ping"                   #4)组成命令参数的数组
+    2) 1) (integer) 13
+       2) (integer) 1309448128
+       3) (integer) 30
+       4) 1) "slowlog"
+           2) "get"
+           3) "100"
+    127.0.0.1:6379> SLOWLOG get 1      #获取最近的 1 条慢日志记录
+    1) 1) (integer) 14
+       2) (integer) 1309448221
+       3) (integer) 15
+       4) 1) "ping"
+    127.0.0.1:6379> SLOWLOG RESET      #重置(清空)慢日志记录，不可恢复
+    ~~~
+
+16. ***LATENCY MONITOR***：Redis 2.1.83 版本引入的延迟监视系统，此系统会在运行时对不同的操作进行采样，以收集与 Redis 实例的潜在延迟源相关的数据，还可以画出延时图，给出诊断建议等。默认情况下，延迟监视是禁用的（如果没有延迟问题，一般来说此功能用不到），并且此功能在收集数据会对性能产生影响（尽管影响很小）。
+
+    延迟监视相关命令：`latency arg ...options...`
+
+17. EVENT NOTIFICATION：
+
+18. ADVANCED CONFIG：
+
+19. ACTIVE DEFRAGMENTATION：
+
+
+
+---
+
+#### 10.持久化之RDB
+
+RDB：**R**edis **D**ata**B**ase，
+
+1. - RDB 储存刷新条件：
+
+     ~~~bash
+     save 900 1
+     save 300 10
+     save 60 10000
+     ~~~
+
+     默认在这 3 种情况下进行存储，在 xx 秒内有 xx 个键值对发生改变则刷新存储。
+
+   - 持久化如果出错，Redis 是否还需要继续工作：
+
+     ~~~bash
+     stop-writes-on-bgsave-error yes
+     ~~~
+
+   - RDB 文件储存格式：
+
+     ~~~bash
+     rdbcompression yes  #是否将 RDB 文件压缩存储
+     rdbchecksum yes     #保存 RDB 文件的时候，进行错误的检查校验
+     ~~~
+
+   - RDB 文件存储路径：
+
+     ~~~bash
+     dbfilename dump.rdb         #文件名
+     dir /var/lib/redis/         #文件路径
+     ~~~
+
+   
+
+
+
+
+
+
+
+
+
+
+
+---
+
+#### 11.持久化之AOF
+
