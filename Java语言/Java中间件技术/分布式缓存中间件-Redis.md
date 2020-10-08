@@ -17,6 +17,7 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 7. [SpringBoot 整合 Redis](#7springboot整合redis)
 8. [使用 Redis 实现分布式锁](#8使用redis实现分布式锁)
 9. [Redis 配置文件](#9redis配置文件)
+10. [持久化之 RDB 与 AOF](#10持久化之rdb与aof)
 
  
 
@@ -1378,7 +1379,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
 13. ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[aaa](#)
 
-14. CLUSTER DOCKER/NAT support：
+14. ***CLUSTER DOCKER/NAT support***：当 Redis cluster 服务经过 NAT 限制或端口被转发时（如 Docker 容器），需要配置集群的节点位置，否则 Redis cluster 地址不能被主机发现。
 
 15. ***SLOW LOG***：Redis 慢日志功能相关配置，在 Redis 中可以将超过指定执行时间的查询命令记录下来，此模块对此功能的参数进行控制。
 
@@ -1416,63 +1417,152 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
     延迟监视相关命令：`latency arg ...options...`
 
-17. EVENT NOTIFICATION：
+17. ***EVENT NOTIFICATION***：事件通知，Redis 提供了事件监听，可以对事件作相关配置，每当事件（如：键失效，键被删除等）发生时，都会向客户端发送通知。在 SpringBoot 中，也对 Redis 的事件监听功能做了集成，通过继承 *org.springframework.data.redis.listener* 包下的相关 Listener（如：***KeyExpirationEventMessageListener***--键过期监听器），实现其 *onMessage* 方法即可在事件发生时触发我们想要的回调。
 
-18. ADVANCED CONFIG：
+18. ***ADVANCED CONFIG***：高级配置，与数据压缩，发布订阅，LFU 算法因子相关的一些复杂配置项。
 
-19. ACTIVE DEFRAGMENTATION：
-
-
-
----
-
-#### 10.持久化之RDB
-
-RDB：**R**edis **D**ata**B**ase，
-
-1. - RDB 储存刷新条件：
-
-     ~~~bash
-     save 900 1
-     save 300 10
-     save 60 10000
-     ~~~
-
-     默认在这 3 种情况下进行存储，在 xx 秒内有 xx 个键值对发生改变则刷新存储。
-
-   - 持久化如果出错，Redis 是否还需要继续工作：
-
-     ~~~bash
-     stop-writes-on-bgsave-error yes
-     ~~~
-
-   - RDB 文件储存格式：
-
-     ~~~bash
-     rdbcompression yes  #是否将 RDB 文件压缩存储
-     rdbchecksum yes     #保存 RDB 文件的时候，进行错误的检查校验
-     ~~~
-
-   - RDB 文件存储路径：
-
-     ~~~bash
-     dbfilename dump.rdb         #文件名
-     dir /var/lib/redis/         #文件路径
-     ~~~
-
-   
-
-
-
-
-
-
-
-
+19. ***ACTIVE DEFRAGMENTATION***：内存碎片整理，Redis 在 4.0 版本加入此功能，对 Redis 运行过程中产生的内存碎片进行整理以节约内存空间，此功能默认禁用且处于实验性阶段，如果没有发生碎片问题（Redis 服务内存占用量高但实际占用内存的数据量不大）则不要轻易开启此功能。
 
 
 
 ---
 
-#### 11.持久化之AOF
+#### 10.持久化之RDB与AOF
+
+RDB：**R**edis **D**ata**B**ase，在指定的时间间隔内将内存中的数据集以快照的形式保存在磁盘上，是默认的持久化方式，默认的文件名为 ***dump.rdb***，恢复时将快照文件放入到配置文件中 dir 配置的目录下，Redis 就会自动读取文件当中的数据到内存中。
+
+Redis 提供了 3 种方式进行 RDB 存储：
+
+- ***save*** 命令：该命令会阻塞当前 Redis 服务器，执行 save 命令期间，Redis 不能处理其他命令，直到 RDB 过程完成为止。
+- ***bgsave*** 命令：Redis 主进程 fork 出一个子进程来进行持久化，子进程会拥有父进程所有的内存数据，主进程不进行任何 I/O 操作，阻塞只发生在 fork 阶段（时间很短）。
+- 自动触发：在配置文件中进行配置 `save 900 1` 等，在达到相应条件时自动触发 *bgsave* 命令。
+
+RDB 存储的优点：
+
+- RDB 文件紧凑，全量备份，非常适合用于进行备份和灾难恢复。
+- 生成 RDB 文件的时候，Redis 主进程不需要进行任何 I/O 操作，不会阻塞 Redis 其他命令的执行。
+- RDB 在恢复大数据集时的速度比 AOF 的恢复速度要快。
+
+RDB 存储的缺点：
+
+- 当数据量较大时，RDB 的执行成本较高，fork 出的子进程也需要占用大量的内存空间。
+- RDB 在一定间隔时间做一次存储，可能会丢失丢失最后一次快照后的所有修改。
+
+*redis.conf* 中 RDB 相关配置：
+
+- RDB 储存刷新条件：
+
+  ~~~bash
+  save 900 1        #每 900 秒保存一次(如果有 1 个键发生改变)
+  save 300 10       #每 300 秒保存一次(如果有 10 个键发生改变)
+  save 60 10000     #每 60 秒保存一次(如果有 10000 个键发生改变)
+  ~~~
+
+  如果需要禁用 RDB，使用 `save ""` 或直接注释所有 `save <seconds> <changes>` 即可。
+
+- RDB 其他配置：
+
+  ~~~bash
+  #持久化如果出错，Redis 是否还需要继续工作
+  stop-writes-on-bgsave-error yes
+  #是否将 RDB 文件压缩存储
+  rdbcompression yes
+  #保存 RDB 文件的时候，进行错误的检查校验
+  rdbchecksum yes
+  #RDB快照文件名
+  dbfilename dump.rdb  
+  #快照文件存储路径
+  dir /var/lib/redis/    
+  ~~~
+
+    
+
+AOF：**A**ppend **O**nly **F**ile，将每一个收到的写命令都通过 write 函数追加到文件中，相当于日志记录，Redis 默认不启用 AOF。恢复时会去读取日志文件，将每一个写命令重新执行一次。AOF 方式就是文件的无限追加，文件会随着时间越来越大，所以 Redis 提供了 Rewrite 功能重写 AOF 文件。
+
+AOF 存储的优点：
+
+- AOF 执行的频率较高，可以更好的保护数据不丢失，且 AOF 文件写入性能非常高，文件不易破损。
+
+- AOF 日志文件的可读性较高（内容为 Redis 命令），非常适合做灾难性的误删除的紧急恢复。比如：使用 *flushall* 命令清空了所有数据，只要后台 rewrite 还没有发生，可以将最后一条 flushall 命令删除，重新读取 AOF 文件即可恢复所有数据。
+
+AOF 存储的缺点：
+
+- 当数据量较大时，AOF 恢复数据所需要的的时间较长。
+- 当 AOF 开启时，会消耗一定的性能，Redis 的 QPS 会降低（影响较小）。
+
+*redis.conf* 中 RDB 相关配置：
+
+- 开启 AOF 功能：
+
+  ~~~bash
+  appendonly yes                          #开启 aof，no 为关闭
+  appendfilename "appendonly.aof"         #aof 存储的文件名
+  ~~~
+
+  注意：*appendonly.aof*  文件的存储路径与 *dump.rdb* 一致，由 `dir` 参数进行配置。
+
+- AOF 执行策略：
+
+  ~~~bash
+  # appendfsync always
+  appendfsync everysec
+  # appendfsync no
+  ~~~
+
+  - ***always***：每次发生数据变更会被立即记录到磁盘，性能影响较大，但数据完整性会比较好。
+  - ***everysec***：每秒钟进行一次追加操作，最多会丢失一秒钟的数据，官方建议采取此策略。
+  - ***no***：从不，即禁用 aof 功能。
+
+- AOF Rewrite 配置：
+
+  ~~~bash
+  #当后台在重写 aof 文件时，会占用大量的磁盘 I/O，此时是否阻塞 aof 操作。
+  #no：阻塞 aof 操作直到磁盘空闲，此方式不会丢失任何数据，但是需要忍受命令阻塞。
+  #yes：aof 操作不会被阻塞而是将追加结果暂时写到缓存中，待磁盘不阻塞时再写入文件(如果发生故障，最多可能丢失 30 秒的数据)
+  no-appendfsync-on-rewrite no
+  #当 aof 文件增长比例达到 100% 时(即为上次重写后的 2 倍)才再次进行重写
+  auto-aof-rewrite-percentage 100
+  #当 aof 文件达到 64mb 时才进行重写(初次启动有效，后续重写依赖增长比例)
+  auto-aof-rewrite-min-size 64mb
+  #从 aof 恢复数据时，是否忽略最后一条可能存在问题的指令(比如指令执行到一半时崩溃)，yes-进行忽略，no-不忽略，可能会启动失败
+  aof-load-truncated yes
+  #是否开启 aof-rdb 混合模式
+  aof-use-rdb-preamble yes
+  ~~~
+
+  混合模式 ***aof-use-rdb-preamble***：Redis 4.0 开始增加了此混合模式，Redis 在重启时通常是加载 AOF 文件，但加载速度较慢，开启此模式后，AOF 在重写时将会直接以 RDB 形式写入内存中的数据：
+
+  1. 子进程会把内存中的数据以 RDB 的方式写入 AOF 中。
+  2. 把重写缓冲区中的增量命令以 AOF 方式写入到文件。
+  3. 使用新的 AOF 文件覆盖旧的 AOF 文件，新的AOF文件中，一部分数据为 RDB格式，一部分为 AOF 格式（重写过程中的增量数据）。
+
+  混合模式既能快速备份又能避免大量数据丢失，但是会降低 AOF 文件的可读性。
+
+
+
+> Redis 提供了持久化文件的校验功能，如果 appendonly.aof 有损坏还可以进行修复。
+>
+> ~~~shell
+> [root@localhost bin]# redis-check-rdb /var/lib/redis/dump.rdb               校验 rdb 文件(rdb 文件不能修复)
+> [root@localhost bin]# redis-check-aof /var/lib/redis/appendonly.aof         校验 aof 文件
+> [root@localhost bin]# redis-check-aof --fix /var/lib/redis/appendonly.aof   修复 aof 文件
+> ~~~
+
+
+
+> Redis 支持 RDB 和 AOF 同时开启时，两者都会讲数据进行持久存储，但是在启动时，Redis 会有限从 AOF 文件中恢复数据。
+>
+> RDB 和 AOF 使用建议：
+>
+> 1. 将 RDB 方式用作后备用途，只在 slave 上持久化 RDB 文件，并且只保留 `save 900 1` 这条规则。
+>
+> 2. 启用 AOF 或使用主从复制：
+>    - 启用 AOF ：在最坏情况下也只会丢失不超过 1 秒的数据，恢复时也只需要直接加载 AOF 文件。代价一是带来了持续的 I/O，二是 AOF 文件重写时造成的阻塞几乎是不可避免的，所以只要硬盘许可，应该尽量减少重写频率，生产中可以将 AOF 重写的基础大小设置到 ***5G*** 以上，日志增长比例阈值也可以做相应修改
+>    - 使用主从复制而不启用 AOF：方式能够省掉一大笔 I/O 消耗，同时减少了 AOF 文件重写时带来的系统波动。代价是如果 Master/Slave 同时倒掉，会丢失十几分钟的数据，恢复数据时需要比较 Master/Slave 中的 RDB 文件，载入较新的那个（微博采用的是此方式）。
+
+
+
+---
+
+#### 11.Redis发布订阅
 
