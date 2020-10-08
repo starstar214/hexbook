@@ -223,6 +223,8 @@ OK
 (integer) 4
 127.0.0.1:6379> type name               #查看 name 键对应值的类型
 string
+127.0.0.1:6379> DEL key_name            #删除指定 key
+(integer) 1
 ~~~
 
 
@@ -914,7 +916,7 @@ public class JedisPoolConfig extends GenericObjectPoolConfig {
 
 
 
-> 在 ***SpringBoot 2.x*** 之后，连接 Redis 服务器不在使用 Jedis 框架，而是采用了 ***Lettuce*** 框架！
+> 在 ***SpringBoot 2.x*** 之后，连接 Redis 服务器不再使用 Jedis 框架，而是采用了 ***Lettuce*** 框架！
 >
 > *Jedis*：采用的是直连，使用 Jedis Pool 用来支撑高并发情况下的连接请求，类似于 BIO 的模式。
 >
@@ -1648,6 +1650,192 @@ Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）�
 ---
 
 #### 12.Redis集群与哨兵
+
+Redis 主从复制：将一台 Redis 服务器的数据，复制到其他的 Redis 服务器。前者称为主节点-master，后者称为从节点-slave，数据的复制是单向的，只能由主节点到从节点，master 以写为主，slave 以读为主。
+
+> 在生产中，80% 的情况下都是在进行读操作，主从复制，读写分离将读操作分散在从节点，主节点用来执行写操作，能够有效地减缓服务器的压力。
+
+Redis 主从复制的主要作用：
+
+- 数据冗余：主从复制实现了数据的热备份，是持久化之外的一种数据冗余方式。
+- 故障恢复：当主节点出现问题时，可以由从节点提供服务，实现快速的故障恢复。
+- 负载均衡：在主从复制的基础上，配合读写分离，由主节点提供写服务，从节点提供读服务，分担了服务器负载，大大的提高了 Redis 服务器的并发量。
+- 高可用：除了上述作用以外，主从复制是 Redis 哨兵和集群的基础，因此可以说主从复制是 Redis 高可用性的基础。
+
+> 注意：在 Redis 中，一个主节点可以有多个从节点，但是一个从节点只能有一个主节点。
+
+
+
+Redis 主从集群搭建：Redis 集群至少需要 3 个节点（哨兵模式要求从机不唯一），在搭建环境时只需要配置从库，主库无需做任何更改。
+
+查看 Redis 服务主从信息命令：`info replication`
+
+~~~shell
+127.0.0.1:6379> info replication
+# Replication
+role:master                                                  #当前服务的主从角色
+connected_slaves:0                                           #连接的从机个数
+master_replid:a043b79f0182f9bc8ae15f73918a467115012f16
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:0
+second_repl_offset:-1
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0
+~~~
+
+- 复制 *redis.conf* 并做相应修改：复制两份配置文件，修改为 8380 和 6381 端口。
+
+  ~~~bash
+  #修改服务启动端口
+  port 6380
+  #修改服务启动的 pid 文件
+  pidfile /root/temp/redis/run/redis_6380.pid
+  #修改日志文件位置
+  logfile /root/temp/redis/log/redis_6380.log
+  #修改 RDB 文件存储位置及名称
+  dbfilename dump_6380.rdb
+  dir /root/temp/redis/lib/
+  #修改 AOF 文件存储名称
+  appendfilename "appendonly_6380.aof"
+  ~~~
+
+  另一个配置文件修改为 6381 端口后，通过不同的配置文件启动 3 个 Redis 服务。
+
+  ~~~shell
+  [root@localhost config]# ps -ef|grep redis
+  root       2895      1  0 00:15 ?        00:00:00 redis-server 0.0.0.0:6379
+  root       3658      1  0 00:15 ?        00:00:00 redis-server 0.0.0.0:6380
+  root       3663      1  1 00:15 ?        00:00:00 redis-server 0.0.0.0:6381
+  root       3668   2065  0 00:15 pts/0    00:00:00 grep --color=auto redis
+  ~~~
+
+- 登入 6380 和 6381 客户端，执行 ***slaveof*** 命令：
+
+  ~~~shell
+  127.0.0.1:6380> SLAVEOF 127.0.0.1 6379
+  OK
+  ~~~
+
+  ~~~shell
+  127.0.0.1:6381> SLAVEOF 127.0.0.1 6379
+  OK
+  ~~~
+
+  此时主机的信息如下：
+
+  ~~~shell
+  127.0.0.1:6379> info replication
+  # Replication
+  role:master
+  connected_slaves:2
+  slave0:ip=127.0.0.1,port=6380,state=online,offset=42,lag=1
+  slave1:ip=127.0.0.1,port=6381,state=online,offset=42,lag=1
+  master_replid:180ed9378bdcfc3cccaef497c8eca72c62ab260e
+  master_replid2:0000000000000000000000000000000000000000
+  master_repl_offset:42
+  second_repl_offset:-1
+  repl_backlog_active:1
+  repl_backlog_size:1048576
+  repl_backlog_first_byte_offset:1
+  repl_backlog_histlen:42
+  ~~~
+
+  6380 从机的信息如下：
+
+  ~~~shell
+  # Replication
+  role:slave
+  master_host:127.0.0.1
+  master_port:6379
+  master_link_status:up
+  master_last_io_seconds_ago:2
+  master_sync_in_progress:0
+  slave_repl_offset:252
+  slave_priority:100
+  slave_read_only:1
+  connected_slaves:0
+  master_replid:180ed9378bdcfc3cccaef497c8eca72c62ab260e
+  master_replid2:0000000000000000000000000000000000000000
+  master_repl_offset:252
+  second_repl_offset:-1
+  repl_backlog_active:1
+  repl_backlog_size:1048576
+  repl_backlog_first_byte_offset:1
+  repl_backlog_histlen:252
+  ~~~
+
+  至此，一个基础的 Redis "一主二从" 集群架构搭建完成。
+
+> 除 "一主二从" 模式，Redis 还可以使用 "层层链路" 模式进行集群，即 6379 作为主机，6380 和 6381 作为从机，6380 仍然从 6379 复制数据，但 6381 从 6380 复制数据（此时 6380 仍然是从节点）。
+
+
+
+Redis 主从搭建注意要点：
+
+- 通过命令行可以使从机跟随主机，但是此种方式是暂时的，服务重启后关系消失，如果需要永久生效，需要在配置文件中配置主从信息：
+
+  ~~~bash
+  relicaof 127.0.0.1 6379
+  masterauth 950920          #如果主机需要密码，则从机需要配置此项
+  ~~~
+
+- 默认状态下，从机是只读状态：
+
+  ~~~shell
+  127.0.0.1:6381> set k v
+  (error) READONLY You can't write against a read only replica.
+  ~~~
+
+  可以修改配置文件使从机可写。
+
+  ~~~bash
+  replica-read-only no
+  ~~~
+
+  注意：写入从机的键值信息不会同步到其他机器。
+
+- 当主机挂掉时，从机依旧连接到主机，但是没有写操作，如果主机回来了，从机依旧可以获取到主机上写的信息。
+- 当从机挂掉时，只要重新将从机连接到主机，就会从新获取主机上的全部数据集。
+- 使用 `slaveof no one` 命令可以使从服务器关闭复制功能，原来复制所得的数据集不回丢失。
+
+> 如果主机断开了连接，我们需要使用 `slaveof no one` 让自己变成主机，其他的节点连接到最新主节点（手动），使 Redis 正常的对外提供服务。使用哨兵模式可以自动完成此过程。
+
+
+
+主从切换技术：当主服务器宕机后，需要手动把一台从服务器切换为主服务器，这就需要人工干预，费事费力，还会造成一段时间内服务不可用。Redis 从 2.8 开始正式提供了 ***sentinel***（哨兵） 模式来解决这个问题，***sentinel*** 能够后台监控主机是否故障，如果故障了根据投票数自动将从库转换为主库。
+
+谋朝篡位的自动版，能够后台监控主机是否故障，如果故障了根据投票数自动将从库转换为主库。
+
+哨兵模式（ ***sentinel*** ）：哨兵模式是一种特殊的模式，它是一个独立运行的进程，通过发送命令，等待 Redis 服务器响应，从而监控运行的多个 Redis 实例，同时 Redis 也提供了哨兵相关的命令。
+
+Redis 哨兵的作用：
+
+1. 通过发送命令，让 Redis 服务器返回其运行状态，包括主服务器和从服务器。
+2. 当哨兵监测到 master 宕机，会自动将 slave 切换成 master，然后通知其他的从服务器，让它们切换主机。
+
+然而一个哨兵进程对 Redis 服务器进行监控，也有可能会出现问题，因此，我们可以使用多个哨兵进行监控，各个哨兵之间还会相互进行监控，这样就形成了多哨兵模式。
+
+哨兵集群的工作原理：
+
+1. 假设主服务器宕机，哨兵1先检测到这个结果，系统并不会马上进行 ***failover***（故障转移） 过程，仅仅是哨兵1主观的认为主服务器不可用，这个现象称为主观下线。
+2. 当后面的哨兵也检测到主服务器不可用，并且数量达到一定值时，主服务器会被标记为客观下线。
+3. 哨兵之间进行一次投票，选出新的主服务器并由某一个哨兵进行故障转移操作，主服务器切换成功后，再通知各个哨兵切换自己监控的主机。
+
+
+
+***redis-sentinel.conf*** 配置文件：
+
+- 
+
+
+
+
+
+
+
+SpringBoot 与 Redis 集群：
 
 
 
