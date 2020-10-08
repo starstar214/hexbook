@@ -1182,21 +1182,21 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 # units are case insensitive so 1GB 1Gb 1gB are all the same.
 ~~~
 
-1. ***INCLUDES***：引入外部配置文件。
+- ***INCLUDES***：引入外部配置文件。
 
    ~~~shell
    # include /path/to/local.conf
    # include /path/to/other.conf
    ~~~
 
-2. ***MODULES***：加载一些 *so* 文件用以扩展 Redis 的功能。
+- ***MODULES***：加载一些 *so* 文件用以扩展 Redis 的功能。
 
    ~~~shell
    # loadmodule /path/to/my_module.so
    # loadmodule /path/to/other_module.so
    ~~~
 
-3. ***NETWORK***：网络模块，配置连接 Redis 服务的相关参数。
+- ***NETWORK***：网络模块，配置连接 Redis 服务的相关参数。
 
    - 网络地址绑定：绑定一个或多个 IP 地址，使 Redis 服务只监听来自目标 IP 的连接请求。
 
@@ -1240,7 +1240,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
      tcp-keepalive 300
      ~~~
 
-4. ***GENERAL***：一些通用配置项。
+- ***GENERAL***：一些通用配置项。
 
    - 守护进程模式：修改为 yes 允许 Redis 服务后台运行。
 
@@ -1279,11 +1279,11 @@ redis.conf 默认单位介绍：单位大小写不敏感。
      always-show-logo yes
      ~~~
 
-5. ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节：[持久化之 RDB](#10持久化之rdb)
+- ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节：[持久化之 RDB 与 AOF](#10持久化之rdb与aof)。
 
-6. ***REPLICATION***：主从复制相关配置，详情见 [主从复制](主从复制)。
+- ***REPLICATION***：主从复制相关配置，详情见 [主从复制](主从复制)。
 
-7. ***SECURITY***：安全相关配置。
+- ***SECURITY***：安全相关配置。
 
    - 设置密码：
 
@@ -1300,13 +1300,13 @@ redis.conf 默认单位介绍：单位大小写不敏感。
      rename-command CONFIG FRaqbC8wSA1XvpFVjCRGry     #将 CONFIG 命令重命名为其他名字，保证不会轻易执行
      ~~~
 
-8. ***CLIENTS***：客户端限制参数配置，同一时间允许最多 n 个客户端进行连接。
+- ***CLIENTS***：客户端限制参数配置，同一时间允许最多 n 个客户端进行连接。
 
    ~~~bash
    maxclients 10000
    ~~~
 
-9. ***MEMORY MANAGEMENT***：内存管理相关配置。
+- ***MEMORY MANAGEMENT***：内存管理相关配置。
 
    - 最大使用内存：一般不做配置，有默认使用大小。
 
@@ -1358,7 +1358,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
      当使用主从配置时，Redis 默认会忽略从库的 maxmemory 相关配置，但是如果从库是可写的并且你希望从库有一些不同的内存设置，可更改此选项。
 
-10. ***LAZY FREEING***：
+- ***LAZY FREEING***：
 
     ~~~bash
     lazyfree-lazy-eviction no
@@ -1367,9 +1367,9 @@ redis.conf 默认单位介绍：单位大小写不敏感。
     replica-lazy-flush no
     ~~~
 
-11. ***APPEND ONLY MODE***：AOF相关配置，详情见第 11 章节：[持久化之 AOF](#11持久化之aof)
+- ***APPEND ONLY MODE***：AOF相关配置，详情见第 10 章节：[持久化之 RDB 与 AOF](#10持久化之rdb与aof)。
 
-12. ***LUA SCRIPTING***：Lua 脚本的相关配置，允许 Lua 脚本执行的的最大好毫秒数
+- ***LUA SCRIPTING***：Lua 脚本的相关配置，允许 Lua 脚本执行的的最大好毫秒数
 
     ~~~bash
     lua-time-limit 5000
@@ -1377,7 +1377,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
     设置为 0 或负值时，Lua 脚本可以无警告的无限执行。
 
-13. ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[aaa](#)
+- ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[aaa](#)
 
 14. ***CLUSTER DOCKER/NAT support***：当 Redis cluster 服务经过 NAT 限制或端口被转发时（如 Docker 容器），需要配置集群的节点位置，否则 Redis cluster 地址不能被主机发现。
 
@@ -1413,15 +1413,15 @@ redis.conf 默认单位介绍：单位大小写不敏感。
     127.0.0.1:6379> SLOWLOG RESET      #重置(清空)慢日志记录，不可恢复
     ~~~
 
-16. ***LATENCY MONITOR***：Redis 2.1.83 版本引入的延迟监视系统，此系统会在运行时对不同的操作进行采样，以收集与 Redis 实例的潜在延迟源相关的数据，还可以画出延时图，给出诊断建议等。默认情况下，延迟监视是禁用的（如果没有延迟问题，一般来说此功能用不到），并且此功能在收集数据会对性能产生影响（尽管影响很小）。
+- ***LATENCY MONITOR***：Redis 2.1.83 版本引入的延迟监视系统，此系统会在运行时对不同的操作进行采样，以收集与 Redis 实例的潜在延迟源相关的数据，还可以画出延时图，给出诊断建议等。默认情况下，延迟监视是禁用的（如果没有延迟问题，一般来说此功能用不到），并且此功能在收集数据会对性能产生影响（尽管影响很小）。
 
     延迟监视相关命令：`latency arg ...options...`
 
-17. ***EVENT NOTIFICATION***：事件通知，Redis 提供了事件监听，可以对事件作相关配置，每当事件（如：键失效，键被删除等）发生时，都会向客户端发送通知。在 SpringBoot 中，也对 Redis 的事件监听功能做了集成，通过继承 *org.springframework.data.redis.listener* 包下的相关 Listener（如：***KeyExpirationEventMessageListener***--键过期监听器），实现其 *onMessage* 方法即可在事件发生时触发我们想要的回调。
+- ***EVENT NOTIFICATION***：事件通知，Redis 提供了事件监听，可以对事件作相关配置，每当事件（如：键失效，键被删除等）发生时，都会向客户端发送通知。在 SpringBoot 中，也对 Redis 的事件监听功能做了集成，通过继承 *org.springframework.data.redis.listener* 包下的相关 Listener（如：***KeyExpirationEventMessageListener***--键过期监听器），实现其 *onMessage* 方法即可在事件发生时触发我们想要的回调。
 
-18. ***ADVANCED CONFIG***：高级配置，与数据压缩，发布订阅，LFU 算法因子相关的一些复杂配置项。
+- ***ADVANCED CONFIG***：高级配置，与数据压缩，发布订阅，LFU 算法因子相关的一些复杂配置项。
 
-19. ***ACTIVE DEFRAGMENTATION***：内存碎片整理，Redis 在 4.0 版本加入此功能，对 Redis 运行过程中产生的内存碎片进行整理以节约内存空间，此功能默认禁用且处于实验性阶段，如果没有发生碎片问题（Redis 服务内存占用量高但实际占用内存的数据量不大）则不要轻易开启此功能。
+- ***ACTIVE DEFRAGMENTATION***：内存碎片整理，Redis 在 4.0 版本加入此功能，对 Redis 运行过程中产生的内存碎片进行整理以节约内存空间，此功能默认禁用且处于实验性阶段，如果没有发生碎片问题（Redis 服务内存占用量高但实际占用内存的数据量不大）则不要轻易开启此功能。
 
 
 
@@ -1554,11 +1554,11 @@ AOF 存储的缺点：
 >
 > RDB 和 AOF 使用建议：
 >
-> 1. 如果 Redis 只用作缓存，可以不使用 Redis 持久化。
+> - 如果 Redis 只用作缓存，可以不使用 Redis 持久化。
 >
-> 2. 启用 Redis 持久化时：
->    1. 将 RDB 方式用作后备用途，只在 slave 上持久化 RDB 文件，并且只保留 `save 900 1` 这条规则。
->    2. 启用 AOF 或使用主从复制：
+> - 启用 Redis 持久化时：
+>    - 将 RDB 方式用作后备用途，只在 slave 上持久化 RDB 文件，并且只保留 `save 900 1` 这条规则。
+>    - 启用 AOF 或使用主从复制：   
 >       - 启用 AOF ：在最坏情况下也只会丢失不超过 1 秒的数据，恢复时也只需要直接加载 AOF 文件。代价一是带来了持续的 I/O，二是 AOF 文件重写时造成的阻塞几乎是不可避免的，所以只要硬盘许可，应该尽量减少重写频率，生产中可以将 AOF 重写的基础大小设置到 ***5G*** 以上，日志增长比例阈值也可以做相应修改
 >       - 使用主从复制而不启用 AOF：方式能够省掉一大笔 I/O 消耗，同时减少了 AOF 文件重写时带来的系统波动。代价是如果 Master/Slave 同时倒掉，会丢失十几分钟的数据，恢复数据时需要比较 Master/Slave 中的 RDB 文件，载入较新的那个（微博采用的是此方式）。
 
