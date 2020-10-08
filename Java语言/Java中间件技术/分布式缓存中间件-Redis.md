@@ -1594,10 +1594,13 @@ Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）�
 
   ~~~shell
   [root@localhost ~]# redis-cli --raw
-  127.0.0.1:6379> SUBSCRIBE china.news.entertainment
+  127.0.0.1:6379> SUBSCRIBE china.news.sport china.news.entertainment
+  subscribe
+  china.news.sport
+  1
   subscribe
   china.news.entertainment
-  1
+  2
   
   ~~~
 
