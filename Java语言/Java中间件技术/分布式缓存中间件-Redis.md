@@ -18,6 +18,9 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 8. [使用 Redis 实现分布式锁](#8使用redis实现分布式锁)
 9. [Redis 配置文件](#9redis配置文件)
 10. [持久化之 RDB 与 AOF](#10持久化之rdb与aof)
+11. [Redis 发布订阅](#11redis发布订阅)
+12. [Redis 集群与哨兵](#12redis集群与哨兵)
+13. [Redis 与缓存](#13redis与缓存)
 
  
 
@@ -1281,7 +1284,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
 - ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节：[持久化之 RDB 与 AOF](#10持久化之rdb与aof)。
 
-- ***REPLICATION***：主从复制相关配置，详情见 [主从复制](主从复制)。
+- ***REPLICATION***：主从复制相关配置，详情见第 12 章节：[Redis 集群与哨兵](#12redis集群与哨兵)
 
 - ***SECURITY***：安全相关配置。
 
@@ -1377,7 +1380,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
     设置为 0 或负值时，Lua 脚本可以无警告的无限执行。
 
-- ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[aaa](#)
+- ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[Redis 集群与哨兵](#12redis集群与哨兵)
 
 14. ***CLUSTER DOCKER/NAT support***：当 Redis cluster 服务经过 NAT 限制或端口被转发时（如 Docker 容器），需要配置集群的节点位置，否则 Redis cluster 地址不能被主机发现。
 
@@ -1567,3 +1570,94 @@ RDB 和 AOF 使用建议：
 
 #### 11.Redis发布订阅
 
+Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）发送消息，订阅者（sub）接收消息，每一个 Redis 客户端可以订阅任意数量的频道。订阅者订阅一个或多个频道，发布者发送消息到频道，每个该频道的订阅者都会接收到该消息。
+
+
+
+发布/订阅相关命令：
+
+- ***SUBCRIBE channel [channel...]***：订阅一个或多个给定的频道。
+- ***UNSUBCRIBE channel [channel...]***：退订一个或多个给定的频道。
+- ***PUBLISH channel message***：发布消息到频道。
+- ***PSUBSCRIBE pattern [pattern ...]***：订阅一个或多个符合给定模式（正则匹配）的频道。
+- ***PUNSUBSCRIBE pattern [pattern ...]***：退订一个或多个符合给定模式（正则匹配）的频道。
+- ***PUBSUB \<subcommand\> [argument [argument...]]***：发布订阅系统相关命令。
+  - *PUBSUB channels*：查看系统所有的活跃频道。
+
+> 在 shell 的 redis-cli 命令行下，订阅频道后将会一直阻塞在订阅界面等待接收频道发送的消息，所以无法执行退订命令，但是在 Java 代码中可以异步的接收频道消息，同时可以使用退订功能。
+
+
+
+测试使用：
+
+- 客户端订阅频道：
+
+  ~~~shell
+  [root@localhost ~]# redis-cli --raw
+  127.0.0.1:6379> SUBSCRIBE china.news.entertainment
+  subscribe
+  china.news.entertainment
+  1
+  
+  ~~~
+
+  订阅频道后，客户端将会阻塞在此界面等待接收频道消息。
+
+- 发布消息到频道：
+
+  ~~~shell
+  [root@localhost ~]# redis-cli --raw
+  127.0.0.1:6379> PUBLISH china.news.entertainment "迪丽热巴摩登写真曝光，复古冷艳风美得让人沉醉"
+  1
+  127.0.0.1:6379> PUBLISH china.news.sport "詹姆斯罕见发怒！夹胳膊爆头！前队友输球输人！"
+  1
+  ~~~
+
+- 订阅者接收到消息：
+
+  ~~~shell
+  [root@localhost ~]# redis-cli --raw
+  127.0.0.1:6379> SUBSCRIBE china.news.sport china.news.entertainment
+  subscribe
+  china.news.sport
+  1
+  subscribe
+  china.news.entertainment
+  2
+  message
+  china.news.entertainment
+  迪丽热巴摩登写真曝光，复古冷艳风美得让人沉醉
+  message
+  china.news.sport
+  詹姆斯罕见发怒！夹胳膊爆头！前队友输球输人！
+  ~~~
+
+- 查看发布/订阅系统所有的活跃频道：
+
+  ~~~shell
+  127.0.0.1:6379> pubsub channels
+  china.news.entertainment
+  china.news.sport
+  ~~~
+
+   
+
+---
+
+#### 12.Redis集群与哨兵
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+#### 13.Redis与缓存
