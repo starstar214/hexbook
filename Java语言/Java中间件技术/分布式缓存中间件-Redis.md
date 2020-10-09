@@ -1172,7 +1172,7 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 
 #### 9.Redis配置文件
 
-默认安装的 Redis 的配置文件位于 ***/etc/redis.conf***。
+默认安装的 Redis 的配置文件位于 ***/etc/redis.conf***（[Example](data/redis.conf)）。
 
 redis.conf 默认单位介绍：单位大小写不敏感。
 
@@ -1820,16 +1820,127 @@ Redis 哨兵的作用：
 哨兵集群的工作原理：
 
 1. 假设主服务器宕机，哨兵1先检测到这个结果，系统并不会马上进行 ***failover***（故障转移） 过程，仅仅是哨兵1主观的认为主服务器不可用，这个现象称为主观下线。
-2. 当后面的哨兵也检测到主服务器不可用，并且数量达到一定值时，主服务器会被标记为客观下线。
-3. 哨兵之间进行一次投票，选出新的主服务器并由某一个哨兵进行故障转移操作，主服务器切换成功后，再通知各个哨兵切换自己监控的主机。
+2. 当后面的哨兵也检测到主服务器不可用，并且数量达到一定值时，主服务器会被标记为客观下线，然后进行故障转移工作。
 
 
 
-***redis-sentinel.conf*** 配置文件：
+***redis-sentinel.conf*** 配置文件：[Example](data/redis-sentinel.conf)
 
-- 
+- 网络配置：默认情况下，sentinel 无法通过不同于 localhost 的网络接口进行访问，当 sentinel 与 Redis 集群不在同一台机器上时，sentinel 与 Redis 集群将会出现通信问题，此时需要手动配置一下两个选项之一：
+
+  ~~~bash
+  bind 127.0.0.1 192.168.1.1 192.168.1.2       #将 Redis 集群的地址绑定到 sentinel 上
+  protected-mode no                            #解除 sentinel 的保护模式
+  ~~~
+
+- *sentinel* 基本配置：
+
+  ~~~bash
+  # 此哨兵实例的运行端口
+  port 26379
+  # 是否以守护进程的方式运行，以守护进程方式运行时 Redis 会创建一个 pid 文件(选择 yes 以允许 sentinel 后台运行)
+  daemonize yes 
+  # 以守护进程运行时创建的 pid 文件位置
+  pidfile "/var/run/redis-sentinel.pid"
+  # sentinel 运行的日志文件位置
+  logfile "/var/log/redis/sentinel.log"
+  # sentinel 的工作目录，将工作目录设置为 /tmp 将不会干扰系统的其他工作
+  dir "/tmp"
+  ~~~
+
+- *sentinel* 监听配置：
+
+  - 配置监听：`sentinel monitor <master-name> <ip> <redis-port> <quorum>`
+
+    ~~~bash
+    sentinel monitor mymaster 127.0.0.1 6379 2
+    ~~~
+
+    *mymaster*：为主机取一个别名，后续的配置可以使用此别名。
+
+    *quorum*：配置一个数量，当达到该数量的哨兵认为主机 "主观下线" 时，才标记主机为 "客观下线"。
+
+    > 在故障转移时，必须在哨兵之间选出一个 leader 执行故障转移操作，此 leader 必须获得大多数 sentinel 的投票，因此在少数情况下无法执行故障转移。
+    >
+    > 例如：当哨兵集群的数量为 2 时，此时主机和其中一个 sentinel 挂掉，则此 sentinel 获取不到足够数量的投票，无法执行故障转移。
+    >
+    > [5 的大多数 = 3，4 的大多数 = 3，3 的大多数 = 2，2 的大多数 = 2；所以当挂掉一个 sentinel 后剩下的 sentinel 无法获得大多数哨兵的投票]
+
+    注意：从库能够被自动发现，sentinel 无需配置从库信息，而在进行故障转移后，sentinel 会自动修改配置文件内容。
+
+  - 主机密码配置：`sentinel auth-pass <master-name> <password>`
+
+    ~~~bash
+    sentinel auth-pass mymaster 950920
+    ~~~
+
+    注意：如果要使用密码和哨兵集群，主机和从机的密码需设置成一致的，也可以部分设置密码，部分不设置密码，但是设置密码的那部分必须保持一致。
+
+  - 主观下线参数：`sentinel down-after-milliseconds <master-name> <milliseconds>`
+
+    ~~~bash
+    sentinel down-after-milliseconds mymaster 30000
+    ~~~
+
+    当主机在 30000 毫秒内都没有对 sentinel 作出响应（或者 sentinel 在 30000 毫秒内都无法 ping 通主机），该 sentinel 标记主机为主观下线。
+
+    此配置项缺省配置为 30 秒。
+
+- *sentinel* 故障转移配置：
+
+  - 故障转移中的主从复制参数：`sentinel parallel-syncs <master-name> <numreplicas>`
+
+    ~~~bash
+    sentinel parallel-syncs mymaster 1
+    ~~~
+
+    在故障转移中，最多可以有多少个 slave 同时对新的 master 进行同步，进行同步的 slave 因为主从复制将无法提供查询服务。此值设置的越小，故障转移所花费的时间越长；此值设置的越大，故障转移期间能够提供查询服务的从技术量越少。
+
+  - 故障转移超时时间：`sentinel failover-timeout <master-name> <milliseconds>`
+
+    ~~~bash
+    sentinel failover-timeout mymaster 180000
+    ~~~
+
+    此配置项以多种方式使用：
+
+    1. 当第一次故障转移失败后，重新启动故障转移所需要的的时间，即同哨兵同主机两次故障转移的间隔时间。
+    2. 如果一个从机根据 sentinel 配置从错误的主机复制数据（此时 sentinel 配置未更新），至少需要此配置的时间，sentinel 才能发现错误并进行纠正，可以理解为 sentinel 隔一段时间才会去检查从机的主机配置。
+    3. 取消一个正在进行中的故障转移所需要的时间（至少过去该时间才进行新一轮的故障转移操作）。
+    4. 故障转移进行时，在等待所有从库复制新主机数据集时，如果花费时间超过了此配置，主从复制将由 sentinel 重新配置，不再受 `sentinel parallel-syncs` 限制。
+
+    此配置项缺省配置为 3 分钟。
+
+- 脚本执行配置：Redis sentinel 支持通知脚本和重新配置脚本，在发生故障转移时，可以触发通知和重新配置客户端。
+
+  ~~~bash
+  sentinel notification-script mymaster /var/redis/notify.sh            #通知脚本
+  sentinel client-reconfig-script mymaster /var/redis/reconfig.sh       #重新配置脚本
+  #不允许使用 SENTINEL SET 命令更改 notification-script 和 client-reconfig-script
+  sentinel deny-scripts-reconfig yes
+  ~~~
+
+- 命令重命名：重命名危险命令，防止在 Redis 客户端重新配置 sentinel 实例
+
+  ~~~bash
+  #重命名 CONFIG 命令
+  SENTINEL rename-command mymaster CONFIG GUESSME
+  #将 CONFIG 命令恢复原来的名称
+  SENTINEL rename-command mymaster CONFIG CONFIG
+  ~~~
+
+  
+
+Redis 集群&哨兵集群工作流程：
+
+1. 哨兵之间进行一次投票，从哨兵当中选出一个 leader ，新的主服务器并由某一个哨兵进行故障转移操作，主服务器切换成功后，再通知各个哨兵切换自己监控的主机。
+2. 当主机再次恢复时，sentinel 检测到原来主机恢复，将会将原来的主机配置为新主机的从机。
 
 
+
+
+
+***sentinel*** 命令：通过 redis-cli 可以与 redis-sentinel 进行通信，通过 `redis-cli -p 26379` 命令进入到交互界面
 
 
 
