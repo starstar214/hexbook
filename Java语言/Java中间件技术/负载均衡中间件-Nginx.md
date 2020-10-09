@@ -49,7 +49,7 @@ Nginx 官方文档：http://nginx.org/en/docs/
 
 - -?，-h：显示帮助。
 
-- -c filename：为 Nginx 指定一个配置文件来代替缺省的配置文件。
+- -c filename：启动时为 Nginx 指定一个配置文件来代替缺省的配置文件。
 
 - -t：不运行 Nginx，而仅仅测试配置文件。nginx 将检查配置文件的语法的正确性，并尝试打开配置文件中所引用到的文件。
 
@@ -58,7 +58,8 @@ Nginx 官方文档：http://nginx.org/en/docs/
 - -s signal：向主进程发送信号，quit（正常停止），stop（强制停止），reload（重新加载），reopen（重新打开日志文件，日志切割时使用）。
 
   ~~~shell
-  [root@localhost ~]# nginx -s reload
+  [root@localhost ~]# nginx -c /etc/nginx/nginx.conf    #启动 nginx 服务 
+  [root@localhost ~]# nginx -s reload                   #重新加载 nginx 服务
   ~~~
 
 *Nginx* 主要控制信号：
