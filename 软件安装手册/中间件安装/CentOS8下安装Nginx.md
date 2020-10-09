@@ -10,6 +10,8 @@
 
 2. Nginx基本命令
 
+   使用 dnf 安装 nginx 后，系统会将其自动加入 systemctl 进行管理。
+
    ```shell
    [root@localhost /]# systemctl start nginx         启动nginx
    [root@localhost /]# systemctl stop nginx          停止nginx
