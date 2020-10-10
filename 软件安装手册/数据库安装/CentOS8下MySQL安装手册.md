@@ -40,7 +40,7 @@ MySQL安装：
 
 MySQL配置：
 
-1. 运行 ***mysql_secure_installation*** 脚本，执行一些与安全性相关的操作并设置MySQL根密码
+1. 运行 ***mysql_secure_installation*** 脚本，执行一些与安全性相关的操作并设置 MySQL Root 密码
 
    ```shell
    [root@localhost ~]# mysql_secure_installation
@@ -167,5 +167,4 @@ MySQL配置：
    [root@localhost ~]# firewall-cmd --reload
    success
    ```
-
    
