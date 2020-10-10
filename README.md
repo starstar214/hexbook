@@ -32,25 +32,25 @@
 
     初识 Linux
 
-    Linux 常用命令
+    [Linux常用命令]()
 
-    [文本编辑器 Vim](Linux系统/Linux基础/文本编辑器Vim.md)
+    [文本编辑器Vim](Linux系统/Linux基础/文本编辑器Vim.md)
 
  2. Linux系统管理
 
     用户及用户组管理
 
-    Linux 权限管理
+    Linux权限管理
 
 3. Linux高级应用
 
-   [Shell 编程](Linux系统/Linux高级应用/Shell编程.md)
+   [Shell编程](Linux系统/Linux高级应用/Shell编程.md)
 
 #### Java语言
 
 1. Java基础
 
-   Java8新特性
+   [Java8新特性](Java语言/Java基础/Java8新特性.md)
 
    Java9新特性
 
@@ -59,10 +59,12 @@
    [分布式缓存中间件-Redis](Java语言/Java中间件技术/分布式缓存中间件-Redis.md)
 
    [负载均衡中间件-Nginx](Java语言/Java中间件技术/负载均衡中间件-Nginx.md)
+   
+   [消息队列中间件-Kafka](Java语言/Java中间件技术/消息队列中间件-Kafka.md)
 
 3. 开源框架
    
-    [安全管理框架-Shiro]()
+    [安全管理框架-Shiro](Java语言/开源框架/安全管理框架-Shiro.md)
 
 #### Python语言
 
@@ -96,13 +98,13 @@
 
 2. 中间件安装
 
-    [CentOS 8 下安装 Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
+    [CentOS8下安装Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
 
-    [CentOS 8 下安装 Redis](软件安装手册/中间件安装/CentOS8下安装Redis.md)
+    [CentOS8下安装Redis](软件安装手册/中间件安装/CentOS8下安装Redis.md)
 
 3. 数据库安装
 
-   [CentOS 8 下安装 MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
+   [CentOS8下安装MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
 
 
 
