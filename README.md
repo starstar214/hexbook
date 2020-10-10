@@ -1,4 +1,12 @@
 <div align="center">
+    <a href="https://gitstar-ranking.com/repositories"> <img src="https://badgen.net/badge/github/GitHub?icon=github&color=4ab8a1"></a>
+    <a href="https://cyc2018.github.io/CS-Notes""><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?icon=Cliqz&logoColor=white"></a>
+    <a href="https://cyc2018.github.io/CS-Notes""><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?icon=Cliqz&logoColor=white"></a>
+    <a href="#微信公众号"> <img src="https://badgen.net/badge/在线阅读/CyC2018?icon=rss&color=4ab8a1"></a>
+</div>
+
+
+<div align="center">
 	<img src="Image/6874747073.png"/>
 </div>
 <div align="center">
