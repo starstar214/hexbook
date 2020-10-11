@@ -189,6 +189,10 @@
 3. 数据库安装
 
    [CentOS 8 下安装 MySQL](notes/软件安装/数据库安装/CentOS8下MySQL安装手册.md)
+   
+4. 其他软件安装
+
+    [Win10 下 Jekyll 安装及使用](notes/软件安装/其他软件安装/Win10下Jekyll安装及使用.md)
 
 ## :black_nib: 后记
 
@@ -202,9 +206,11 @@
 
 在线排版工具：[Text-Typesetting](https://github.com/CyC2018/Text-Typesetting)。
 
+#### 网页
 
+项目静态网页根据 [Jekyll](http://jekyllcn.com/) 生成，可以直接通过 [MarkDown](http://markdown.p2hp.com/) 文本生成静态网页，支持自定义样式。
 
-
+**Jekyll** 安装及使用见：[Win10 下 Jekyll 安装及使用](notes/软件安装/其他软件安装/Win10下Jekyll安装及使用.md)。
 
 
 
