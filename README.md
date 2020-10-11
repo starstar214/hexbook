@@ -6,9 +6,13 @@
 </div>
 &nbsp;
 
-|             计算机基础             |             网络             |              Linux               |             Java              |          &nbsp;&nbsp;数据库          |           中间件           |                      开发工具                      |         编码实践         |                 Python                  |             大数据             |          人工智能          |                       软件架构                       |                         软件安装                         |
-| :--------------------------------: | :--------------------------: | :------------------------------: | :---------------------------: | :----------------------------------: | :------------------------: | :------------------------------------------------: | :----------------------: | :-------------------------------------: | :----------------------------: | :------------------------: | :--------------------------------------------------: | :------------------------------------------------------: |
-| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-Linux 系统) | [:coffee:](#coffee-Java 语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:hammer_and_wrench:](#hammer_and_wrench-开发工具) | [:bulb:](#bulb-编码实践) | [:kiwi_fruit:](#kiwi_fruit-Python 语言) | [:hamburger:](#hamburger-后记) | [:robot:](#robot-人工智能) | [:classical_building:](#classical_building-软件架构) | [:artificial_satellite:](#artificial_satellite-软件安装) |
+|             计算机基础             |             网络             |              Linux              |             Java             |          &nbsp;&nbsp;数据库          |           中间件           |                      开发工具                      |
+| :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :------------------------------------------------: |
+| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-Linux系统) | [:coffee:](#coffee-Java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:hammer_and_wrench:](#hammer_and_wrench-开发工具) |
+
+|         编码实践         |                 Python                 |              大数据              |          人工智能          |                       软件架构                       |             软件安装             |              后记              |
+| :----------------------: | :------------------------------------: | :------------------------------: | :------------------------: | :--------------------------------------------------: | :------------------------------: | :----------------------------: |
+| [:bulb:](#bulb-编码实践) | [:watermelon:](#watermelon-Python语言) | [:hamburger:](#hamburger-大数据) | [:robot:](#robot-人工智能) | [:classical_building:](#classical_building-软件架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib​-后记) |
 
 &nbsp;&nbsp;
 
@@ -54,7 +58,7 @@
 
    Netty 框架
 
-## :penguin: Linux 系统
+## :penguin: Linux系统
 
  1. Linux基础
 
@@ -74,7 +78,7 @@
 
    [Shell编程](Linux系统/Linux高级应用/Shell编程.md)
 
-##  :coffee: Java 语言
+##  :coffee: Java语言
 
 1. Java基础
 
@@ -149,7 +153,7 @@
 1. 编码规范
 2. 
 
-## :kiwi_fruit: Python 语言
+## :watermelon: Python语言
 
 1. Python基础
 2. 爬虫
@@ -166,7 +170,7 @@
 2. 集群
 3. 分布式
 
-## :artificial_satellite: 软件安装
+## :airplane: 软件安装
 
 1. 常用软件安装
 
@@ -179,5 +183,18 @@
 3. 数据库安装
 
    [CentOS8下安装MySQL](软件安装/数据库安装/CentOS8下MySQL安装手册.md)
+
+## :black_nib: 后记
+
+
+
+
+
+
+
+
+
+
+
 
 
