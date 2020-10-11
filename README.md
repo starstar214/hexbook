@@ -1,18 +1,19 @@
+&nbsp;
+
+&nbsp;
+
 <div align="center">
     <a href=""> <img src="https://img.shields.io/badge/github-GitHub-4ab8a1?logo=github&logoColor=white"></a>
     <a href=""><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?logo=Minutemailer&logoColor=white"></a>
     <a href=""><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?logo=Codio&logoColor=white"></a>
     <a href=""><img src="https://img.shields.io/badge/在线阅读-Read-4ab8a1?logo=Reason Studios&logoColor=white"></a>
 </div>
+
 &nbsp;
 
-|             计算机基础             |             网络             |              Linux              |             Java             |          &nbsp;&nbsp;数据库          |           中间件           |                      开发工具                      |
-| :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :------------------------------------------------: |
-| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-Linux系统) | [:coffee:](#coffee-Java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:hammer_and_wrench:](#hammer_and_wrench-开发工具) |
-
-|         编码实践         |                 Python                 |              大数据              |          人工智能          |                       软件架构                       |             软件安装             |              后记              |
-| :----------------------: | :------------------------------------: | :------------------------------: | :------------------------: | :--------------------------------------------------: | :------------------------------: | :----------------------------: |
-| [:bulb:](#bulb-编码实践) | [:watermelon:](#watermelon-Python语言) | [:hamburger:](#hamburger-大数据) | [:robot:](#robot-人工智能) | [:classical_building:](#classical_building-软件架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib​-后记) |
+|             计算机基础             |             网络             |              Linux              |             Java             |          &nbsp;&nbsp;数据库          |           中间件           |         编码实践         |                Python                |           软件架构           |             软件安装             |              后记              |
+| :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :----------------------: | :----------------------------------: | :--------------------------: | :------------------------------: | :----------------------------: |
+| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-Linux系统) | [:coffee:](#coffee-Java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:bulb:](#bulb-编码实践) | [:bar_chart:](#bar_chart-Python语言) | [:hammer:](#hammer-软件架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib-后记) |
 
 &nbsp;&nbsp;
 
@@ -134,37 +135,43 @@
 
    [反向代理服务器-Nginx](中间件/Web应用服务器/反向代理服务器-Nginx.md)
 
-## :hammer_and_wrench: 开发工具
+##  :bulb: ​编码实践
 
-1. 项目构建工具
+1. 编码规范
+
+2. 项目构建工具
 
    [Maven]()
 
    [Gradle]()
 
-2. 版本管理工具
+3. 版本管理工具
 
    Git
 
    SVN
 
-## :bulb: 编码实践
+4. 研发流程管理
 
-1. 编码规范
-2. 
+   Jenkins 持续集成
 
-## :watermelon: Python语言
+5. 线上运维部署
 
-1. Python基础
+## :bar_chart: Python语言
+
+1. Python基础 
+
 2. 爬虫
-3. 数据挖掘
-4. 机器学习
 
-## :hamburger: 大数据
+3. 大数据
 
-## :robot: 人工智能
+   数据挖掘
 
-## :classical_building: 软件架构
+4. 人工智能
+
+   机器学习
+
+## :hammer: 软件架构
 
 1. 系统设计基础
 2. 集群
@@ -176,13 +183,13 @@
 
 2. 中间件安装
 
-    [CentOS8下安装Nginx](软件安装/中间件安装/CentOS8下安装Nginx.md)
+    [CentOS 8下安装 Nginx](软件安装/中间件安装/CentOS8下安装Nginx.md)
 
-    [CentOS8下安装Redis](软件安装/中间件安装/CentOS8下安装Redis.md)
+    [CentOS 8下安装 Redis](软件安装/中间件安装/CentOS8下安装Redis.md)
 
 3. 数据库安装
 
-   [CentOS8下安装MySQL](软件安装/数据库安装/CentOS8下MySQL安装手册.md)
+   [CentOS 8 下安装 MySQL](软件安装/数据库安装/CentOS8下MySQL安装手册.md)
 
 ## :black_nib: 后记
 
