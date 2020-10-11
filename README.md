@@ -65,7 +65,7 @@
 
     [Linux常用命令]()
 
-    [文本编辑器Vim](Linux系统/Linux基础/文本编辑器Vim.md)
+    [文本编辑器Vim](notes/Linux系统/Linux基础/文本编辑器Vim.md)
 
  2. Linux系统管理
 
@@ -75,13 +75,13 @@
 
 3. Linux高级应用
 
-   [Shell编程](Linux系统/Linux高级应用/Shell编程.md)
+   [Shell编程](notes/Linux系统/Linux高级应用/Shell编程.md)
 
 ##  :coffee: Java语言
 
 1. Java基础
 
-   [Java8 新特性](Java语言/Java基础/Java8新特性.md)
+   [Java8 新特性](notes/Java语言/Java基础/Java8新特性.md)
 
    Java9 新特性
 
@@ -89,7 +89,7 @@
 
 3. 开源框架
    
-    [安全管理框架-Shiro](Java语言/开源框架/安全管理框架-Shiro.md)
+    [安全管理框架-Shiro](notes/Java语言/开源框架/安全管理框架-Shiro.md)
 
 ## :floppy_disk: 数据库
 
@@ -113,11 +113,11 @@
 
 2. 消息队列中间件
 
-   [消息队列中间件-Kafka](中间件/消息队列中间件/消息队列中间件-Kafka.md)
+   [消息队列中间件-Kafka](notes/中间件/消息队列中间件/消息队列中间件-Kafka.md)
 
 3. NoSQL 数据库
 
-   [分布式缓存中间件-Redis](中间件/NoSQL数据库/分布式缓存中间件-Redis.md)
+   [分布式缓存中间件-Redis](notes/中间件/NoSQL数据库/分布式缓存中间件-Redis.md)
 
 4. 容器化技术
 
@@ -131,7 +131,7 @@
 
 6. Web 应用服务器
 
-   [反向代理服务器-Nginx](中间件/Web应用服务器/反向代理服务器-Nginx.md)
+   [反向代理服务器-Nginx](notes/中间件/Web应用服务器/反向代理服务器-Nginx.md)
 
 ##  :bulb: ​编码实践
 
@@ -181,13 +181,13 @@
 
 2. 中间件安装
 
-    [CentOS 8下安装 Nginx](软件安装/中间件安装/CentOS8下安装Nginx.md)
+    [CentOS 8下安装 Nginx](notes/软件安装/中间件安装/CentOS8下安装Nginx.md)
 
-    [CentOS 8下安装 Redis](软件安装/中间件安装/CentOS8下安装Redis.md)
+    [CentOS 8下安装 Redis](notes/软件安装/中间件安装/CentOS8下安装Redis.md)
 
 3. 数据库安装
 
-   [CentOS 8 下安装 MySQL](软件安装/数据库安装/CentOS8下MySQL安装手册.md)
+   [CentOS 8 下安装 MySQL](notes/软件安装/数据库安装/CentOS8下MySQL安装手册.md)
 
 ## :black_nib: 后记
 
