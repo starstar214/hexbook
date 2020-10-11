@@ -16,8 +16,9 @@
 &nbsp;&nbsp;
 
 <div align="center">
-	<img src="Image/15648676465.png"/>
+	<img src="Image/156486764656.png"/>
 </div>
+
 
 ## :computer: ​计算机基础
 
