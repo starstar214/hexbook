@@ -1,40 +1,60 @@
 <div align="center">
-    <a href="https://gitstar-ranking.com/repositories"> <img src="https://badgen.net/badge/github/GitHub?icon=github&color=4ab8a1"></a>
-    <a href="https://cyc2018.github.io/CS-Notes""><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?icon=Cliqz&logoColor=white"></a>
-    <a href="https://cyc2018.github.io/CS-Notes""><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?icon=Cliqz&logoColor=white"></a>
-    <a href="#微信公众号"> <img src="https://badgen.net/badge/在线阅读/CyC2018?icon=rss&color=4ab8a1"></a>
+    <a href=""> <img src="https://img.shields.io/badge/github-GitHub-4ab8a1?logo=github&logoColor=white"></a>
+    <a href=""><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?logo=Minutemailer&logoColor=white"></a>
+    <a href=""><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?logo=Codio&logoColor=white"></a>
+    <a href=""><img src="https://img.shields.io/badge/在线阅读-Read-4ab8a1?logo=Reason Studios&logoColor=white"></a>
 </div>
+&nbsp;
 
+|             计算机基础             |             网络             |              Linux               |             Java              |          &nbsp;&nbsp;数据库          |           中间件           |                      开发工具                      |         编码实践         |                 Python                  |             大数据             |          人工智能          |                       软件架构                       |                         软件安装                         |
+| :--------------------------------: | :--------------------------: | :------------------------------: | :---------------------------: | :----------------------------------: | :------------------------: | :------------------------------------------------: | :----------------------: | :-------------------------------------: | :----------------------------: | :------------------------: | :--------------------------------------------------: | :------------------------------------------------------: |
+| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-Linux 系统) | [:coffee:](#coffee-Java 语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:hammer_and_wrench:](#hammer_and_wrench-开发工具) | [:bulb:](#bulb-编码实践) | [:kiwi_fruit:](#kiwi_fruit-Python 语言) | [:hamburger:](#hamburger-后记) | [:robot:](#robot-人工智能) | [:classical_building:](#classical_building-软件架构) | [:artificial_satellite:](#artificial_satellite-软件安装) |
+
+&nbsp;&nbsp;
 
 <div align="center">
-	<img src="Image/6874747073.png"/>
-</div>
-<div align="center">
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机硬件-hardware-brightgreen?logo=Hexo&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/计算机基础-computer basics-orange?logo=Cliqz&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Linux系统-linux-yellow?logo=Linux&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Java语言-java-blue?logo=Java"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/Python语言-python-red?logo=Python&logoColor=white"></a>
-      <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/大数据-bigdata-cc9999?logo=Koding&logoColor=white"></a>
-      <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/人工智能-artificial intelligence-99cccc?logo=Adobe Illustrator&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/项目工具与开发技巧-development-green?logo=Steam&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/系统架构-system structure-pink?logo=StackShare&logoColor=white"></a>
-  <a href="javascript:void(null)" onclick="return false;"><img src="https://img.shields.io/badge/软件安装-installation-3ee0d7?logo=Indeed&logoColor=white"></a>
+	<img src="Image/15648676465.png"/>
 </div>
 
+## :computer: ​计算机基础
 
-# 目录
-#### 计算机硬件
+ 1. 计算机硬件基础
 
-#### 计算机基础
+ 2. 数据结构
 
- 1. 数据结构
+    数据结构与数学
 
-    数据结构的数学知识
+ 3. 算法导论
 
- 2. 算法导论
+ 4. 编程思想
 
-#### Linux系统
+    设计模式
+
+    面向对象
+
+## :cloud: 计算机网络
+
+1. 网络基础
+
+   计算机网络发展
+
+2. 网络协议
+
+   TCP/IP 协议
+
+   HTTP 协议
+
+   UDP 协议
+
+3. 网络通信
+
+   Socket 套接字
+
+   NIO 
+
+   Netty 框架
+
+## :penguin: Linux 系统
 
  1. Linux基础
 
@@ -54,41 +74,63 @@
 
    [Shell编程](Linux系统/Linux高级应用/Shell编程.md)
 
-#### Java语言
+##  :coffee: Java 语言
 
 1. Java基础
 
-   [Java8新特性](Java语言/Java基础/Java8新特性.md)
+   [Java8 新特性](Java语言/Java基础/Java8新特性.md)
 
-   Java9新特性
+   Java9 新特性
 
-2. Java中间件技术
-
-   [分布式缓存中间件-Redis](Java语言/Java中间件技术/分布式缓存中间件-Redis.md)
-
-   [负载均衡中间件-Nginx](Java语言/Java中间件技术/负载均衡中间件-Nginx.md)
-   
-   [消息队列中间件-Kafka](Java语言/Java中间件技术/消息队列中间件-Kafka.md)
+   Java 多线程编程
 
 3. 开源框架
    
     [安全管理框架-Shiro](Java语言/开源框架/安全管理框架-Shiro.md)
 
-#### Python语言
+## :floppy_disk: 数据库
 
-1. Python基础
+1. 关系型数据库
 
-2. 爬虫
+   MySQL
 
-3. 数据挖掘
+   Oracle
 
-4. 机器学习
+2. 数据仓库
 
-#### 大数据
+   Hadoop
 
-#### 人工智能
+## :rocket: 中间件
 
-#### 项目工具与开发技巧
+1. 数据库中间件
+
+   MyCat
+
+   ShardingSphere
+
+2. 消息队列中间件
+
+   [消息队列中间件-Kafka](中间件/消息队列中间件/消息队列中间件-Kafka.md)
+
+3. NoSQL 数据库
+
+   [分布式缓存中间件-Redis](中间件/NoSQL数据库/分布式缓存中间件-Redis.md)
+
+4. 容器化技术
+
+   Docker
+
+   Kubernetes
+
+5. 分布式服务中间件
+
+   ZooKeeper
+
+6. Web 应用服务器
+
+   [反向代理服务器-Nginx](中间件/Web应用服务器/反向代理服务器-Nginx.md)
+
+## :hammer_and_wrench: 开发工具
 
 1. 项目构建工具
 
@@ -98,23 +140,44 @@
 
 2. 版本管理工具
 
-#### 软件架构
+   Git
 
-#### 软件安装
+   SVN
+
+## :bulb: 编码实践
+
+1. 编码规范
+2. 
+
+## :kiwi_fruit: Python 语言
+
+1. Python基础
+2. 爬虫
+3. 数据挖掘
+4. 机器学习
+
+## :hamburger: 大数据
+
+## :robot: 人工智能
+
+## :classical_building: 软件架构
+
+1. 系统设计基础
+2. 集群
+3. 分布式
+
+## :artificial_satellite: 软件安装
 
 1. 常用软件安装
 
 2. 中间件安装
 
-    [CentOS8下安装Nginx](软件安装手册/中间件安装/CentOS8下安装Nginx.md)
+    [CentOS8下安装Nginx](软件安装/中间件安装/CentOS8下安装Nginx.md)
 
-    [CentOS8下安装Redis](软件安装手册/中间件安装/CentOS8下安装Redis.md)
+    [CentOS8下安装Redis](软件安装/中间件安装/CentOS8下安装Redis.md)
 
 3. 数据库安装
 
-   [CentOS8下安装MySQL](软件安装手册/数据库安装/CentOS8下MySQL安装手册.md)
+   [CentOS8下安装MySQL](软件安装/数据库安装/CentOS8下MySQL安装手册.md)
 
-
-
----
 
