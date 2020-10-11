@@ -192,11 +192,15 @@
 
 ## :black_nib: 后记
 
+笔记内容仅作为学习过程记录，无其他用途。
 
+#### 排版
 
+笔记内容参考 [中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines/blob/master/README.zh-CN.md) 进行排版，以保证内容的可读性。
 
+笔记灵感参考自 GitHub 项目：[CS-Notes](https://github.com/CyC2018/CS-Notes)。
 
-
+在线排版工具：[Text-Typesetting](https://github.com/CyC2018/Text-Typesetting)。
 
 
 
