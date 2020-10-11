@@ -1,12 +1,10 @@
 &nbsp;
 
-&nbsp;
-
 <div align="center">
-    <a href=""> <img src="https://img.shields.io/badge/github-GitHub-4ab8a1?logo=github&logoColor=white"></a>
-    <a href=""><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?logo=Minutemailer&logoColor=white"></a>
-    <a href=""><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?logo=Codio&logoColor=white"></a>
-    <a href=""><img src="https://img.shields.io/badge/在线阅读-Read-4ab8a1?logo=Reason Studios&logoColor=white"></a>
+    <a href="https://github.com/starstar214/SR-Notes"> <img src="https://img.shields.io/badge/github-GitHub-4ab8a1?logo=github&logoColor=white"></a>
+    <a href="https://gitee.com/nothing-to-lose/SR-Notes"><img src="https://img.shields.io/badge/码云-Gitee-4ab8a1?logo=Minutemailer&logoColor=white"></a>
+    <a href="https://codechina.csdn.net/weixin_41817826/SR-Notes"><img src="https://img.shields.io/badge/CSDN-CodeChina-4ab8a1?logo=Codio&logoColor=white"></a>
+    <a href="https://starstar214.github.io/SR-Notes/"><img src="https://img.shields.io/badge/在线阅读-Read-4ab8a1?logo=justGiving&logoColor=white"></a>
 </div>
 
 &nbsp;
