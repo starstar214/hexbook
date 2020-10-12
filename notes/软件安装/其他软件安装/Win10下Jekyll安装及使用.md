@@ -25,7 +25,7 @@ Jekyll 官网：[官方网站](http://jekyllcn.com/)
 
    下载安装包：[下载地址](https://rubyinstaller.org/downloads/)
 
-   官网下载安装包速度较慢，可以移步至 GitHub 上进行下载：[GitHub 下载地址](https://github.com/oneclick/rubyinstaller2)。
+   官网下载安装包速度较慢，可以到 GitHub 上进行下载：[GitHub 下载地址](https://github.com/oneclick/rubyinstaller2)。
 
    下载 Ruby 时，可以分别下载 **Ruby** 和开发工具包 **Devkit**，安装 Ruby 后再安装开发工具包；同时官方也提供了 Ruby 安装包与开发工具包结合的安装程序*rubyinstaller-devkit-2.7.2-1-x64.exe*，直接下载安装即可。
 
@@ -94,6 +94,10 @@ Jekyll 官网：[官方网站](http://jekyllcn.com/)
    访问 http://127.0.0.1:4000/ 查看页面：
 
    <p align='center'> <img src='../Image/1602440369.jpg' title='Nginx默认页面' style='max-width:600px'></img> </p>
+
+Jekyll 各个目录及作用：
+
+- 
 
 
 
