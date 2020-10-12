@@ -9,9 +9,9 @@
 
 &nbsp;
 
-|             计算机基础             |             网络             |              Linux              |             Java             |          &nbsp;&nbsp;数据库          |           中间件           |         编码实践         |                Python                |           软件架构           |             软件安装             |              后记              |
+|             计算机基础             |             网络             |              Linux              |             Java             |          数据库          |           中间件           |         编码实践         |                Python                |           系统架构           |             软件安装             |              后记              |
 | :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :----------------------: | :----------------------------------: | :--------------------------: | :------------------------------: | :----------------------------: |
-| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-linux系统) | [:coffee:](#coffee-java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:bulb:](#bulb-编码实践) | [:bar_chart:](#bar_chart-python语言) | [:hammer:](#hammer-软件架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib-后记) |
+| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-linux系统) | [:coffee:](#coffee-java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:bulb:](#bulb-编码实践) | [:bar_chart:](#bar_chart-python语言) | [:hammer:](#hammer-系统架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib-后记) |
 
 &nbsp;&nbsp;
 
