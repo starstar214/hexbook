@@ -1892,7 +1892,7 @@ Redis 哨兵的作用：
     sentinel parallel-syncs mymaster 1
     ~~~
 
-    在故障转移中，最多可以有多少个 slave 同时对新的 master 进行同步，进行同步的 slave 因为主从复制将无法提供查询服务。此值设置的越小，故障转移所花费的时间越长；此值设置的越大，故障转移期间能够提供查询服务的从技术量越少。
+    在故障转移中，最多可以有多少个 slave 同时对新的 master 进行同步，进行同步的 slave 因为主从复制将无法提供查询服务。此值设置的越小，故障转移所花费的时间越长；此值设置的越大，故障转移期间能够提供查询服务的从机数量越少。
 
   - 故障转移超时时间：`sentinel failover-timeout <master-name> <milliseconds>`
 
@@ -1914,7 +1914,7 @@ Redis 哨兵的作用：
   ~~~bash
   sentinel notification-script mymaster /var/redis/notify.sh            #通知脚本
   sentinel client-reconfig-script mymaster /var/redis/reconfig.sh       #重新配置脚本
-  #不允许使用 SENTINEL SET 命令更改 notification-script 和 client-reconfig-script
+  #不允许使用 SENTINEL SET 命令更改 notification-script 和 client-reconfig-script 配置
   sentinel deny-scripts-reconfig yes
   ~~~
 
@@ -1955,7 +1955,7 @@ Redis 哨兵的作用：
 
 哨兵集群搭建：
 
-1. ss
+1. 
 
 
 
