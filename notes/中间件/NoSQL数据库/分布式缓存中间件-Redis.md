@@ -1918,12 +1918,12 @@ Redis 哨兵的作用：
   sentinel deny-scripts-reconfig yes
   ~~~
 
-- 命令重命名：重命名危险命令，防止在 Redis 客户端重新配置 sentinel 实例
+- 命令重命名：一般来说，Sentinel 在运行过程中会对 Redis 执行相应命令，如：***CONFIG***、***SLAVEOF*** 等，如果 Redis 服务器已经对这些危险命令进行了重命名，则需要在 Sentinel 配置文件中指明。
 
   ~~~bash
-  #重命名 CONFIG 命令
+  #指明 Redis 服务器 CONFIG 命令的别名
   SENTINEL rename-command mymaster CONFIG GUESSME
-  #将 CONFIG 命令恢复原来的名称
+  #此配置项可以在运行过程中进行更改，下面为将 CONFIG 命令恢复原名的方式
   SENTINEL rename-command mymaster CONFIG CONFIG
   ~~~
 
@@ -1961,23 +1961,50 @@ Redis 哨兵的作用：
 
 
 
-***sentinel*** 命令：通过 redis-cli 可以与 redis-sentinel 进行通信，通过 `redis-cli -p 26379` 命令进入到交互界面
+***sentinel*** 常用命令：通过 redis-cli 可以与 redis-sentinel 进行通信，通过 `redis-cli -p 26379` 命令进入到交互界面
 
+进入 Redis Sentinel 客户端：
 
+~~~shell
+[root@localhost ~]# redis-cli -p 26379
+127.0.0.1:26379> 
+~~~
+
+SENTINEL 常用命令：
+
+~~~bash
+
+~~~
 
 
 
 SpringBoot 与 Redis 集群：
 
+*application.properties* 配置文件：
 
+- Redis 相关配置：
 
+  ~~~properties
+  spring.redis.cluster.nodes=172.27.9.137:7001,172.27.9.138:7001,172.27.9.139:7001
+  spring.redis.timeout=600000
+  ~~~
 
+- Lettuce 连接池相关配置：
 
+  ~~~properties
+  #连接池中允许的最大空闲连接数，使用负数表示无限制，默认值 8，当最大空闲连接数和最大连接数都未达到上限时，客户端请求时 Lettuce 将会创建新链接
+  spring.redis.lettuce.pool.max-idle=16
+  #连接池中允许的最小空闲连接数，超过此值的连接在驱逐线程运行时将会被回收，默认值 0
+  spring.redis.lettuce.pool.min-idle=8
+  #连接池最大连接数，使用负数表示无限制，默认值 8 
+  spring.redis.lettuce.pool.max-active=32
+  #当连接池的连接耗尽时，线程最大等待时间(毫秒单位)，超过此时间后将会抛出错误，默认 -1(不限制)
+  spring.redis.lettuce.pool.max-wait=-1
+  #每隔一段时间运行驱逐线程，回收连接池中的空闲连接(毫秒单位)，不配置此项默认不进行回收
+  spring.redis.lettuce.pool.time-between-eviction-runs=600000
+  ~~~
 
-
-
-
-
+  
 
 
 
