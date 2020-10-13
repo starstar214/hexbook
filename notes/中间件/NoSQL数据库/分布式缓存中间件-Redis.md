@@ -19,8 +19,8 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 9. [Redis 配置文件](#9redis配置文件)
 10. [持久化之 RDB 与 AOF](#10持久化之rdb与aof)
 11. [Redis 发布订阅](#11redis发布订阅)
-12. [Redis 集群与哨兵](#12redis集群与哨兵)
-13. [Redis 与缓存](#13redis与缓存)
+12. [Redis 主从与哨兵](#12redis主从与哨兵)
+13. [Redis 集群模式](#13redis集群模式)
 
  
 
@@ -1286,7 +1286,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
 - ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节：[持久化之 RDB 与 AOF](#10持久化之rdb与aof)。
 
-- ***REPLICATION***：主从复制相关配置，详情见第 12 章节：[Redis 集群与哨兵](#12redis集群与哨兵)
+- ***REPLICATION***：主从复制相关配置，详情见第 12 章节：[Redis 主从与哨兵](#12redis主从与哨兵)
 
 - ***SECURITY***：安全相关配置。
 
@@ -1382,7 +1382,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
     设置为 0 或负值时，Lua 脚本可以无警告的无限执行。
 
-- ***REDIS CLUSTER***：Redis 集群配置，详情见第 12 章节：[Redis 集群与哨兵](#12redis集群与哨兵)
+- ***REDIS CLUSTER***：Redis 集群配置，详情见第 13 章节：[Redis 集群模式](#13redis集群模式)
 
 14. ***CLUSTER DOCKER/NAT support***：当 Redis cluster 服务经过 NAT 限制或端口被转发时（如 Docker 容器），需要配置集群的节点位置，否则 Redis cluster 地址不能被主机发现。
 
@@ -1649,7 +1649,7 @@ Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）�
 
 ---
 
-#### 12.Redis集群与哨兵
+#### 12.Redis主从与哨兵
 
 Redis 主从复制：将一台 Redis 服务器的数据，复制到其他的 Redis 服务器。前者称为主节点-master，后者称为从节点-slave，数据的复制是单向的，只能由主节点到从节点，master 以写为主，slave 以读为主。
 
@@ -1955,11 +1955,55 @@ Redis 哨兵的作用：
 
 哨兵集群搭建：
 
-1. 
+1. 复制并修改修改 ***redis-sentinel.conf*** 文件：
 
+   ~~~bash
+   #端口
+   port 26380
+   #设置后台运行
+   daemonize yes
+   #pid 目录
+   pidfile "/root/temp/redis/sentinel/run/redis-sentinel-26380.pid"
+   #日志目录
+   logfile "/root/temp/redis/sentinel/log/sentinel-26380.log"
+   #监听主机
+   sentinel monitor mymaster 127.0.0.1 6379 2
+   ~~~
 
+   将端口分别改为 26379，26380，26381。
 
+2. 使用 `redis-sentinel redis-sentinel-26379.conf` 运行 3 个哨兵实例。
 
+3. 当主机挂掉时，哨兵会进行故障转移，并记录日志信息：
+
+   ~~~verilog
+   2652:X 14 Oct 2020 00:14:25.029 # +sdown master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.092 # +odown master mymaster 127.0.0.1 6379 #quorum 3/2
+   2652:X 14 Oct 2020 00:14:25.092 # +new-epoch 1
+   2652:X 14 Oct 2020 00:14:25.092 # +try-failover master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.092 # +vote-for-leader aa52892a8ae198a1ca73538e0a0cc14850d5a621 1
+   2652:X 14 Oct 2020 00:14:25.094 # c87a6b286e1a51d618fc48a4b1c4fbca9a3d202e voted for aa52892a8ae198a1ca73538e0a0cc14850d5a621 1
+   2652:X 14 Oct 2020 00:14:25.094 # 590ee2b5dd9b78f79993e1304c1cb64eada8be8e voted for aa52892a8ae198a1ca73538e0a0cc14850d5a621 1
+   2652:X 14 Oct 2020 00:14:25.148 # +elected-leader master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.148 # +failover-state-select-slave master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.249 # +selected-slave slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.249 * +failover-state-send-slaveof-noone slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:25.321 * +failover-state-wait-promotion slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:26.101 # +promoted-slave slave 127.0.0.1:6381 127.0.0.1 6381 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:26.101 # +failover-state-reconf-slaves master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:26.191 * +slave-reconf-sent slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:27.106 * +slave-reconf-inprog slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:27.106 * +slave-reconf-done slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:27.169 # -odown master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:27.169 # +failover-end master mymaster 127.0.0.1 6379
+   2652:X 14 Oct 2020 00:14:27.169 # +switch-master mymaster 127.0.0.1 6379 127.0.0.1 6381
+   2652:X 14 Oct 2020 00:14:27.169 * +slave slave 127.0.0.1:6380 127.0.0.1 6380 @ mymaster 127.0.0.1 6381
+   2652:X 14 Oct 2020 00:14:27.169 * +slave slave 127.0.0.1:6379 127.0.0.1 6379 @ mymaster 127.0.0.1 6381
+   2652:X 14 Oct 2020 00:14:57.172 # +sdown slave 127.0.0.1:6379 127.0.0.1 6379 @ mymaster 127.0.0.1 6381
+   
+   ~~~
+
+   
 
 ***sentinel*** 常用命令：通过 redis-cli 可以与 redis-sentinel 进行通信，通过 `redis-cli -p 26379` 命令进入到交互界面
 
@@ -1972,27 +2016,70 @@ Redis 哨兵的作用：
 
 SENTINEL 常用命令：
 
-~~~bash
+- info [section]：返回该 sentinel [某 section] 的信息，section 可以是 Server，Clients，CPU，Stats，Sentinel。
 
-~~~
+  ~~~bash
+  127.0.0.1:26379> info CPU
+  # CPU
+  used_cpu_sys:3.790803
+  used_cpu_user:1.019102
+  used_cpu_sys_children:0.000000
+  used_cpu_user_children:0.000000
+  ~~~
+
+- 查看主机信息：
+
+  ~~~bash
+  127.0.0.1:26379> sentinel masters             #查看 sentinel 监视的所有主机信息
+  ......
+  127.0.0.1:26379> sentinel master mymaster     #查看 sentinel 监视的指定主机信息
+  ......
+  ~~~
+
+- 查看指定主机的从机信息：`sentinel slaves mymaster`。
+
+- 查看指定主机的哨兵信息：`sentinel sentinels mymaster`。
+
+- 查看指定主机的 IP 及端口：
+
+  ~~~bash
+  127.0.0.1:26379> sentinel get-master-addr-by-name mymaster
+  1) "127.0.0.1"
+  2) "6381"
+  ~~~
+
+- sentinel **reset** \<pattern\>：重置匹配 pattern 的所有主服务器（正则），重置操作将会清除主服务器目前的所有状态，包括正在执行中的故障转移，并移除目前已经发现和关联主服务器的所有从服务器和 sentinel，然后再重新发现这个集群的状态。
+
+- sentinel **failover** \<master name\> ： 强制进行故障转移。
+
+- sentinel **moniotr** \<name\> \<ip\> \<port\> \<quorum\>：以命令行的方式添加监视的主机（相当于配置文件中的那一行）。
+
+- sentinel **remove** \<name\>：不再对名称为 name 的 master 进行监视。
+
+- sentinel **set** \<mastername> [\<option> \<value>]：修改监视的主机的相关配置
+
+  ~~~bash
+  127.0.0.1:26379> sentinel set mymaster down-after-milliseconds 60000
+  OK
+  ~~~
 
 
 
-SpringBoot 与 Redis 集群：
-
-*application.properties* 配置文件：
+SpringBoot 与 Redis 集成 *application.properties* 配置文件：
 
 - Redis 相关配置：
 
   ~~~properties
-  spring.redis.cluster.nodes=172.27.9.137:7001,172.27.9.138:7001,172.27.9.139:7001
-  spring.redis.timeout=600000
+  #集群地址，以逗号分隔
+  spring.redis.cluster.nodes=192.168.253.128:6379,192.168.253.128:6380,192.168.253.128:6381
+  # Redis 响应超时时间
+  spring.redis.timeout=60000
   ~~~
 
 - Lettuce 连接池相关配置：
 
   ~~~properties
-  #连接池中允许的最大空闲连接数，使用负数表示无限制，默认值 8，当最大空闲连接数和最大连接数都未达到上限时，客户端请求时 Lettuce 将会创建新链接
+  #连接池中允许的最大空闲连接数，使用负数表示无限制，默认值 8，当最大空闲连接数和最大连接数都未达到上限时，客户端发出请求时 Lettuce 将会创建新连接
   spring.redis.lettuce.pool.max-idle=16
   #连接池中允许的最小空闲连接数，超过此值的连接在驱逐线程运行时将会被回收，默认值 0
   spring.redis.lettuce.pool.min-idle=8
@@ -2004,12 +2091,20 @@ SpringBoot 与 Redis 集群：
   spring.redis.lettuce.pool.time-between-eviction-runs=600000
   ~~~
 
-  
+
+最简单的配置：为设置密码的情况下，仅配置 `spring.redis.cluster.nodes` 这一项即可。
 
 
 
 ---
 
-#### 13.Redis与缓存
+#### 13.Redis集群模式
 
- 
+通过主从复制与哨兵模式，能够有效的分担单台 Redis 服务器的负载，并基本实现 Redis 服务器的高可用，但是此种方式多个服务器存储同一份数据，大大的浪费了服务器资源，当服务器内存使用达到上限时，无法进行横向扩展（无法通过新增服务器扩大内存空间），纵向扩展（在线扩容）也会变得及其复杂（需要扩展多台服务器内存容量，并且涉及到主从切换相关操作）。
+
+从 Redis 3.0 开始，官方提供了 ***Cluster*** 集群模式，实现了 Redis 的分布式存储，即每台 Redis 节点上存储不同的内容。
+
+ ***Cluster*** 集群模式：
+
+
+
