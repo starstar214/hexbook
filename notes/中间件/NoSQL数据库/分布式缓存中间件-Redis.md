@@ -21,6 +21,7 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 11. [Redis 发布订阅](#11redis发布订阅)
 12. [Redis 主从与哨兵](#12redis主从与哨兵)
 13. [Redis 集群模式](#13redis集群模式)
+14. [Redis 与缓存](#14Redis与缓存)
 
  
 
@@ -2100,11 +2101,213 @@ SpringBoot 与 Redis 集成 *application.properties* 配置文件：
 
 #### 13.Redis集群模式
 
-通过主从复制与哨兵模式，能够有效的分担单台 Redis 服务器的负载，并基本实现 Redis 服务器的高可用，但是此种方式多个服务器存储同一份数据，大大的浪费了服务器资源，当服务器内存使用达到上限时，无法进行横向扩展（无法通过新增服务器扩大内存空间），纵向扩展（在线扩容）也会变得及其复杂（需要扩展多台服务器内存容量，并且涉及到主从切换相关操作）。
+通过主从复制与哨兵模式，能够有效的分担单台 Redis 服务器的负载，并基本实现 Redis 服务器的高可用，但是此种方式多个服务器存储同一份数据，大大的浪费了服务器资源，当服务器内存使用达到上限时，无法进行横向扩展（无法通过新增服务器扩大内存空间），纵向扩展（在线扩容）也会变得及其复杂（需要扩展多台服务器内存容量，并且涉及到主从切换相关操作），单个节点的性能压力问题仍然没有解决。
 
 从 Redis 3.0 开始，官方提供了 ***Cluster*** 集群模式，实现了 Redis 的分布式存储，即每台 Redis 节点上存储不同的内容。
 
- ***Cluster*** 集群模式：
+***Cluster*** 集群模式：
+
+Redis 集群是一个提供在多个 Redis 节点间共享数据的程序集，Redis 集群并不支持处理多个 keys 的命令，因为这需要在不同的节点间移动数据，从而达不到像单机 Redis 那样的性能，在高负载的情况下可能会导致不可预料的错误。
+
+Redis 集群通过分区来提供一定程度的可用性，在实际环境中当某个节点宕机或者不可达的情况下继续处理命令。
+
+Redis 集群的优点：
+
+- 无中心化架构，自动分割数据到不同的节点上。
+- 可扩展性：可线性扩展到 1000 多个节点，节点可动态添加或删除。
+- 高可用性：整个集群的部分节点失败或者不可达的情况下能够继续处理命令。
+
+Redis 集群的缺点：
+
+- 数据通过异步复制，Redis 并不能保证数据的强一致性，这意味这在实际中集群在特定的条件下可能会丢失写操作。
+- 不支持 Key 批量操作，并且当多个 Key 分布于不同的节点上时无法使用事务功能。
 
 
 
+Redis 集群的数据分片：
+
+Redis 集群引入了哈希槽的概念，集群中共有 ***16384*** 个哈希槽，每个 Key 通过 *CRC16* 校验后对 16384 取模来决定放置哪个槽，集群的每个节点负责一部分哈希槽。
+
+Redis 集群的主从复制模型：
+
+为了使在部分节点失败或者大部分节点无法通信的情况下集群仍然可用，所以集群使用了主从复制模型，每个节点都会有 1 个复制品。
+
+假设集群中有 A、B、C 三个主节点，并且添加 A1、B1、C1 作为主节点的从节点，当 B 节点挂掉后，从节点 B1 转移成主节点，此时的集群仍然可用，当然如果 B 和 B1 同时挂掉，集群不可用。
+
+Redis 集群规范：http://www.redis.cn/topics/cluster-spec.html
+
+
+
+Redis 集群搭建：此例中搭建三注三从的最基本集群架构。
+
+1. 创建集群测试的目录：
+
+   ~~~shell
+   [root@localhost redis]# mkdir cluster_test
+   [root@localhost redis]# cd cluster_test/
+   [root@localhost cluster_test]# mkdir 7000 7001 7002 7003 7004 7005
+   [root@localhost cluster_test]# 
+   ~~~
+
+2. 修改配置文件
+
+   ~~~bash
+   port 7000
+   pidfile /root/temp/redis/cluster_test/7000/redis_7000.pid
+   logfile /root/temp/redis/cluster_test/7000/redis_7000.log
+   dir /root/temp/redis/cluster_test/7000/
+   #开启集群功能
+   cluster-enabled yes
+   #指定集群配置文件，此文件不需要人工修改，由集群自动创建
+   cluster-config-file nodes-7000.conf
+   #如果主机在 15s 内无响应则认为主机已经宕机进行主从切换
+   cluster-node-timeout 15000
+   ~~~
+
+   Cluster 其他配置项（默认配置即可）：
+   
+   ~~~bash
+   #主从复制有效因子，用来判断从机的副本数据是否太旧，并决定是否进行故障转移
+   cluster-replica-validity-factor 10
+   #副本迁移屏障：新的主机至少有 1 个副本数据库时才允许故障转移
+   cluster-migration-barrier 1
+   #集群是否必须覆盖所有Hash槽才对外提供服务
+   #设为 no 时，部分节点宕机不影响其他节点对其所覆盖的Hash槽提供服务。
+   #设为 yse 时，只要有一个节点宕机且无法进行故障转移时整个节点都会不可用
+   cluster-require-full-coverage yes
+   #不允许集群故障转移，设置为yes时，可防止副本在主服务器发生故障时尝试对其主服务器进行故障转移。
+   cluster-replica-no-failover no
+   ~~~
+   
+3. 修改完配置文件后，直接启动 6 个 Redis 服务。
+
+   ~~~shell
+   [root@localhost 7000]# ps -ef|grep redis
+   root       2355      1  0 00:55 ?        00:00:00 redis-server 0.0.0.0:7000 [cluster]
+   root       2366      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7001 [cluster]
+   root       2375      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7002 [cluster]
+   root       2384      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7003 [cluster]
+   root       2393      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7004 [cluster]
+   root       2402      1  1 00:56 ?        00:00:00 redis-server 0.0.0.0:7005 [cluster]
+   root       2407   2206  0 00:56 pts/0    00:00:00 grep --color=auto redis
+   ~~~
+
+4. 使用 ***redis-trib.rb*** 脚本操作 Redis 集群，此脚本由  Ruby 语言编写，放在 Redis 源码包中，可以帮我们快速的创建出 Redis 集群。如果没有此脚本也可以到 GitHub 上进行下载然后放至虚拟机目录下进行执行，GitHub 下载地址：https://github.com/beebol/redis-trib.rb
+
+   此脚本运行需要安装 Ruby 语言环境：
+
+   ~~~shell
+   [root@localhost cluster_test]# dnf install ruby
+   ......
+   完毕！
+   [root@localhost cluster_test]# ruby -v
+   ruby 2.5.5p157 (2019-03-15 revision 67260) [x86_64-linux]
+   ~~~
+
+   安装 gem 的 Redis 插件：
+
+   ~~~shell
+   [root@localhost cluster_test]# gem install redis
+   Fetching: redis-4.2.2.gem (100%)
+   Successfully installed redis-4.2.2
+   1 gem installed
+   ~~~
+
+   使用 ***redis-trib.rb*** 脚本启动集群：
+
+   ~~~shell
+   [root@localhost cluster_test]# ./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005
+   >>> Creating cluster
+   >>> Performing hash slots allocation on 6 nodes...
+   Using 3 masters:
+   127.0.0.1:7000
+   127.0.0.1:7001
+   127.0.0.1:7002
+   Adding replica 127.0.0.1:7003 to 127.0.0.1:7000
+   Adding replica 127.0.0.1:7004 to 127.0.0.1:7001
+   Adding replica 127.0.0.1:7005 to 127.0.0.1:7002
+   M: cc08546b875a76e999c949cc1096c873526f1e71 127.0.0.1:7000
+      slots:0-5460 (5461 slots) master
+   M: 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48 127.0.0.1:7001
+      slots:5461-10922 (5462 slots) master
+   M: c373955d1d1c6495d67b9c0f1241e7fd568a23e3 127.0.0.1:7002
+      slots:10923-16383 (5461 slots) master
+   S: 45f5612b5c6b11f4fb68e29f725a82647ca9ab82 127.0.0.1:7003
+      replicates cc08546b875a76e999c949cc1096c873526f1e71
+   S: 40735fb2450e7a0340944c5792615603bab90432 127.0.0.1:7004
+      replicates 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48
+   S: 98b63c77b4c1cd0392690ff080864329c0a30700 127.0.0.1:7005
+      replicates c373955d1d1c6495d67b9c0f1241e7fd568a23e3
+   Can I set the above configuration? (type 'yes' to accept): yes     #输入yes允许程序修改 node.conf 文件
+   >>> Nodes configuration updated
+   >>> Assign a different config epoch to each node
+   >>> Sending CLUSTER MEET messages to join the cluster
+   Waiting for the cluster to join...
+   >>> Performing Cluster Check (using node 127.0.0.1:7000)
+   M: cc08546b875a76e999c949cc1096c873526f1e71 127.0.0.1:7000
+      slots:0-5460 (5461 slots) master
+   M: 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48 127.0.0.1:7001
+      slots:5461-10922 (5462 slots) master
+   M: c373955d1d1c6495d67b9c0f1241e7fd568a23e3 127.0.0.1:7002
+      slots:10923-16383 (5461 slots) master
+   M: 45f5612b5c6b11f4fb68e29f725a82647ca9ab82 127.0.0.1:7003
+      slots: (0 slots) master
+      replicates cc08546b875a76e999c949cc1096c873526f1e71
+   M: 40735fb2450e7a0340944c5792615603bab90432 127.0.0.1:7004
+      slots: (0 slots) master
+      replicates 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48
+   M: 98b63c77b4c1cd0392690ff080864329c0a30700 127.0.0.1:7005
+      slots: (0 slots) master
+      replicates c373955d1d1c6495d67b9c0f1241e7fd568a23e3
+   [OK] All nodes agree about slots configuration.
+   >>> Check for open slots...
+   >>> Check slots coverage...
+   [OK] All 16384 slots covered.
+   ~~~
+
+   至此，Redis 集群搭建完毕！
+
+> 注意：使用 `./redis-trib.rb help` 命令即可查看脚本帮助。
+>
+
+
+
+集群模式使用：
+
+
+
+在 Redis 集群模式下，Redis 还提供了一些命令与集群进行交互：
+
+使用客户端连接任意一个集群服务器进行交互，几个常用的命令如下：
+
+- cluster info：查看集群信息。
+- cluster nodes：查看集群所有节点。
+- cluster meet \<ip> \<port>：向集群中添加新成员。
+- cluster forget \<node_id> ：从集群中移除成员。
+
+~~~shell
+[root@localhost 7000]# redis-cli -p 7000
+127.0.0.1:7000> cluster info
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:324
+cluster_stats_messages_pong_sent:331
+cluster_stats_messages_sent:655
+cluster_stats_messages_ping_received:326
+cluster_stats_messages_pong_received:324
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_received:655
+~~~
+
+
+
+---
+
+#### 14.Redis与缓存
