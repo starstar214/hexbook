@@ -2091,9 +2091,12 @@ SpringBoot 与 Redis 集成 *application.properties* 配置文件：
   #每隔一段时间运行驱逐线程，回收连接池中的空闲连接(毫秒单位)，不配置此项默认不进行回收
   spring.redis.lettuce.pool.time-between-eviction-runs=600000
   ~~~
+  
+  最简单的配置：为设置密码的情况下，仅配置 `spring.redis.cluster.nodes` 这一项即可。
+  
+- 配置 ***redisTemplate*** 然后使用。
 
 
-最简单的配置：为设置密码的情况下，仅配置 `spring.redis.cluster.nodes` 这一项即可。
 
 
 
@@ -2140,171 +2143,233 @@ Redis 集群规范：http://www.redis.cn/topics/cluster-spec.html
 
 Redis 集群搭建：此例中搭建三注三从的最基本集群架构。
 
-1. 创建集群测试的目录：
+1）启动 6 个 Redis 集群服务：
 
-   ~~~shell
-   [root@localhost redis]# mkdir cluster_test
-   [root@localhost redis]# cd cluster_test/
-   [root@localhost cluster_test]# mkdir 7000 7001 7002 7003 7004 7005
-   [root@localhost cluster_test]# 
-   ~~~
+- 创建集群测试的目录：
 
-2. 修改配置文件
+  ~~~shell
+  [root@localhost redis]# mkdir cluster_test
+  [root@localhost redis]# cd cluster_test/
+  [root@localhost cluster_test]# mkdir 7000 7001 7002 7003 7004 7005
+  [root@localhost cluster_test]# 
+  ~~~
 
-   ~~~bash
-   port 7000
-   pidfile /root/temp/redis/cluster_test/7000/redis_7000.pid
-   logfile /root/temp/redis/cluster_test/7000/redis_7000.log
-   dir /root/temp/redis/cluster_test/7000/
-   #开启集群功能
-   cluster-enabled yes
-   #指定集群配置文件，此文件不需要人工修改，由集群自动创建
-   cluster-config-file nodes-7000.conf
-   #如果主机在 15s 内无响应则认为主机已经宕机进行主从切换
-   cluster-node-timeout 15000
-   ~~~
+- 修改配置文件：
 
-   Cluster 其他配置项（默认配置即可）：
-   
-   ~~~bash
-   #主从复制有效因子，用来判断从机的副本数据是否太旧，并决定是否进行故障转移
-   cluster-replica-validity-factor 10
-   #副本迁移屏障：新的主机至少有 1 个副本数据库时才允许故障转移
-   cluster-migration-barrier 1
-   #集群是否必须覆盖所有Hash槽才对外提供服务
-   #设为 no 时，部分节点宕机不影响其他节点对其所覆盖的Hash槽提供服务。
-   #设为 yse 时，只要有一个节点宕机且无法进行故障转移时整个节点都会不可用
-   cluster-require-full-coverage yes
-   #不允许集群故障转移，设置为yes时，可防止副本在主服务器发生故障时尝试对其主服务器进行故障转移。
-   cluster-replica-no-failover no
-   ~~~
-   
-3. 修改完配置文件后，直接启动 6 个 Redis 服务。
+  ~~~shell
+  port 7000
+  pidfile /root/temp/redis/cluster_test/7000/redis_7000.pid
+  logfile /root/temp/redis/cluster_test/7000/redis_7000.log
+  dir /root/temp/redis/cluster_test/7000/
+  #开启集群功能
+  cluster-enabled yes
+  #指定集群配置文件，此文件不需要人工修改，由集群自动创建
+  cluster-config-file nodes-7000.conf
+  #如果主机在 15s 内无响应则认为主机已经宕机进行主从切换
+  cluster-node-timeout 15000
+  ~~~
 
-   ~~~shell
-   [root@localhost 7000]# ps -ef|grep redis
-   root       2355      1  0 00:55 ?        00:00:00 redis-server 0.0.0.0:7000 [cluster]
-   root       2366      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7001 [cluster]
-   root       2375      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7002 [cluster]
-   root       2384      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7003 [cluster]
-   root       2393      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7004 [cluster]
-   root       2402      1  1 00:56 ?        00:00:00 redis-server 0.0.0.0:7005 [cluster]
-   root       2407   2206  0 00:56 pts/0    00:00:00 grep --color=auto redis
-   ~~~
+  > Cluster 其他配置项（默认配置即可）：
+  >
+  > ~~~shell
+  > #主从复制有效因子，用来判断从机的副本数据是否太旧，并决定是否进行故障转移
+  > cluster-replica-validity-factor 10
+  > #副本迁移屏障：新的主机至少有 1 个副本数据库时才允许故障转移
+  > cluster-migration-barrier 1
+  > #集群是否必须覆盖所有Hash槽才对外提供服务
+  > #设为 no 时，部分节点宕机不影响其他节点对其所覆盖的Hash槽提供服务。
+  > #设为 yse 时，只要有一个节点宕机且无法进行故障转移时整个节点都会不可用
+  > cluster-require-full-coverage yes
+  > #不允许集群故障转移，设置为yes时，可防止副本在主服务器发生故障时尝试对其主服务器进行故障转移。
+  > cluster-replica-no-failover no
+  > ~~~
 
-4. 使用 ***redis-trib.rb*** 脚本操作 Redis 集群，此脚本由  Ruby 语言编写，放在 Redis 源码包中，可以帮我们快速的创建出 Redis 集群。如果没有此脚本也可以到 GitHub 上进行下载然后放至虚拟机目录下进行执行，GitHub 下载地址：https://github.com/beebol/redis-trib.rb
+- 修改完配置文件后，直接启动 6 个 Redis 服务:
 
-   此脚本运行需要安装 Ruby 语言环境：
+  ~~~shell
+  [root@localhost 7000]# ps -ef|grep redis
+  root       2355      1  0 00:55 ?        00:00:00 redis-server 0.0.0.0:7000 [cluster]
+  root       2366      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7001 [cluster]
+  root       2375      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7002 [cluster]
+  root       2384      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7003 [cluster]
+  root       2393      1  0 00:56 ?        00:00:00 redis-server 0.0.0.0:7004 [cluster]
+  root       2402      1  1 00:56 ?        00:00:00 redis-server 0.0.0.0:7005 [cluster]
+  root       2407   2206  0 00:56 pts/0    00:00:00 grep --color=auto redis
+  ~~~
 
-   ~~~shell
-   [root@localhost cluster_test]# dnf install ruby
-   ......
-   完毕！
-   [root@localhost cluster_test]# ruby -v
-   ruby 2.5.5p157 (2019-03-15 revision 67260) [x86_64-linux]
-   ~~~
+2）通过工具启动集群：在 Redis 5.x 版本以下，我们需要使用 ***redis-trib.rb*** 脚本操作 Redis 集群，此脚本由  Ruby 语言编写，放在 Redis 源码包中，可以帮我们快速的创建出 Redis 集群。如果没有此脚本也可以到 GitHub 上进行下载然后放至虚拟机目录下进行执行，GitHub 下载地址：https://github.com/beebol/redis-trib.rb；而在 Redis 5.0 版本以上，我们可以直接使用 ***redis-cli*** 创建 Redis 集群。
 
-   安装 gem 的 Redis 插件：
+- 使用 *redis-trib.rb* 创建 Redis 集群：
 
-   ~~~shell
-   [root@localhost cluster_test]# gem install redis
-   Fetching: redis-4.2.2.gem (100%)
-   Successfully installed redis-4.2.2
-   1 gem installed
-   ~~~
+  1. 安装此脚本运行需要的 Ruby 语言环境：
 
-   使用 ***redis-trib.rb*** 脚本启动集群：
+     ~~~shell
+     [root@localhost cluster_test]# dnf install ruby
+     ......
+     完毕！
+     [root@localhost cluster_test]# ruby -v
+     ruby 2.5.5p157 (2019-03-15 revision 67260) [x86_64-linux]
+     ~~~
 
-   ~~~shell
-   [root@localhost cluster_test]# ./redis-trib.rb create --replicas 1 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005
-   >>> Creating cluster
-   >>> Performing hash slots allocation on 6 nodes...
-   Using 3 masters:
-   127.0.0.1:7000
-   127.0.0.1:7001
-   127.0.0.1:7002
-   Adding replica 127.0.0.1:7003 to 127.0.0.1:7000
-   Adding replica 127.0.0.1:7004 to 127.0.0.1:7001
-   Adding replica 127.0.0.1:7005 to 127.0.0.1:7002
-   M: cc08546b875a76e999c949cc1096c873526f1e71 127.0.0.1:7000
-      slots:0-5460 (5461 slots) master
-   M: 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48 127.0.0.1:7001
-      slots:5461-10922 (5462 slots) master
-   M: c373955d1d1c6495d67b9c0f1241e7fd568a23e3 127.0.0.1:7002
-      slots:10923-16383 (5461 slots) master
-   S: 45f5612b5c6b11f4fb68e29f725a82647ca9ab82 127.0.0.1:7003
-      replicates cc08546b875a76e999c949cc1096c873526f1e71
-   S: 40735fb2450e7a0340944c5792615603bab90432 127.0.0.1:7004
-      replicates 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48
-   S: 98b63c77b4c1cd0392690ff080864329c0a30700 127.0.0.1:7005
-      replicates c373955d1d1c6495d67b9c0f1241e7fd568a23e3
-   Can I set the above configuration? (type 'yes' to accept): yes     #输入yes允许程序修改 node.conf 文件
-   >>> Nodes configuration updated
-   >>> Assign a different config epoch to each node
-   >>> Sending CLUSTER MEET messages to join the cluster
-   Waiting for the cluster to join...
-   >>> Performing Cluster Check (using node 127.0.0.1:7000)
-   M: cc08546b875a76e999c949cc1096c873526f1e71 127.0.0.1:7000
-      slots:0-5460 (5461 slots) master
-   M: 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48 127.0.0.1:7001
-      slots:5461-10922 (5462 slots) master
-   M: c373955d1d1c6495d67b9c0f1241e7fd568a23e3 127.0.0.1:7002
-      slots:10923-16383 (5461 slots) master
-   M: 45f5612b5c6b11f4fb68e29f725a82647ca9ab82 127.0.0.1:7003
-      slots: (0 slots) master
-      replicates cc08546b875a76e999c949cc1096c873526f1e71
-   M: 40735fb2450e7a0340944c5792615603bab90432 127.0.0.1:7004
-      slots: (0 slots) master
-      replicates 5f5ec68ba6df7eba62f5ff816c5858f7f43dec48
-   M: 98b63c77b4c1cd0392690ff080864329c0a30700 127.0.0.1:7005
-      slots: (0 slots) master
-      replicates c373955d1d1c6495d67b9c0f1241e7fd568a23e3
-   [OK] All nodes agree about slots configuration.
-   >>> Check for open slots...
-   >>> Check slots coverage...
-   [OK] All 16384 slots covered.
-   ~~~
+  2. 安装 gem 的 Redis 插件：
 
-   至此，Redis 集群搭建完毕！
+     ~~~shell
+     [root@localhost cluster_test]# gem install redis
+     Fetching: redis-4.2.2.gem (100%)
+     Successfully installed redis-4.2.2
+     1 gem installed
+     ~~~
 
-> 注意：使用 `./redis-trib.rb help` 命令即可查看脚本帮助。
+  3. 使用 ***redis-trib.rb*** 脚本启动集群：
+
+     ~~~shell
+     [root@localhost cluster_test]# ./redis-trib.rb create --replicas 1 192.168.253.128:7000 192.168.253.128:7001 192.168.253.128:7002 192.168.253.128:7003 192.168.253.128:7004 192.168.253.128:7005
+     >>> Creating cluster
+     >>> Performing hash slots allocation on 6 nodes...
+     
+     ......
+     
+     Can I set the above configuration? (type 'yes' to accept): yes     #输入yes允许程序修改 node.conf 文件
+     >>> Nodes configuration updated
+     >>> Assign a different config epoch to each node
+     >>> Sending CLUSTER MEET messages to join the cluster
+     
+     ......
+     
+     [OK] All 16384 slots covered.
+     ~~~
+
+     Redis 集群搭建完毕！
+
+     > 注意：使用 `./redis-trib.rb help` 命令即可查看脚本帮助。
+
+- 使用 *redis-trib.rb* 创建 Redis 集群：
+
+  ~~~shell
+  [root@localhost cluster_test]# redis-cli --cluster create 192.168.253.128:7000 192.168.253.128:7001 192.168.253.128:7002 192.168.253.128:7003 192.168.253.128:7004 192.168.253.128:7005 --cluster-replicas 1
+  >>> Performing hash slots allocation on 6 nodes...
+  Master[0] -> Slots 0 - 5460
+  Master[1] -> Slots 5461 - 10922
+  Master[2] -> Slots 10923 - 16383
+  
+  ......
+  
+  Can I set the above configuration? (type 'yes' to accept): yes  #输入yes允许程序修改 node.conf 文件
+  
+  ......
+  
+  [OK] All 16384 slots covered.
+  ~~~
+
+  Redis 集群搭建完毕！
+
+3）Redis 集群常用操作：
+
+- 可以通过 `redis-cli` 连接任意一个集群服务器进行交互：
+
+  - cluster info：查看集群信息。
+  - cluster nodes：查看集群所有节点。
+  - cluster meet \<ip> \<port>：向集群中添加新成员。
+  - cluster forget \<node_id> ：从集群中移除成员。
+
+  ~~~shell
+  [root@localhost 7000]# redis-cli -p 7000
+  127.0.0.1:7000> cluster info
+  cluster_state:ok
+  cluster_slots_assigned:16384
+  cluster_slots_ok:16384
+  cluster_slots_pfail:0
+  cluster_slots_fail:0
+  cluster_known_nodes:6
+  
+  ......
+  ~~~
+
+  哈希槽相关操作：
+
+  - cluster addslots \<slot> [slot ...] ：将一个或多个槽（ slot）指派（ assign）给当前节点。
+
+  - cluster delslots \<slot> [slot ...] ：移除一个或多个槽对当前节点的指派。
+
+  - cluster flushslots ：移除指派给当前节点的所有槽，让当前节点变成一个没有指派任何槽的节点。
+
+  - cluster setslot \<slot> node <node_id> ：将槽 slot 指派给 node_id 指定的节点，如果槽已经指派给另一个节点，那么先让另一个节点删除该槽，然后再进行指派。
+
+  - cluster setslot \<slot> migrating <node_id> ：将本节点的槽 slot 迁移到 node_id 指定的节点中。
+
+  - cluster setslot \<slot> importing <node_id> ：从 node_id 指定的节点中导入槽 slot 到本节点。
+
+  - cluster setslot \<slot> stable ：取消对槽 slot 的导入（import）或者迁移（migrate）。
+
+> 关闭 Redis 集群时，直接关闭 Redis 服务即可，尽量不要使用 kill -9 直接杀掉进程，而是使用 redis-cli 客户端 shutdown 进程。
 >
+> 再次启动 Redis 集群时，只需要启动各个 Redis 服务即可，不需要再次执行 `--cluster create` 命令。
+>
+> 如果需要重新创建集群节点，需要删除 node.conf、dump.rdb 和 appendonly.aof 文件，否则将会出现如下报错：
+>
+> `[ERR] Node 192.168.253.128:7000 is not empty. Either the node already knows other nodes (check with CLUSTER NODES) or contains some key in database 0.`
 
+4）Redis 集群请求重定向：
 
+- 在集群模式下，Redis 在接收到键任何命令时会先计算该键所在的槽，如果该键所在的槽位于当前节点，则直接执行命令，如果该键位于其它节点，则返回重定向信息。比如 key 这个键在槽 866 上，而槽 866 位于 2 节点上，假设在 1 节点上执行 `get key` 信息：
 
-集群模式使用：
+  ~~~shell
+  127.0.0.1:7000> get key
+  (error) MOVED 12539 127.0.0.1:7002
+  ~~~
 
+  此时可以通过命令定位主机：
 
+  ~~~shell
+  127.0.0.1:7000> cluster keyslot key                    #查看 key 键所在槽位
+  (integer) 12539
+  127.0.0.1:7000> cluster nodes                          #查看槽位分布以定位到主机
+  3747b8a73cd3be4a1e1765422a5dd74f7817ded7 127.0.0.1:7005@17005 slave 1b170934f6008822d7175df6c64c374b64fb66b9 0 1602926566000 6 connected
+  74185e84f82f3e9e47d31cdc06b1728126a56a4f 127.0.0.1:7001@17001 master - 0 1602926566733 2 connected 5461-10922
+  1b170934f6008822d7175df6c64c374b64fb66b9 127.0.0.1:7002@17002 master - 0 1602926565000 3 connected 10923-16383
+  127d1ac3e6e03ae1bf3d9f5daddbf95082751758 127.0.0.1:7000@17000 myself,master - 0 1602926567000 1 connected 0-5460
+  96e49a1187b1ad82a417767a5f2faa03e1488360 127.0.0.1:7003@17003 slave 127d1ac3e6e03ae1bf3d9f5daddbf95082751758 0 1602926567740 4 connected
+  584f701fc28fe635b3190abcf7878be75476a213 127.0.0.1:7004@17004 slave 74185e84f82f3e9e47d31cdc06b1728126a56a4f 0 1602926566000 5 connected
+  ~~~
 
-在 Redis 集群模式下，Redis 还提供了一些命令与集群进行交互：
+  此外，还可以使用 -c 选项使客户端自动重定向：
 
-使用客户端连接任意一个集群服务器进行交互，几个常用的命令如下：
+  ~~~shell
+  [root@localhost cluster_test]# redis-cli -c -p 7000
+  127.0.0.1:7000> set key value
+  -> Redirected to slot [12539] located at 127.0.0.1:7002
+  OK
+  ~~~
 
-- cluster info：查看集群信息。
-- cluster nodes：查看集群所有节点。
-- cluster meet \<ip> \<port>：向集群中添加新成员。
-- cluster forget \<node_id> ：从集群中移除成员。
+5）SpringBoot 与 Redis 集群整合：  
 
-~~~shell
-[root@localhost 7000]# redis-cli -p 7000
-127.0.0.1:7000> cluster info
-cluster_state:ok
-cluster_slots_assigned:16384
-cluster_slots_ok:16384
-cluster_slots_pfail:0
-cluster_slots_fail:0
-cluster_known_nodes:6
-cluster_size:3
-cluster_current_epoch:6
-cluster_my_epoch:1
-cluster_stats_messages_ping_sent:324
-cluster_stats_messages_pong_sent:331
-cluster_stats_messages_sent:655
-cluster_stats_messages_ping_received:326
-cluster_stats_messages_pong_received:324
-cluster_stats_messages_meet_received:5
-cluster_stats_messages_received:655
-~~~
+- ***application.properties*** 配置文件：
+
+  ~~~properties
+  #集群地址
+  spring.redis.cluster.nodes=192.168.253.128:7000,192.168.253.128:7001,192.168.253.128:7002,192.168.253.128:7003,192.168.253.128:7004,192.168.253.128:7005
+  #请求最大重定向次数
+  spring.redis.cluster.max-redirects=3
+  # lettuce 开启集群信息刷新功能，当故障转移后及时感知，追踪最新的主机信息
+  spring.redis.lettuce.cluster.refresh.adaptive=true
+  #集群信息刷新间隔时间(毫秒数)
+  spring.redis.lettuce.cluster.refresh.period=600000
+  ~~~
+
+- 报错解决：`java.net.ConnectException: Connection refused: no further information`
+
+  ~~~verilog
+  Unable to connect to [127.0.0.1:7000]: Connection refused: no further information: /127.0.0.1:7000
+  Unable to connect to [127.0.0.1:7002]: Connection refused: no further information: /127.0.0.1:7002
+  Unable to connect to [127.0.0.1:7005]: Connection refused: no further information: /127.0.0.1:7005
+  Unable to connect to [127.0.0.1:7003]: Connection refused: no further information: /127.0.0.1:7003
+  Unable to connect to [127.0.0.1:7004]: Connection refused: no further information: /127.0.0.1:7004
+  Unable to connect to [127.0.0.1:7001]: Connection refused: no further information: /127.0.0.1:7001
+  ~~~
+
+  这是由于在创建 Redis 集群时，使用了 `127.0.0.1` 地址，注意：在创建集群时，只能使用机器的真实 IP 地址，否则 *Lettuce* 无法连接到 Redis 集群。
+
+- 配置号 RedisTemplate 后便可以正常使用。
 
 
 
