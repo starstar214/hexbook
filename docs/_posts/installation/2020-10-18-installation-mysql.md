@@ -9,7 +9,7 @@ catalog: false
 tags:
     - 软件安装
     - 数据库
-	- MySQL
+    - MySQL
 ---
 
 
