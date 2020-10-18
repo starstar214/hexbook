@@ -4,8 +4,8 @@ title:      "Linux 下安装 MySQL"
 subtitle:   "「软件安装」MySQL"
 date:       2020-10-18
 author:     "Hex"
-header-img: "img/post-bg-computer.jpg"
-catalog: false
+header-img: "img/post-bg-data.jpg"
+catalog:    true
 tags:
     - 软件安装
     - 数据库
@@ -18,7 +18,7 @@ MySQL Database Service is a fully managed database service to deploy cloud-nativ
 
 
 
-***DNF***：DNF代表 Dandified YUM 是基于 RPM 的 Linux 发行版的软件包管理器。用于在 Fedora / RHEL / CentOS 操作系统中安装，更新和删除软件包。 它是CentOS8 的默认软件包管理器。 DNF 是 YUM 的下一代版本，功能强大且具有健壮的特征，使维护软件包组变得更加容易，并且能够自动解决依赖性问题。
+***CentOS8 - DNF***：DNF代表 *Dandified YUM* 是基于 RPM 的 Linux 发行版的软件包管理器。用于在 Fedora / RHEL / CentOS 操作系统中安装，更新和删除软件包。 它是CentOS8 的默认软件包管理器。 DNF 是 YUM 的下一代版本，功能强大且具有健壮的特征，使维护软件包组变得更加容易，并且能够自动解决依赖性问题。
 
 
 
@@ -26,9 +26,9 @@ MySQL Database Service is a fully managed database service to deploy cloud-nativ
 
 
 
-MySQL安装：
+## MySQL安装
 
-1. 安装MySQL
+1. 安装 MySQL
 
    ```shell
    [root@localhost ~]# dnf install @mysql
@@ -36,19 +36,19 @@ MySQL安装：
 
    根据提示输入 y 进行安装。
 
-2. 启动MySQL服务
+2. 启动 MySQL 服务
 
    ```shell
    [root@localhost ~]# systemctl start mysqld
    ```
 
-3. 设置MySQL开机自启
+3. 设置 MySQL 开机自启
 
    ```shell
    [root@localhost ~]# systemctl enable mysqld
    ```
 
-4. 查看MySQL运行状态
+4. 查看 MySQL 运行状态
 
    ```shell
    [root@localhost ~]# systemctl status mysqld
@@ -56,7 +56,7 @@ MySQL安装：
 
    
 
-MySQL配置：
+## MySQL 配置
 
 1. 运行 ***mysql_secure_installation*** 脚本，执行一些与安全性相关的操作并设置 MySQL Root 密码
 
@@ -78,7 +78,7 @@ MySQL配置：
    
    LOW    Length >= 8
    MEDIUM Length >= 8, numeric, mixed case, and special characters
-   STRONG Length >= 8, numeric, mixed case, special characters and dictionary                  file
+   STRONG Length >= 8, numeric, mixed case, special characters and dictionary            file
    
    Please enter 0 = LOW, 1 = MEDIUM and 2 = STRONG: 0  #选择 0-LOW 密码强度
    Please set the password for root here.
@@ -170,7 +170,7 @@ MySQL配置：
 
    
 
-系统网络配置：
+## 系统网络配置
 
 1. 开启系统防火墙的 3306 端口：
 
@@ -186,3 +186,6 @@ MySQL配置：
    success
    ```
    
+
+以上配置全部完成后，即可通过外部客户端访问到 MySQL。
+
