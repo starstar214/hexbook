@@ -109,4 +109,4 @@ Jekyll 各个目录及作用：
 
 此处我们使用黄玄大神的模板：https://github.com/Huxpro/huxpro.github.io ，将此模板下载下来，然后自己进行修改即可。
 
-注意：可能出现404，需要修改url
+注意：可能出现404，需要修改 `_config.yml` 中的 url 路径。
