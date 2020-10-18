@@ -2,7 +2,7 @@
 layout:     post
 title:      "Linux 下安装 MySQL"
 subtitle:   "「软件安装」MySQL"
-date:       2020-10-18 22:00:00
+date:       2020-10-18
 author:     "Hex"
 header-img: "img/post-bg-computer.jpg"
 catalog: false
