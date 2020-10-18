@@ -11,7 +11,7 @@ tags:
 
 
 
-Shell 脚本语言是实现 Linux/UNIX 系统管理及自动化运维所必备的重要工具， Linux/UNIX 系统的底层及基础应用软件的核心大都涉及 Shell 脚本的内容。Shell 脚本是一种通过 Shell 语言编写的脚本程序，在脚本中编写一系列的系统指令，通过执行脚本方便，快速，灵活，自动化的执行一些系统任务，提升我们的工作效率，减少不必要的重复工作。&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Shell 脚本语言是实现 Linux/UNIX 系统管理及自动化运维所必备的重要工具， Linux/UNIX 系统的底层及基础应用软件的核心大都涉及 Shell 脚本的内容。Shell 脚本是一种通过 Shell 语言编写的脚本程序，在脚本中编写一系列的系统指令，通过执行脚本方便，快速，灵活，自动化的执行一些系统任务，提升我们的工作效率，减少不必要的重复工作。&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;   
 
 
 
