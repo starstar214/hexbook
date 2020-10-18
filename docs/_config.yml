@@ -6,7 +6,7 @@ email: tiny.star@qq.com
 description: "关于程序与设计、黑客与画家 | Hex，Web & Java Lover，Software Engineer | 发现更大的世界"
 keyword: "Hex, 计算机, Linux, Java, Python, 数据库, 开发技巧, 架构师, 个人网站, 互联网"
 url: "https://starstar214.github.io/SR-Notes"              # your host, for absolute URL
-baseurl: ""                             # for example, '/blog' if your blog hosted on 'host/blog'
+baseurl: "/hexbook"                             # for example, '/blog' if your blog hosted on 'host/blog'
 
 # Publish posts or collection documents with a future date.
 future: true
