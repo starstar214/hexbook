@@ -1,6 +1,6 @@
 # Site settings
-title: Hex Note
-SEOTitle: Star的博客 | Hex Blog
+title: Hex Book
+SEOTitle: Hex的笔记 | Hex Book
 header-img: img/home-bg.jpg
 email: tiny.star@qq.com
 description: "关于程序与设计、黑客与画家 | Hex，Web & Java Lover，Software Engineer | 发现更大的世界"
@@ -59,7 +59,7 @@ kramdown:
 
 
 # Disqus settings
-disqus_username: hux
+disqus_username: hex
 
 # Netease settings
 netease_comment: false
