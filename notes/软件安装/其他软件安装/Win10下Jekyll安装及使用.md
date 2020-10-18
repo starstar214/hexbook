@@ -107,5 +107,6 @@ Jekyll 各个目录及作用：
 
 在 GitHub 上，有很多现成的关于 Jekyll 的模板，我们可以选择自己喜欢的进行下载使用。
 
-此处我们使用 https://github.com/Huxpro/huxpro.github.io 上的模板，将此模板下载下来，然后自己进行修改即可。
+此处我们使用黄玄大神的模板：https://github.com/Huxpro/huxpro.github.io ，将此模板下载下来，然后自己进行修改即可。
 
+注意：可能出现404，需要修改url
