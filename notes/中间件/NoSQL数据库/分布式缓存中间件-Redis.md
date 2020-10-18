@@ -2243,7 +2243,7 @@ Redis 集群搭建：此例中搭建三注三从的最基本集群架构。
 
      > 注意：使用 `./redis-trib.rb help` 命令即可查看脚本帮助。
 
-- 使用 *redis-trib.rb* 创建 Redis 集群：
+- 使用 *redis-cli* 创建 Redis 集群：
 
   ~~~shell
   [root@localhost cluster_test]# redis-cli --cluster create 192.168.253.128:7000 192.168.253.128:7001 192.168.253.128:7002 192.168.253.128:7003 192.168.253.128:7004 192.168.253.128:7005 --cluster-replicas 1

@@ -198,7 +198,7 @@
 
 文件为学习过程笔记，内容持续更新。
 
-#### 排版
+#### 内容
 
 笔记内容参考 [中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines/blob/master/README.zh-CN.md) 进行排版，以保证内容的可读性。
 
