@@ -10,9 +10,9 @@
 
 &nbsp;
 
-|             计算机基础             |             网络             |              Linux              |             Java             |          数据库          |           中间件           |         编码实践         |                Python                |           系统架构           |             软件安装             |              后记              |
-| :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :----------------------: | :----------------------------------: | :--------------------------: | :------------------------------: | :----------------------------: |
-| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-linux系统) | [:coffee:](#coffee-java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:bulb:](#bulb-编码实践) | [:bar_chart:](#bar_chart-python语言) | [:hammer:](#hammer-系统架构) | [:airplane:](#airplane-软件安装) | [:black_nib:](#black_nib-后记) |
+|             计算机基础             |             网络             |              Linux              |             Java             |          数据库          |           中间件           |         编码实践         |                Python                |           系统架构           |             后记             |
+| :--------------------------------: | :--------------------------: | :-----------------------------: | :--------------------------: | :----------------------------------: | :------------------------: | :----------------------: | :----------------------------------: | :--------------------------: | :------------------------------: |
+| [:computer:](#computer-计算机基础) | [:cloud:](#cloud-计算机网络) | [:penguin:](#penguin-linux系统) | [:coffee:](#coffee-java语言) | [:floppy_disk:](#floppy_disk-数据库) | [:rocket:](#rocket-中间件) | [:bulb:](#bulb-编码实践) | [:bar_chart:](#bar_chart-python语言) | [:hammer:](#hammer-系统架构) | [:black_nib:](#black_nib-后记) |
 
 &nbsp;&nbsp;
 
@@ -140,23 +140,23 @@
 
 1. 编码规范
 
-2. 项目构建工具
+2. 编码实践
+
+3. 项目工具
+
+   IDEA
 
    [Maven]()
 
    [Gradle]()
 
-3. 版本管理工具
-
    Git
 
    SVN
 
-4. 研发流程管理
+4. 研发流程
 
    Jenkins 持续集成
-
-5. 线上运维部署
 
 ## :bar_chart: Python语言
 
@@ -178,24 +178,6 @@
 2. 集群
 3. 分布式
 
-## :airplane: 软件安装
-
-1. 常用软件安装
-
-2. 中间件安装
-
-    [CentOS 8下安装 Nginx](notes/软件安装/中间件安装/CentOS8下安装Nginx.md)
-
-    [CentOS 8下安装 Redis](notes/软件安装/中间件安装/CentOS8下安装Redis.md)
-
-3. 数据库安装
-
-   [CentOS 8 下安装 MySQL](notes/软件安装/数据库安装/CentOS8下MySQL安装手册.md)
-   
-4. 其他软件安装
-
-    [Win10 下 Jekyll 安装及使用](notes/软件安装/其他软件安装/Win10下Jekyll安装及使用.md)
-
 ## :black_nib: 后记
 
 文件为学习过程笔记，内容持续更新。
@@ -212,7 +194,4 @@
 
 项目静态网页根据 [Jekyll](http://jekyllcn.com/) 生成，可以直接通过 [MarkDown](http://markdown.p2hp.com/) 文本生成静态网页，支持自定义样式。
 
-**Jekyll** 安装及使用见：[Win10 下 Jekyll 安装及使用](notes/软件安装/其他软件安装/Win10下Jekyll安装及使用.md)。
-
-
-
+网页样式参考自 GitHub 项目：https://github.com/Huxpro/huxpro.github.io

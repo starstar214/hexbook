@@ -9,19 +9,20 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 **目录**
 
 1. [NoSQL 与 Redis](#1nosql与redis)
-2. [Redis 基础知识与命令](#2redis基础知识与命令)
-3. [Redis 五大数据类型](#3redis五大数据类型)
-4. [Redis 特殊数据类型](#4redis特殊数据类型)
-5. [Redis 事务及 WATCH 锁](#5redis事务及watch锁)
-6. [使用 Jedis 操作 Redis](#6使用jedis操作redis)
-7. [SpringBoot 整合 Redis](#7springboot整合redis)
-8. [使用 Redis 实现分布式锁](#8使用redis实现分布式锁)
-9. [Redis 配置文件](#9redis配置文件)
-10. [持久化之 RDB 与 AOF](#10持久化之rdb与aof)
-11. [Redis 发布订阅](#11redis发布订阅)
-12. [Redis 主从与哨兵](#12redis主从与哨兵)
-13. [Redis 集群模式](#13redis集群模式)
-14. [Redis 与缓存](#14Redis与缓存)
+2. [Redis 安装](#2redis安装)
+3. [Redis 基础知识与命令](#3redis基础知识与命令)
+4. [Redis 五大数据类型](#4redis五大数据类型)
+5. [Redis 特殊数据类型](#5redis特殊数据类型)
+6. [Redis 事务及 WATCH 锁](#6redis事务及watch锁)
+7. [使用 Jedis 操作 Redis](#7使用jedis操作redis)
+8. [SpringBoot 整合 Redis](#8springboot整合redis)
+9. [使用 Redis 实现分布式锁](#9使用redis实现分布式锁)
+10. [Redis 配置文件](#10redis配置文件)
+11. [持久化之 RDB 与 AOF](#11持久化之rdb与aof)
+12. [Redis 发布订阅](#12redis发布订阅)
+13. [Redis 主从与哨兵](#13redis主从与哨兵)
+14. [Redis 集群模式](#14redis集群模式)
+15. [Redis 与缓存](#15Redis与缓存)
 
  
 
@@ -84,12 +85,62 @@ NoSQL 数据库分类：
 - 图形数据库：使用灵活的图形模型存储数据（不是存图片，是存关系的数据库）。常见的数据库产品有：Neo4j，InfoGrid。
 
   应用场景：社交网络，推荐系统等，专注于构建关系图谱。
-
- 
+  
+  
 
 ---
 
-#### 2.Redis基础知识与命令
+#### 2.Redis安装
+
+1. 查询 Redis 版本
+
+   ```shell
+   [root@localhost ~]# dnf list redis
+   ```
+
+2. 安装 Redis
+
+   ~~~shell
+   [root@localhost ~]# dnf install redis
+   ~~~
+
+3. 查看 Redis 相关文件位置
+
+   ~~~shell
+   [root@localhost ~]# rpm -ql redis
+   ~~~
+
+   - 配置文件位置：*/etc* 下，***redis-sentinel.conf*** 文件以及 ***redis.conf*** 文件。
+   - 运行脚本位置：*/usr/bin/* 下，***redis-benchmark***（自带的Redis性能测试工具），***redis-check-aof***，***redis-check-rdb***，***redis-cli***，***redis-sentinel***（哨兵启动脚本），***redis-server***。
+   - 默认日志目录：*/var/log/redis/*，默认为此目录下的 ***redis.log*** 文件。
+
+4. Redis 基本命令
+
+   ```shell
+   [root@localhost ~]# redis-server /ect/redis.conf           启动Redis，非后台启动，退出命令行后服务停止
+   [root@localhost ~]# redis-server /ect/redis.conf &         后台启动Redis
+   [root@localhost redis]# redis-cli     进入Redis客户端,默认连接localhost的6379端口
+   127.0.0.1:6379> ping
+   PONG
+   127.0.0.1:6379> exit
+   [root@localhost redis]# redis-cli shutdown    关闭Redis服务
+   2836:M 14 Sep 2020 01:04:13.294 # User requested shutdown...
+   2836:M 14 Sep 2020 01:04:13.294 * Saving the final RDB snapshot before exiting.
+   2836:M 14 Sep 2020 01:04:13.295 * DB saved on disk
+   2836:M 14 Sep 2020 01:04:13.296 # Redis is now ready to exit, bye bye...
+   [1]+  已完成               redis-server  (工作目录: /var/lib)
+   (当前工作目录：/var/log/redis)
+   ```
+
+   > 启动 Redis 时需要添加 & 符号使 Redis 后台运行，也可以修改配置文件 daemonize 为 yes 以守护进程的方式启动。
+   >
+   > 启动时须指定配置文件，否则 Redis 会使用默认配置（非默认配置文件），某些配置项会不同于默认配置文件。
+
+
+
+---
+
+#### 3.Redis基础知识与命令
 
 *Redis*（**Re**mote **Di**ctionary **S**erver )，即远程字典服务；Redis 使用 ANSI C 语言编写，支持网络，可基于内存亦可持久化的日志型、Key-Value数据库，
 
@@ -245,7 +296,7 @@ OK
 
 ---
 
-#### 3.Redis五大数据类型
+#### 4.Redis五大数据类型
 
 1. 字符串类型
 
@@ -548,7 +599,7 @@ OK
 
 ---
 
-#### 4.Redis特殊数据类型
+#### 5.Redis特殊数据类型
 
 地理位置 ***Geospatial***：*Geospatial* 是 Redis 3.2 版本推出的一个新功能，用来记录地理位置的名称和经纬度，可以用来推算两地之间的距离，方圆距离内的地理信息等，其数据结构为一种特殊 Zset，值存储地理名，score 存储经度和纬度信息。
 
@@ -698,7 +749,7 @@ OK
 
 ---
 
-#### 5.Redis事务及WATCH锁
+#### 6.Redis事务及WATCH锁
 
 Redis 事务的本质是一组命令的集合。事务支持一次执行多个命令，一个事务中所有命令都会被序列化。在事务执行过程，会按照顺序串行化执行队列中的命令，其他客户端提交的命令请求不会插入到事务执行命令序列中。
 
@@ -804,7 +855,7 @@ QUEUED
 
 ---
 
-#### 6.使用Jedis操作Redis
+#### 7.使用Jedis操作Redis
 
 Jedis 是 Redis 官方推荐的 Java 连接开发工具，使用 Java 来操作 Redis，Redis 所有命令都可以通过 Jedis 执行。
 
@@ -903,7 +954,7 @@ public class JedisPoolConfig extends GenericObjectPoolConfig {
 
 ---
 
-#### 7.SpringBoot整合Redis
+#### 8.SpringBoot整合Redis
 
 新建 *SpringBoot* 项目，选择 
 
@@ -1076,7 +1127,7 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 
 ---
 
-#### 8.使用Redis实现分布式锁
+#### 9.使用Redis实现分布式锁
 
 为了防止分布式系统中的多个进程之间相互干扰，我们需要一种分布式协调技术来对这些进程进行调度，而这个分布式协调技术的核心就是分布式锁。
 
@@ -1171,7 +1222,7 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 
 ---
 
-#### 9.Redis配置文件
+#### 10.Redis配置文件
 
 默认安装的 Redis 的配置文件位于 ***/etc/redis.conf*** ：[Example](data/redis.conf)。
 
@@ -1433,7 +1484,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
 ---
 
-#### 10.持久化之RDB与AOF
+#### 11.持久化之RDB与AOF
 
 RDB：**R**edis **D**ata**B**ase，在指定的时间间隔内将内存中的数据集以快照的形式保存在磁盘上，是默认的持久化方式，默认的文件名为 ***dump.rdb***，恢复时将快照文件放入到配置文件中 dir 配置的目录下，Redis 就会自动读取文件当中的数据到内存中。
 
@@ -1571,7 +1622,7 @@ RDB 和 AOF 使用建议：
 
 ---
 
-#### 11.Redis发布订阅
+#### 12.Redis发布订阅
 
 Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）发送消息，订阅者（sub）接收消息，每一个 Redis 客户端可以订阅任意数量的频道。订阅者订阅一个或多个频道，发布者发送消息到频道，每个该频道的订阅者都会接收到该消息。
 
@@ -1650,7 +1701,7 @@ Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）�
 
 ---
 
-#### 12.Redis主从与哨兵
+#### 13.Redis主从与哨兵
 
 Redis 主从复制：将一台 Redis 服务器的数据，复制到其他的 Redis 服务器。前者称为主节点-master，后者称为从节点-slave，数据的复制是单向的，只能由主节点到从节点，master 以写为主，slave 以读为主。
 
@@ -2102,7 +2153,7 @@ SpringBoot 与 Redis 集成 *application.properties* 配置文件：
 
 ---
 
-#### 13.Redis集群模式
+#### 14.Redis集群模式
 
 通过主从复制与哨兵模式，能够有效的分担单台 Redis 服务器的负载，并基本实现 Redis 服务器的高可用，但是此种方式多个服务器存储同一份数据，大大的浪费了服务器资源，当服务器内存使用达到上限时，无法进行横向扩展（无法通过新增服务器扩大内存空间），纵向扩展（在线扩容）也会变得及其复杂（需要扩展多台服务器内存容量，并且涉及到主从切换相关操作），单个节点的性能压力问题仍然没有解决。
 
@@ -2375,4 +2426,4 @@ Redis 集群搭建：此例中搭建三注三从的最基本集群架构。
 
 ---
 
-#### 14.Redis与缓存
+#### 12.Redis与缓存
