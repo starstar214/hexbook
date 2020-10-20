@@ -4,7 +4,6 @@ subtitle: "「Linux」Shell Programming"
 layout: post
 author: "Hex"
 header-img: "img/post-bg-coffee.jpg"
-header-style: text
 tags:
   - Linux
   - Shell 编程
