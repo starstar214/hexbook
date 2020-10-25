@@ -14,6 +14,13 @@ tags:
 
 
 
+Redis 高可用常见的两种方式：
+
+- 主从复制（Replication-Sentinel 模式）
+- Redis集群（Redis-Cluster 模式）
+
+
+
 ## Redis 主从复制
 
 Redis 主从复制：将一台 Redis 服务器的数据，复制到其他的 Redis 服务器。前者称为主节点-master，后者称为从节点-slave，数据的复制是单向的，只能由主节点到从节点，master 以写为主，slave 以读为主。
