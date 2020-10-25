@@ -3,7 +3,7 @@ title: "Redis 高可用"
 subtitle: "「Redis」哨兵与集群"
 layout: post
 author: "Hex"
-date:  2020-10-25
+date:  2020-10-25 18:00:00
 header-img: "img/post-bg-universe.jpg"
 catalog:    true
 tags:
