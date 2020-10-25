@@ -22,7 +22,6 @@ Redis 文档：http://www.redis.cn/，https://www.redis.net.cn/
 12. [Redis 发布订阅](#12redis发布订阅)
 13. [Redis 主从与哨兵](#13redis主从与哨兵)
 14. [Redis 集群模式](#14redis集群模式)
-15. [Redis 与缓存](#15Redis与缓存)
 
  
 
@@ -2420,10 +2419,4 @@ Redis 集群搭建：此例中搭建三注三从的最基本集群架构。
 
   这是由于在创建 Redis 集群时，使用了 `127.0.0.1` 地址，注意：在创建集群时，只能使用机器的真实 IP 地址，否则 *Lettuce* 无法连接到 Redis 集群。
 
-- 配置号 RedisTemplate 后便可以正常使用。
-
-
-
----
-
-#### 12.Redis与缓存
+- 配置好 RedisTemplate 后便可以正常使用。
