@@ -286,7 +286,7 @@ OK
 
    字符串数据相关命令：
 
-   ~~~mysql
+   ~~~shell
    127.0.0.1:6379> get name
    "niko"
    127.0.0.1:6379> APPEND name oo       #字符串追加拼接，如果当前 key 不存在，则相当于 set key
@@ -308,7 +308,7 @@ OK
 
    整型数据相关命令：
 
-   ~~~mysql
+   ~~~shell
    127.0.0.1:6379> set views 0          #设置整型数据
    OK
    127.0.0.1:6379> INCR views           #views 自增 1
@@ -329,7 +329,7 @@ OK
 
    其他命令：
 
-   ~~~mysql
+   ~~~shell
    127.0.0.1:6379> setex gender 20 male   #设置值同时设置过期时间
    OK
    127.0.0.1:6379> get gender
@@ -365,7 +365,7 @@ OK
 >
 > 1. 使用 json 字符串储存对象
 >
->    ~~~mysql
+>    ~~~shell
 >    127.0.0.1:6379> set user:1 {name:niko,age:25,gender:male}
 >    OK
 >    127.0.0.1:6379> get "user:1"
@@ -374,7 +374,7 @@ OK
 >
 > 2. 设计 key 的值使用 mset 来储存对象
 >
->    ~~~mysql
+>    ~~~shell
 >    127.0.0.1:6379> mset user:1:name niko user:1:age 25 user:1:gender male
 >    OK
 >    127.0.0.1:6379> mget user:1:age user:1:gender
