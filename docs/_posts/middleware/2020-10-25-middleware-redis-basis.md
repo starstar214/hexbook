@@ -943,9 +943,9 @@ redis.conf 默认单位介绍：单位大小写不敏感。
      always-show-logo yes
      ~~~
 
-- ***SNAPSHOTTING***：RDB 快照参数设置，详情见第 10 章节。
+- ***SNAPSHOTTING***：RDB 快照参数设置，详情见：[持久化之 RDB 与 AOF](#持久化之-rdb-与-aof)
 
-- ***REPLICATION***：主从复制相关配置，详情见 Redis 高级：[Redis 高级使用](#12redis主从与哨兵)
+- ***REPLICATION***：主从复制相关配置，详情见：[Redis 主从复制](https://starstar214.github.io/hexbook/2020/10/25/middleware-redis-available/#redis-主从复制)
 
 - ***SECURITY***：安全相关配置。
 
@@ -1031,7 +1031,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
     replica-lazy-flush no
     ~~~
 
-- ***APPEND ONLY MODE***：AOF相关配置，详情见第 10 章节：[持久化之 RDB 与 AOF](#持久化之 rdb 与 aof)。
+- ***APPEND ONLY MODE***：AOF相关配置，详情见：[持久化之 RDB 与 AOF](#持久化之-rdb-与-aof)
 
 - ***LUA SCRIPTING***：Lua 脚本的相关配置，允许 Lua 脚本执行的的最大好毫秒数
 
@@ -1041,7 +1041,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
     设置为 0 或负值时，Lua 脚本可以无警告的无限执行。
 
-- ***REDIS CLUSTER***：Redis 集群配置，详情见 Redis 高级：[Redis 集群模式](#13redis集群模式)
+- ***REDIS CLUSTER***：Redis 集群配置，详情见：[Redis 集群模式](https://starstar214.github.io/hexbook/2020/10/25/middleware-redis-available/#redis-集群模式)
 
 14. ***CLUSTER DOCKER/NAT support***：当 Redis cluster 服务经过 NAT 限制或端口被转发时（如 Docker 容器），需要配置集群的节点位置，否则 Redis cluster 地址不能被主机发现。
 
