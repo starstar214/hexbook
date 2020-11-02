@@ -93,6 +93,8 @@
 3. 开源框架
    
     [安全管理框架-Shiro](notes/Java语言/开源框架/安全管理框架-Shiro.md)
+    
+    [SpringBoot 核心基础](notes/Java语言/开源框架/SpringBoot核心基础.md)
 
 ## :floppy_disk: 数据库
 
