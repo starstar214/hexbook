@@ -66,7 +66,7 @@ Spring，SpringBoot 与 SpringCloud：
 
 ***SpringBoot***：SpringBoot 是 Spring 框架的扩展，它消除了设置 Spring 应用程序所需的复杂例行配置，帮助我么快速的搭建应用，简化开发过程。
 
-***SpringCloud***：，SpringCloud 是一个基于 SpringBoot 实现的微服务解决方案，主要用于微服务架构应用的开发。
+***SpringCloud***：SpringCloud 是一个基于 SpringBoot 实现的微服务解决方案，主要用于微服务架构应用的开发。
 
 
 
@@ -335,7 +335,7 @@ public @interface EnableAutoConfiguration {
 
     同样地，此处获取到 `spring.factories` 中与 *org.springframework.boot.autoconfigure.AutoConfigurationImportFilter* 相关的过滤器组件，然后通过过滤器过滤出第一步获取到的候选自动配置，完成整个项目的自动配置。
 
-- 在筛选出了自动配置类后，由自动配置类帮助我们进行自动配置（以 *EmbeddedWebServerFactoryCustomizerAutoConfiguration* 为例）
+- 加载了自动配置类后，由自动配置类帮助我们进行自动配置（以 *EmbeddedWebServerFactoryCustomizerAutoConfiguration* 为例）
 
   ~~~java
   @Configuration(proxyBeanMethods = false)
@@ -351,22 +351,18 @@ public @interface EnableAutoConfiguration {
   ~~~java
   @ConfigurationProperties(prefix = "server", ignoreUnknownFields = true)
   public class ServerProperties {
-      
-  	/**
-  	 * Server HTTP port.
-  	 */
   	private Integer port;
       
       ...
   }
   ~~~
-
+  
   通过 `@ConfigurationProperties` 注解将配置信息中以 *server* 开头的配置信息与此类中的属性进行绑定，然后进行配置。
-
+  
   > SpringBoot 容器启动时，会去项目的所有 jar 包下的 `META-INF` 目录下寻找 `spring-configuration-metadata.json` 文件，文件中包含了 SpringBoot 为我们所做的默认配置信息，如：
-  >
+>
   > ~~~json
-  > {
+> {
   >     "name": "server.port",
   >     "type": "java.lang.Integer",
   >     "description": "Server HTTP port.",
@@ -381,22 +377,295 @@ public @interface EnableAutoConfiguration {
 
 #### 4.SpringBoot 配置
 
+SpringBoot 使用一个全局的配置文件，配置文件名是固定的：***application.properties***，***application.yml***。
+
+我们可以在配置文件当中修改自动配置的默认值，SpringBoot 启动时就会根据配置文件中的相关信息进行应用配置。
+
+配置文件放在 ***src/main/resources*** 目录或者类路径的 ***config*** 目录下。
 
 
 
+> 在 IDEA 中，properties 文件的默认字符集为 GBK，如果配置项有中文则会出现乱码，可以在 Editor --> File Encodings 中更改默认字符集。
 
 
 
+*YAML*（**Y**AML **A**in't a **M**arkup **L**anguage / **Y**et **A**nother **M**arkup **L**anguage），YAML 不是一种标记语言，但仍是另外的一种标记语言。
+
+YAML 的语法和其他高级语言类似，并且可以简单表达清单、散列表，标量等数据形态。它使用。空格进行缩进，特别适合用来表达或编辑数据结构、各种配置文件、倾印调试内容、文件大纲等。YAML 的配置文件后缀为 ***.yml***，如：***application.yml*** 。
+
+配置实例：
+
+~~~yaml
+server:
+ port: 8080
+~~~
+
+YAML 的基本语法：
+
+- 使用空格表示层级关系，空格可以多个，但同一层级的元素一定要左对齐。
+- 对象键值对使用冒号加空格表示，**key: value**。
+- 大小写敏感。
+- 使用 **#** 表示注释。
+
+YAML 支持的数据类型：
+
+- 字面量：数字、字符串、布尔和日期键值对，如：***key: value***，默认字符串不需要加双引号（也可以加）并支持转义符；如果给字符串加上单引号，单引号中的特殊字符将会被转义为普通字符数据。
+
+- 对象：对象有两种写法
+
+  - 键值对集合：
+
+    ~~~yaml
+    user:
+     name: James
+     age: 25
+    ~~~
+
+  - 行内写法：
+
+    ~~~yaml
+    user: {name: James,age: 25}
+    ~~~
+
+- 数组：数组同样也有两种写法
+
+  - 写法一：
+
+    ~~~yaml
+    pets: 
+      - dog
+      - cat
+      - pig
+    ~~~
+
+  - 行内写法：
+
+    ~~~yaml
+    pets: [dog,cat,pig]
+    ~~~
+
+> YAML 文档块：YAML 支持将一个文档的内容进行切分，文档块之间使用 3 个横线进行切分
+>
+> ~~~yaml
+> server:
+>  port: 8081
+>   
+> ---
+> 
+> server:
+>  port: 8083
+> ~~~
 
 
 
+SpringBoot 配置文件中值的获取：在 SpringBoot 中，可以通过 *@ConfigurationProperties*，*@Value* 注解获取配置文件中的值。
+
+在开发中，我们可以引入 `spring-boot-configuration-processor`，可以帮助我们处理配置信息，在编写配置文件时给出提示等。
+
+~~~xml
+<dependency>
+   <groupId>org.springframework.boot</groupId>
+   <artifactId>spring-boot-configuration-processor</artifactId>
+   <optional>true</optional>
+</dependency>
+~~~
 
 
 
+- `@ConfigurationProperties`：标注在类中，将配置文件中的属性值与注入到类的同名属性值中。
+
+  ```java
+  @Data
+  @Component
+  @ConfigurationProperties(prefix = "user")
+  public class SysUser {
+      private String username;
+      private LocalDate birthday;
+      private List<String> pets;
+  	//将字符串绑定到 LocalDate 属性上
+      public void setBirthday(String date){
+          this.birthday = LocalDate.parse(date);
+      }
+  }
+  ```
+
+  - 要获取配置文件中的属性值，标注此注解的类必须加入到 SpringBoot 容器中进行管理。
+  - 在 *@ConfigurationProperties* 注解中必须指定属性前缀，容器才能识别对应属性。
+  - 当 JavaBean 中含有复杂对象属性时，可以改写属性的 set 方法将配置文件中的值绑定到该属性上。
+
+  配置文件：
+
+  ```yaml
+  user:
+    username: Niko
+    birthday: 1920-11-08
+    pets:
+      - dog
+      - cat
+  ```
+
+- `@Value`：标注在属性上，将为该属性赋值。
+
+  ```java
+  @Data
+  @Component
+  @ConfigurationProperties(prefix = "user")
+  public class SysUser {
+      @Value("${user.username}")
+      private String username;
+      @Value("#{T(java.time.LocalDate).parse('${user.birthday}')}")
+      private LocalDate birthday;
+      @Value("${user.pets}")
+      private List<String> pets;
+  }
+  ```
+
+  配置文件：
+
+  ```yaml
+  user:
+    username: Niko
+    birthday: 1995-11-08
+    pets: dog,cat
+  ```
+
+  ***@Value*** 中支持的写法：
+
+  - 字面量（支持运算符）：@Value("hello")，@Value("5+3")，@Value("5 > 3 ? 1 : 0") 等。
+  - ${} + 属性值：${user.username}，与配置文件中的属性值绑定。
+  - #{} + ***spel*** 表达式：[spel 官网地址](https://docs.spring.io/spring-framework/docs/4.2.x/spring-framework-reference/html/expressions.html)，在 spel 表达式中，我们可以使用容器中的组件，调用其方法，也可以调用静态方法，静态变量，同时也支持运算符，可以获取数组元素 `#{array[0]}`，还可以直接 new 对象进行方法调用 `#{new Xxx().xxx()}`。
+
+  > `@Value` 无法识别 yaml 配置文件中的数组等复杂数据结构，只能将数组写为逗号分割的字符串进行识别，或者使用 *ConfigurationProperties* 进行注入。
+
+ *@ConfigurationProperties* 与 *@Value* 的区别：
+
+| 功能                                         | *@ConfigurationProperties* | *@Value* |
+| -------------------------------------------- | -------------------------- | -------- |
+| 属性松散绑定（下划线，短横线，驼峰相互转换） | 支持                       | 不支持   |
+| spel 表达式                                  | 不支持                     | 支持     |
+| JSR303 数据校验                              | 支持                       | 不支持   |
+| 复杂数据类型封装                             | 支持                       | 不支持   |
 
 
 
+外部配置文件引入：
 
----
+- `@PropertySource(value = {"classpath:user.properties"})`：将外部的配置文件与当前类进行绑定，然后配合 *@ConfigurationProperties*，*@Value* 进行使用。
 
-#### 6.SpringBoot Banner
+  ```java
+  @Data
+  @Component
+  @ConfigurationProperties(prefix = "user")
+  @PropertySource(value = {"classpath:user.properties"})
+  public class SysUser {
+      private String username;
+      private LocalDate birthday;
+      private List<String> pets;
+  
+      public void setBirthday(String date){
+          this.birthday = LocalDate.parse(date);
+      }
+  }
+  ```
+
+  此时 user 的相关配置写在了单独的 *user.properties* 文件中。
+
+- `@ImportResource(locations = {"classpath:beans.xml"})`：引入 spring 的配置文件（只能是 xml 文件），将此注解标注在配置类上，该配置文件就会生效。
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+      <beans>
+          <bean class="com.star.demo.config.SysUser" id="myUser">
+              <property name="username" value="star"/>
+              <property name="birthday" value="1995-09-20"/>
+              <property name="pets" value="dog,cat,pig"/>
+          </bean>
+      </beans>
+  </beans>
+  ```
+
+  主配置类：
+
+  ```java
+  @SpringBootApplication
+  @ImportResource(locations = {"classpath:beans.xml"})
+  public class DemoApplication {
+  
+     public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+     }
+  
+  }
+  ```
+
+  此时，容器中就添加进来了 id 为 myUser 的组件（在 SpringBoot 中，可以直接使用 @Bean 向容器中添加组件）。
+
+
+
+配置文件占位符：在 properties 或 yml 配置文件中，我们可以使用 ***${}*** 来做配置文件占位符使用。
+
+- 使用随机数函数：
+
+  ```properties
+  user.birthday=1995-11-${random.int(10,30)}
+  ```
+
+  还有另外的随机函数，在 IDEA 中会进行提示。
+
+- 使用其他配置项：
+
+  ```properties
+  user.username=Niko
+  user.description=${user.username} is an excellent programmer
+  ```
+
+- 指定默认值：
+
+  ```properties
+  user.description=${user.username:James} is an excellent programmer
+  ```
+
+  使用当未定义 user.username 的值时，则使用 James 作为此表达式的值。
+
+
+
+SpringBoot 多配置文件 Profile：Profile 是 Spring 对不同环境提供不同配置功能的支持，可以通过激活、指定参数等方式快速切换环境。
+
+可以使用多文件（application-xxx.properties）或多文档块（application.yml）的方式实现多环境：
+
+指定方式：
+
+```properties
+spring.profiles=prod
+```
+
+激活方式：
+
+- 在主配置文件中或者 yml 文件的第一个文档块中进行指定
+
+  ~~~properties
+  spring.profiles.active=prod
+  ~~~
+
+- 使用命令行参数：
+
+  ~~~shell
+  [root@localhost ~]# nohup java -jar demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+  ~~~
+
+- 使用 jvm 参数：
+
+  ~~~properties
+  –Dspring.profiles.active=prod
+  ~~~
+
+  
+
+SpringBoot 配置加载位置：
+
+内部配置：
+
+- 
