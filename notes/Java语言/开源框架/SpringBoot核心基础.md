@@ -175,13 +175,13 @@ Spring，SpringBoot 与 SpringCloud：
 
 ---
 
-#### 3.Starter 与 AutoConfiguration
+#### 3.SpringBoot Starter
 
 在 SpringBoot 项目中包含了许许多多的 spring-boot-starter-xxx，我们称之为 SpringBoot 场景启动器，SpringBoot 将所有的功能抽取成一个个的场景启动器，我们只需要在项目中引入这些 *starter*，相关场景的依赖就都会导入进来并且统一由 SpringBoot 帮助我们进行版本管理。
 
 以 `spring-boot-starter-web` 为例，在此 *starter* 的 pom 文件中，SpringBoot 会帮助我们导入 json，tomcat，web，webmvc 等相关依赖，我们无需额外导入其他依赖即可搭建一个基础的 web 应用。
 
-spring-boot-starter-web 的 pom.xml 引入的相关依赖：
+例：spring-boot-starter-web 的 pom.xml 引入的相关依赖：
 
 ~~~xml
 <dependencies>
@@ -220,7 +220,11 @@ spring-boot-starter-web 的 pom.xml 引入的相关依赖：
 
 
 
-SpringBoot 帮助我们引入相关依赖后，还会进一步帮助我们进行自动配置：
+---
+
+#### 4.SpringBoot AutoConfiguration
+
+SpringBoot 帮助我们引入相关依赖后，就会进一步帮助我们进行自动配置：
 
 在 SpringBoot 主程序类上，有一个注解 `@SpringBootApplication`：
 
@@ -375,7 +379,7 @@ public @interface EnableAutoConfiguration {
 
 ---
 
-#### 4.SpringBoot 配置
+#### 5.SpringBoot 配置
 
 SpringBoot 使用一个全局的配置文件，配置文件名是固定的：***application.properties***，***application.yml***。
 
@@ -666,6 +670,62 @@ spring.profiles=prod
 
 SpringBoot 配置加载位置：
 
+官方文档介绍：[官方文档](https://docs.spring.io/spring-boot/docs/2.3.4.RELEASE/reference/htmlsingle/#boot-features-external-config)
+
 内部配置：
 
 - 
+
+
+
+
+
+
+
+---
+
+#### 6.SpringBoot 日志
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+#### 7.SpringBoot Web
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+#### 8.SpringBoot 数据访问
