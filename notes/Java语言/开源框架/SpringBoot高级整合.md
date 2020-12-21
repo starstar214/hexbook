@@ -117,9 +117,9 @@ SpringBoot 中使用缓存：
 
 - ***cacheResolver***：指定缓存解析器，与 *cacheManager* 二选一。
 
-- ***condition***：*condition* 指定的条件成立的情况下才缓存，与 *unless* 相反，可以使用 `#result`。
+- ***condition***：对方法的参数进行判断，当 *condition* 指定的条件成立的情况下才缓存，与 *unless* 相反，不可使用 `#result`。
 
-- ***unless***：*unless* 指定的条件成立时就不会缓存，与 *condition* 相反，可以使用 `#result`。
+- ***unless***：对方法的执行结果进行判断，*unless* 指定的条件成立时就不会缓存，与 *condition* 相反，可以使用 `#result`。
 
 简单使用：
 
@@ -188,3 +188,31 @@ public class CacheConfiguration {
 注意：此方法是 2.x 版本的 *CacheManager* 创建方法。
 
 如果加入的 RedisCacheManager 覆盖了元容器中的 redisCacheManager，则缓存注解的 cacheManager 属性可省略，否则需要指定自定义的 CacheManager ID。
+
+
+
+> 由于 Spring Cache 的实现原理是基于 AOP 的动态代理实现的，即都在方法调用前后去获取方法的名称、参数、返回值，然后进行缓存。如果是类的内部调用则是直接通过 this 调用而不是代理对象的调用,  所以 AOP 失效，缓存注解失效。
+>
+> 解决方法：从 ***Spring 4.3*** 开始，可以通过通过注入 self，再通过 self 调用方法即可解决此问题。
+>
+> ~~~java
+> @Slf4j
+> @Service
+> public class EmployeeService {
+> 
+>     @Autowired
+>     private EmployeeMapper mapper;
+>     @Autowired
+>     private EmployeeService self;
+> 
+>     @Cacheable(value = "employee", key = "#id")
+>     public Employee getEmployeeById(int id) {
+>         return mapper.getEmployeeById(id);
+>     }
+> 
+>     public void demo(int id) {
+>         //通过 self 自我调用
+>         Employee employee = self.getEmployeeById(id);
+>     }
+> }
+> ~~~
