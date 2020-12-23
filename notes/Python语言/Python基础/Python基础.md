@@ -9,6 +9,8 @@ Python 官网：https://www.python.org/
 1. [计算机基础知识](#1计算机基础知识)
 2. [Python 简介](#2Python 简介)
 3. [Python 基本语法](#3Python 基本语法)
+4. [Python 数据类型](#4Python 数据类型)
+5. [Python 运算符](#5Python 运算符)
 
 
 
@@ -355,13 +357,27 @@ Python 开发工具 IDLE
 **PyCharm 的安装及使用**
 
 1. 在官网下载 PyCharm 并安装：https://www.jetbrains.com/pycharm/download/other.html
+
 2. 双击 PyCharm 运行，点击 `Create New Project` 创建新项目。
+
 3. 选择 `Pure Python` 创建一个简单的纯 Python 项目，在 Location 处输入项目存放位置。
+
 4. 展开 `Project Interpreter`，为项目指定一个独立的 Python 解释器（也可直接使用默认值）。
+
 5. 点击 `create` 创建项目。
+
 6. 右键左侧窗口的项目名 --> 选择 New --> 选择 Python File --> 输入文件名创建 Python 文件。
+
 7. 编写 Python 文件内容，点击顶部工具栏上的 Run 运行编写的 Python 文件。
-8. 如果控制台输出正常，则简单的 Python 项目搭建完成。
+
+   ~~~python
+   # Python 的输出语句
+   print("Hello Python!")
+   # Python 的 print 方法可以输出多个参数，输出时将会自动在每一个参数之间添加空格
+   print("Python is", 26, "years old.")
+   ~~~
+
+8. 控制台输出正常，PyCharm 的安装完成。
 
 
 
@@ -413,18 +429,6 @@ Python 开发工具 IDLE
 
 5. 在 Python 中使用 `#` 来表示单行注释，# 后的内容都属于注释，注释的内容将会被解释器所忽略（习惯上 # 后边跟一个空格）。
 
-   Python 的多行注释使用 `'''` 或 `"""` 表示
-
-   ~~~python
-   '''
-    单引号表示的多行注释
-   '''
-   
-   """
-    双引号表示的多行注释
-   """
-   ~~~
-
    
 
 **Python 变量**
@@ -437,7 +441,7 @@ Python 开发工具 IDLE
 
 ​	变量可以用来保存字面量，变量中保存的字面量是不定的，变量本身没有任何意思，根据不同的字面量表示不同的意思。
 
-​	在 Python 中使用变量不需要定义，直接为变量赋值即可。
+​	在 Python 中使用变量不需要定义，直接为变量赋值即可，如：`a = "123"`
 
 ​	不能使用没有进行过赋值的变量。
 
@@ -480,34 +484,318 @@ Python 开发工具 IDLE
 
    - 类名：使用帕斯卡命名法，内部类使用额外的下划线开头，如：MyClass，_InnerClass
 
-   - 函数：使用下划线命名法，如：example_function
+   - 函数&方法：使用下划线命名法，如：example_function
 
-   - 函数参数：使用下划线命名法，同时总使用 `self` 作为实例方法的第一个参数，总使用 `cls` 作为类方法的第一个参数，如：function_param，self，cls
+     ​	类内部函数命名，使用单下划线开头（该函数可被继承访问）。
 
-   - 
+     ​	类内部私有函数命名，使用双下划线开头（该函数不可被继承访问）。
 
-     
+   - 函数&方法的参数：使用下划线命名法，同时总使用 `self` 作为实例方法的第一个参数，总使用 `cls` 作为类方法的第一个参数，如：function_param，self，cls
 
-     
-     
+   - 变量：使用下划线命名法，同时因为 Python 是动态类型语言，所以变量名不应带有类型信息，如 iValue，names_list 等都是不好的命名。
 
+     ​	类内部变量命名，使用单下划线开头（该变量可被继承访问）。
 
+     ​	类内部私有变量命名，使用双下划线开头（该变量不可被继承访问）。
 
+   - 异常：使用帕斯卡命名法，同时以 `Error` 结尾，如：NameError
 
+   - 常量：使用下划线命名法，但是常量名所有的字母均大写，如：MAX_OVERFLOW
 
-
-
-**Python 运算符**
-
-
-
-
-
-
-
-
+> Python 中下划线的含义
+>
+> 1. 单前导下划线：\_var、\_function，它有一个约定俗成的含义：以单个下划线开头的变量或方法仅供内部使用；它只是对程序员的一个提示， 程序的行为不会受其影响。
+>
+> ​	注：在使用通配符导入模块时，以单下划线开头的变量或方法不会导入，常规导入不受影响（我们应该尽量避免通配符导入）。
+>
+> 2. 单末尾下划线：var\_、function\_，当一个变量的最合适的名称已经被一个关键字所占用，此时可以附加一个下划线来解决命名冲突，如：class\_
+>
+> 3. 双前导下划线：\_\_var、\_\_function，双下划线前缀会导致 Python 解释器重写属性名称，在类被扩展的时候不容易与子类中的命名产生冲突。
+>
+> ​	注：使用此种方式命名时，如果你创建了一个子类，那么你将不能轻易地覆写父类中的方法或变量。
+>
+> 4. 双前导和双末尾下划线：\_\_var\_\_，使用这种用法表示 Python 中特殊的方法或变量，如：\_\_init\_\_，\_\_all\_\_ 等。
+>
+> 5. 单下划线：\_，使用独立下划线是用作一个名字，表示某个变量是临时的或无关紧要的，如使用 for _ in range(10): 用来循环。
 
 
 
 ---
+
+### 4.Python 数据类型
+
+**数值**
+
+在 Python 中，数值分为了三种：整数，浮点数，复数
+
+整数：在 Python 中所有的整数都是 int 类型，如：10，-5 等，整数的大小没有限制，可以是任意大小。
+
+​	在书写时，如果整数长度过大，可以使用下划线做分隔符，如：10\_000
+
+​	其他进制的整数写法：
+
+​	1.二进制（Binary）：以 0b 开头，如：0b101101
+
+​	2.八进制（Octal）：以 0o 开头，如：0o1574
+
+​	3.十六进制（Hexadecimal）：以 0x 开头，如：ox51ac8
+
+​	注意：为了避免混淆，Python 总会以十进制输出数字（所有语言都如此）。
+
+浮点数：在 Python 中所有的小数都是 float 类型，如：0.78，1.22
+
+​	对浮点数进行运算时，可能会得到一个不精确的结果，可以通过模块 decimal 进行计算。
+
+复数：数学概念，见：https://baike.baidu.com/item/%E5%A4%8D%E6%95%B0/254365
+$$
+方程：x^2 - 2x + 2 = 0；解得：x^2 - 2x + 1 = -1；解得：(x - 1)^2 = -1；解得：x - 1 = \sqrt{-1}；解得：x = 1 + \sqrt{-1}；即：x = 1 - 1i
+$$
+​	其中 1 - 1i 就是一个复数，由实部 1 和虚部 -1 组成，虚部后加字母 i 表示。
+
+在 Python 中，使用 a + bj 来表示复数：
+
+~~~python
+# 复数
+num = 1 + 2j
+# 打印 num 的实部
+print(num.real)
+# 打印 num 的虚部
+print(num.imag)
+~~~
+
+
+
+**字符串**
+
+字符串用来表示一段文本信息，在 Python 中，字符串需要使用单引号或双引号引起来，单引号和双引号可以同时使用，但相同的引号之间不能嵌套。
+
+长字符串：使用三重引号来包含文字内容，内容之间可以随意换行
+
+```python
+a = '''abc
+efg
+'''
+print(a)
+```
+
+字符串支持转义符，如：`\n` 表示换行，`\u1234` 表示 Unicode 编码 1234 表示的字符。
+
+> 在 Python 中，字符串之间可以使用加号进行拼接，但是字符串也只能与字符串进行拼接，与其他类型的数据（如：int）拼接时会报错：TypeError
+
+字符串格式化：
+
+1. 字符串占位符 %s：%s 表示任意字符串
+
+   使用方法：字符串外加一个 %，然后紧跟需要填充的内容
+
+   ~~~python
+   # 单占位符
+   msg = 'Hello,%s' % 'Niko'
+   print(msg)
+   # 将数字作为字符串填充进去
+   msg = 'I\'m %s years old.' % 25
+   print(msg)
+   # 多占位符，括号内的内容按顺序填充
+   msg = 'Hello,%s,I %s you so much!' % ('Niko', 'miss')
+   print(msg)
+   ~~~
+
+   输出结果：
+
+   ~~~markdown
+   Hello,Niko
+   I'm 25 years old.
+   Hello,Niko,I miss you so much!
+   ~~~
+
+   我们还可以在 % 后面加上数字来限制填充内容的最小（最大）长度，如果少于（超出）该长度，将会对字符串前方添加空格（截除多余内容），如：%3s，%3.5s
+
+   ~~~python
+   # 限制填充内容长度至少为 5
+   msg = 'Nice to meet you,%5s' % 'Niko'
+   print(msg)
+   # 限制填充内容长度至少为 3，最多为 5
+   msg = 'Nice to meet you,%3.5s' % 'Charles'
+   print(msg)
+   ~~~
+
+   输出结果：
+
+   ~~~markdown
+   Nice to meet you, Niko
+   Nice to meet you,Charl
+   ~~~
+
+2. 整数占位符 %d：对整数内容进行格式化填充
+
+   限制整数的长度，如：%4d，填充长度至少是 4，不够时在前面加空格；%.4d，填充长度至少是 4，不够时在前面加 0
+
+   ~~~python
+   msg = 'There are %.4d eggs in the basket' % 123.5700
+   print(msg)
+   msg = 'There are %4d eggs in the basket' % 123.5700
+   print(msg)
+   ~~~
+
+   输出结果：
+
+   ~~~markdown
+   There are 0123 eggs in the basket
+   There are  123 eggs in the basket
+   ~~~
+
+3. 浮点数占位符 %f：对浮点数内容进行格式化填充
+
+   限制小数位数，如：%.3f，保留 3 位小数，多于 3 位的会被截除，少于 3 位的则在末尾添加 0
+
+   ~~~python
+   # 限制小数位数
+   msg = 'There are %.2f eggs in the basket' % 123.5700
+   print(msg)
+   ~~~
+
+   输出结果：
+
+   ~~~markdown
+   There are 123.57 eggs in the basket
+   ~~~
+
+格式化字符串：在字符串前加 f 或 F 表示该字符串是一个格式化字符串，格式化字符串中可以直接引用变量
+
+~~~python
+age = 25
+name = "James"
+introduction = f"{name} is {age} years old."
+print(introduction)
+~~~
+
+输出结果：
+
+~~~markdown
+James is 25 years old.
+~~~
+
+字符串复制：在 Python 中，如果使用字符串与整数相乘，相当于把字符串重复指定次数并拼接
+
+~~~python
+# 字符串复制
+a = "Hello "
+a *= 5
+print(a)
+~~~
+
+输出结果：
+
+~~~markdown
+Hello Hello Hello Hello Hello 
+~~~
+
+
+
+**布尔值**
+
+在 Python 使用 bool 表示布尔值，用来表示真（True）或假（False）两个值（在 Python 中布尔值的首字母大写）。
+
+~~~python
+# 布尔值
+a = True
+b = False
+~~~
+
+在 Python 中 True 相当于整数 1，False 相当于整数 0
+
+~~~python
+print(1 + True)
+print(1 + False)
+~~~
+
+输出的结果是：2、1
+
+
+
+**空值（None）**
+
+在 Python 中，使用 None 来表示空值，不存在。
+
+
+
+**类型检查**
+
+在 Python 中，使用 type() 函数检查变量的值的数据类型
+
+~~~python
+# 类型检查
+print(type("str"))
+print(type(1))
+print(type(1.2))
+print(type(1 + 2j))
+print(type(False))
+print(type(None))
+~~~
+
+输出结果：
+
+~~~markdown
+<class 'str'>
+<class 'int'>
+<class 'float'>
+<class 'complex'>
+<class 'bool'>
+<class 'NoneType'>
+~~~
+
+
+
+**对象（Object）**
+
+Python 是一门面向对象的语言，在 Python 中任何东西都可看作对象，例如：数值、字符串、布尔值、None 都是对象
+
+每个对象都保存了 3 中属性：
+
+- id：用来标识对象的唯一性，使用 id() 函数进行查看。
+
+  ~~~python
+  print(id("Hello"))
+  ~~~
+
+  输出：1985004694768，由解释器生成，在 CPython 中，此值就是该对象的内存地址。
+
+  对象一旦创建，其 id 永远不能改变。
+
+- type：用来标识对象的类型，使用 type() 函数进行查看。
+
+  Python 是一门强类型的语言，对象一旦创建，其 type 也永远不能改变。
+
+- value：用来标识对象当中存储的具体数据，当我们使用 print() 打印时，就是打印的对象的值。
+
+  在 Python 中，对象的值可以改变，可以改变值的对象叫可变对象（如：list，set），不可以改变值的对象叫不可变对象（如：int，float）。
+
+
+
+**变量和对象**
+
+在 Python 中，变量更像是对象的一个别名，变量当中存储的是对象的内存地址。
+
+
+
+**类型转换**
+
+在 Python 中，可以对变量的值进行类型转换（不是改变对象的类型，而是创建一个新的类型的对象重新赋值给变量）。
+
+类型转换的 4 个函数：int()、float()、str()、bool()
+
+类型转换不会改变变量的值，而是返回转换后的结果，需要重新赋值才可转换变量类型。
+
+注意事项：
+
+1. float 转 int 是省略小数点后的结果。
+2. 小数字符串不能直接转换为 int，如 int('12.5') 会抛出异常：ValueError
+3. 类型转换函数不能转换 None 值。
+4. 使用 bool() 可以将 空数值（0、0.0）、空字符串（''、""）、空（None）、空集合（[]、()、{}）转为 False，其他情况下都是 True。
+
+
+
+---
+
+### 5.Python 运算符
 
