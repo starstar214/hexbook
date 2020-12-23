@@ -166,6 +166,8 @@
 
 1. Python基础 
 
+   [Python 基础](notes/Python语言/Python基础/Python基础.md)
+
 2. 爬虫
 
 3. 大数据
