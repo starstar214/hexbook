@@ -2,8 +2,6 @@ Python 官网：https://www.python.org/
 
 
 
-
-
 **目录**
 
 1. [计算机基础知识](#1计算机基础知识)
@@ -12,13 +10,10 @@ Python 官网：https://www.python.org/
 4. [Python 数据类型](#4Python 数据类型)
 5. [Python 运算符](#5Python 运算符)
 6. [流程控制](#6流程控制)
-7. [列表](#7列表)
-
-
-
-
-
-
+7. [序列与列表](#7序列与列表)
+8. [字典](#8字典)
+9. [集合](#9集合)
+10. [函数](#10函数)
 
 
 
@@ -1064,7 +1059,7 @@ for c in "Hello":
 
 ---
 
-### 7.序列
+### 7.序列与列表
 
 > **序列（sequence）**
 >
@@ -1215,6 +1210,8 @@ print(my_list.count("孙悟空"))
       my_num.sort(reverse=True)
       print(my_num)
       ~~~
+   
+5. 使用 copy() 方法浅拷贝一个新列表：my_list2 = my_list.copy()，如果列表当中存在可变对象，则只是拷贝引用，可变对象改变时会同时影响到两个列表。
 
 > 通过 list() 函数可以将不可变序列转换为 list，然后可以执行可变序列的相关操作。
 
@@ -1230,3 +1227,370 @@ for c in my_num:
     print(c)
 ~~~
 
+
+
+**range() 函数**
+
+生成一个自然数组成的序列，如 range(5) = [0, 1, 2, 3, 4]
+
+此函数需要 3 个参数：起始位置，结束位置，步长。
+
+通过 range() 可以创建一个指定次数的 for 循环。
+
+~~~python
+for i in range(20):
+    print(i)
+~~~
+
+通过 range() 实现 fori 循环：
+
+~~~python
+my_list = ["唐僧", "孙悟空", "猪八戒", "沙僧", "白骨精", "如来佛祖", "红孩儿"]
+for i in range(len(my_list)):
+    my_list[i] += "酱"
+print(my_list)
+~~~
+
+输出：['唐僧酱', '孙悟空酱', '猪八戒酱', '沙僧酱', '白骨精酱', '如来佛祖酱', '红孩儿酱']
+
+
+
+**元组（tuple）**
+
+元组是一个不可变序列，除了元素不可改变外，它的操作与列表一致。
+
+当我们希望数据不改变时，使用元组，其他情况使用列表。
+
+元组创建：使用 () 创建：
+
+~~~python
+my_tuple = ("a", "b")
+print(type(my_tuple))
+~~~
+
+输出：<class 'tuple'>
+
+如果元组不是空元组，可以省略括号
+
+~~~python
+my_tuple = "a", "b"
+print(type(my_tuple))
+~~~
+
+如果元组当中只有一个元素，在创建时也应该在末尾添加都好表示其是一个元组
+
+~~~python
+my_tuple = ("a",)
+my_tuple = "a",
+~~~
+
+使用元组为变量赋值：
+
+~~~python
+my_tuple = "a", "b", "c"
+a, b, c = my_tuple
+~~~
+
+赋值方法巧用：
+
+~~~python
+a = 200
+b = 300
+a, b = b, a
+~~~
+
+为两个变量或多个变量相互赋值。
+
+使用元组赋值变量时，当两边的变量个数不相等时，也可以赋值为 list
+
+~~~python
+my_tuple = "a", "b", "c", "d", "e", "f", "g"
+a, b, *c, d = my_tuple
+print(a, b, c, d)
+~~~
+
+输出：a b ['c', 'd', 'e', 'f'] g，此时将中间部分看作是一个 list 进行赋值。
+
+
+
+**可变对象**
+
+值可以改变的对象成为可变对象，list 就是一个可变对象。
+
+可变对象的操作：
+
+1. 修改对象：my_list[0] = 10，此种方式是修改对象的值，其他指向该对象的变量值也会受到影响。
+2. 修改变量：my_list = []，此种方式是修改变量的引用，其他指向该对象的变量不会受到影响。
+
+
+
+---
+
+### 8.字典
+
+字典（dict）是一种映射的数据结构，类似于 Map。
+
+字典的作用于 list 类似，都是用来存储对象的容器，字典中每一个元素都有一个唯一的 key，通过这个唯一的 key 可以快速查找到指定的 value。
+
+list 存储数据的性能很好，但是查询较慢；而 dict 存储数据的性能不如 list，单查询效率较高。
+
+字典的创建：使用 {} 或 dict() 创建字典
+
+~~~python
+my_dict = {"name": "Monkey King", "species": "monkey"}
+# 使用此种方式创建的 dict 的 key 都是 str
+this_dict = dict(name="Monkey King", species="monkey")
+# 使用双值子 tuple 创建 dict
+that_dict = dict([("name", "Monkey King"), ("species", "monkey")])
+~~~
+
+字典的 key 可以是任意的不可变对象（int，str，bool，tuple...），字典的值可以是任意对象。
+
+字典的 key 不可重复，如果有重复的，前面的 value 将会被覆盖。
+
+获取字典的值：
+
+~~~python
+my_dict = {"name": "Monkey King", "species": "monkey"}
+print(my_dict["name"])
+~~~
+
+如果使用了字典中不存在的键，则会抛出 KeyError。
+
+
+
+**字典的使用**
+
+获取字典中的键值对个数：len(my_dict)
+
+检查字典中是否包含指定的键：in/not in
+
+~~~python
+my_dict = {"name": "Monkey King", "species": "monkey"}
+print("name" in my_dict)
+~~~
+
+获取 dict 中 key 对应的值：my_dict["name"] 或 my_dict.get("name")
+
+~~~python
+my_dict = {"name": "Monkey King", "species": "monkey"}
+print(my_dict.get("address"))
+print(my_dict.get("address", "天涯海角"))
+~~~
+
+使用 get() 方法，当获取不到值时返回 None，还可以使用第二个参数设置一个默认值。
+
+修改字典的值：
+
+1. my_dict["name"] = "Tang Seng"，当字典中有该 name 的 key 时，则为修改现有元素，否则为添加新元素。
+
+2. 使用 setdefault：如果字典中存在 key 则不作操作并返回 key 对应的 value，否则将 key-value 设置到 dict 中。
+
+   ~~~python
+   my_dict = {"name": "Monkey King", "species": "monkey"}
+   my_dict.setdefault("name", "Zhu BaJie")
+   print(my_dict)
+   ~~~
+
+   第二个参数key省略，省略时相当于 get() 函数。
+
+3. update() 函数，将其他字典中的 key-value 添加到当前字典当中
+
+   ~~~python
+   person_dict = {"name": "Monkey King", "species": "monkey"}
+   job_dict = {"job": "Demon Master", "name": "モンキーキング"}
+   person_dict.update(job_dict)
+   print(person_dict)
+   ~~~
+
+   输出：{'name': 'モンキーキング', 'species': 'monkey', 'job': 'Demon Master'}，当前 dict 中重复的 key 的值会被覆盖。
+
+删除字典中的键值对：
+
+1. del my_dict["name"]，当删除不存在的值时，抛出 KeyError。
+
+2. 使用 popitem() 函数：随机删除（一般都是最后一个元素） dict 的元素并将作为 tuple 返回
+
+   ~~~python
+   my_dict = {"name": "Monkey King", "species": "monkey"}
+   print(my_dict.popitem())
+   ~~~
+
+   输出：('species', 'monkey')，当删除空字典时，抛出 KeyError。
+
+3. 使用 pop() 函数：根据 key 删除 value，并返回该 value。
+
+   ~~~python
+   my_dict = {"name": "Monkey King", "species": "monkey"}
+   print(my_dict.pop("name"))
+   ~~~
+
+   如果删除不存在的 key，则抛出 KeyError；此时可以添加第二个参数，如果不存在 key，直接返回第二个参数，如：print(my_dict.pop("address", "无"))。
+
+4. clear() 函数，删除字典中所有元素。
+
+浅复制：使用 copy() 函数，复制出的 dict 与原 dict 相互独立，但 dict 中的元素不会重新拷贝（如果 value 是可变对象，则会相互影响）。
+
+~~~python
+my_dict = {"name": "Monkey King", "species": "monkey", "list": [1, 3, 5]}
+copy_dict = my_dict.copy()
+copy_dict["list"][2] = 8
+print(my_dict["list"])
+~~~
+
+此时，my_dict 中的 list 会变为 [1, 3, 8]。
+
+
+
+**字典的遍历**
+
+遍历字典用到的方法：
+
+- keys() - 返回字典的所有的 key 组成的序列
+
+- values() - 返回字典的所有的 value 组成的序列
+
+- items() - 返回字典的所有的 key-value 组成的序列，每一个 key-value 封装成为一个双值元组。
+
+  ~~~python
+  my_dict = {"name": "Monkey King", "species": "monkey", "list": [1, 3, 5]}
+  print(my_dict.items())
+  ~~~
+
+  输出：dict_items([('name', 'Monkey King'), ('species', 'monkey'), ('list', [1, 3, 8])])
+
+  ~~~python
+  my_dict = {"name": "Monkey King", "species": "monkey", "list": [1, 3, 5]}
+  for k, v in my_dict.items():
+      print(k, v)
+  ~~~
+
+  此时可以用两个值去接受序列中的子序列。
+
+
+
+---
+
+### 9.集合
+
+集合（set）与列表非常相似，不同点：
+
+- 集合中只能存储不可变对象。
+- 集合中的元素是无序的（不是按照插入顺序排序的，不能通过索引查找）。
+- 集合中不能出现重复元素（集合中的元素都是唯一的）。
+
+集合创建：使用 {}
+
+~~~python
+my_set = {2, 3, 4, 1, 2}
+print(my_set)
+~~~
+
+输出：{1, 2, 3, 4}，如果创建空集合，只能使用 set()，不能使用 {}，因为此时默认创建的是空字典。
+
+使用 set() 函数将序列或字典转换为集合：
+
+~~~python
+this_set = set([2, 3, 4, 1, 2])
+print(this_set)
+# 使用 dict 创建集合时，只会使用 dict 当中的 key
+this_set = set(my_dict)
+~~~
+
+> 如果给 set 存放可变对象，则会抛出 TypeError。
+
+
+
+**集合的使用**
+
+1. 使用 in/not in 判断集合是否包含某元素。
+
+2. 使用 len() 获取集合的长度。
+
+3. 向集合中添加元素：使用 add() 方法，如：my_set.add(2)
+
+4. 将另一个序列中的元素添加到当前集合：使用 update() 方法
+
+   ~~~python
+   my_set = {2, 3, 4, 1, 2}
+   my_set.update("hello")
+   print(my_set)
+   ~~~
+
+   输出：{1, 2, 3, 4, 'o', 'l', 'h', 'e'}
+
+5. 随机删除（并返回）集合中的元素：pop() 方法，一般为删除第一个元素
+
+   ~~~python
+   my_set = {2, 3, 4, 1, 2}
+   my_set.pop()
+   ~~~
+
+6. 删除集合中的指定元素：remove() 方法。
+
+7. clear() 方法清空集合。
+
+8. copy() 方法对集合进行浅拷贝。
+
+
+
+**集合的运算**
+
+1. 求两个集合的交集：
+
+   ~~~python
+   set1 = set("tomato")
+   set2 = set("orange")
+   new_set = set1 & set2
+   print(new_set)
+   ~~~
+
+   输出：{'a', 'o'}，只返回同时在两个集合当中出现的元素。
+
+2. 求两个集合的并集：
+
+   ~~~python
+   set1 = set("tomato")
+   set2 = set("orange")
+   new_set = set1 | set2
+   print(new_set)
+   ~~~
+
+   输出：{'m', 'o', 'n', 'a', 'g', 'e', 't', 'r'}，返回在任意一个集合中出现过的元素。
+
+3. 求两个集合的差集：
+
+   ~~~python
+   set1 = set("tomato")
+   set2 = set("orange")
+   new_set = set1 - set2
+   print(new_set)
+   ~~~
+
+   输出：{'t', 'm'}，返回只在 set1 集合中出现的元素。
+
+4. 求两个集合的异或集：
+
+   ~~~python
+   set1 = set("tomato")
+   set2 = set("orange")
+   new_set = set1 ^ set2
+   print(new_set)
+   ~~~
+
+   输出：{'g', 'n', 'r', 't', 'e', 'm'}，返回只在某一个集合中出现（另一个集合当中没有）的元素。
+
+5. 检查一个集合是否是另一个集合的子集、超集（包含且含多余元素）、相等：>=，<=，>，<，==
+
+   ~~~python
+   set1 = set("tomato")
+   set2 = set("orange")
+   new_set = set1 | set2
+   print(new_set >= set1)
+   ~~~
+
+   
+
+---
+
+### 10.函数
