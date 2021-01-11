@@ -1,4 +1,4 @@
-SpringBoot 官网：[https://spring.io/projects/spring-boot/](https://spring.io/projects/spring-boot/)
+.SpringBoot 官网：[https://spring.io/projects/spring-boot/](https://spring.io/projects/spring-boot/)
 
 Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can "just run".
 
@@ -739,6 +739,40 @@ slf4j + logback 日志框架的使用：
 
 日志级别：trace >> debug >> info >> warn >> error
 
+- trace：极其详细的系统运行信息；默认情况下，既不打印到终端也不输出到文件（请不要在业务代码中使用）
+
+- debug：终端查看、在线调试；该级别日志默认情况下会打印到终端输出，但是不会归档到日志文件；此级别一般用于开发者在程序当前启动窗口上，查看日志流水信息。
+
+- info：报告程序进度和状态信息
+
+  - 程序进度：系统状态、业务状态的变更；业务逻辑的分步骤。
+  - 状态信息：客户端请求参数；第三方接口的调用参数和调用结果。
+
+  > 调用其他第三方服务时，所有的出参和入参是必须要记录的（因为你很难追溯第三方模块发生的问题）
+
+- warn：不应该出现但是不影响程序、不影响当前请求正常运行的异常情况
+
+  - 有容错机制的时候出现的错误情况
+  - 找不到配置文件，但是系统能自动创建配置文件
+  - 某参数即将接近临界值时，如：缓存池占用达到警告线
+  - 业务异常的记录，如：当接口抛出业务异常时，应该记录此异常
+
+- error：影响到程序正常运行、影响当前请求正常运行的异常情况；如：打开配置文件失败、第三方接口异常，以及 SQLException 等影响功能使用的异常。
+
+  > 如果进行了抛出异常操作，请不要打印 error 日志，如：
+  >
+  > ~~~java
+  > try{
+  >     //......
+  > }catch（Exception e）{
+  >     String message = "An error occurred when process business";
+  >     log.error(message, e);
+  >     throw new ServiceException(message, e);
+  > }
+  > ~~~
+  >
+  > 请不要像这样记录 error 日志，此时错误日志应该由异常的最终处理方进行记录。
+
 我们可以调整需要输出的日志级别，当设置为某一日志级别后，日志只会打印此级别以及更高级别的日志信息，如：日志级别为 info 时，只会输出 info、warn、error 级别的日志。
 
 SpringBoot 日志级别设置：
@@ -1033,6 +1067,502 @@ setSystemProperty(resolver, FILE_LOG_PATTERN, "pattern.file");
 
 ### 7.SpringBoot Web
 
+**RESTful API**
+
+RESTful API 是目前最流行的 API 设计规范，用于 Web 数据接口的设计。
+
+URL 设计：动词 + 宾语
+
+- 动词：通常就是五种 HTTP 方法，对应 CRUD 操作。
+  - GET：读取（Read）
+  - POST：新建（Create）
+  - PUT：更新（Update）
+  - PATCH：更新（Update），通常是部分更新
+  - DELETE：删除（Delete）
+- 宾语：宾语就是 API 的 URL，是 HTTP 动词作用的对象。它应该是名词，不能是动词。比如，/articles 这个 URL 就是正确的，而 /getAllCars、/createNewCar、/deleteAllRedCars 等 URL 不是名词，所以都是错误的。
+
+> 避免多级 URL：
+>
+> 在开发中常见的情况：资源需要多级分类，因此很容易写出多级的 URL，比如获取某个作者的某一类文章：GET /authors/12/categories/2
+>
+> 这种 URL 不利于扩展，语义也不明确，往往要想一会，才能明白含义；更好的做法是，除了第一级，其他级别都用查询字符串表达：GET /authors/12?categories=2
+>
+> 还有一个例子：查询已发布的文章
+>
+> 1. GET /articles/published
+> 2. GET /articles?published=true
+>
+> 很明显，published 并不是名词，第二种查询字符串的写法更好。
+
+
+
+**HTTP 状态码**
+
+在服务器通讯过程中，客户端的每一次请求，服务器都必须给出回应。回应包括 HTTP 状态码和数据两部分。
+
+HTTP 状态码就是一个三位数，分成五个类别：1xx（相关信息，服务器 API 不需要 1xx 状态码）、2xx（操作成功）、3xx（重定向）、4xx（客户端错误）、5xx（服务器错误）
+
+2xx 状态码表示操作成功：
+
+1. 20x：不同的 HTTP 方法可以返回操作成功的更精确的状态码，如：GET >> 200 OK、POST >> 201 Created、PUT >> 200 OK、PATCH >> 200 OK、DELETE >> 204 No Content（资源已删除，不存在）
+2. 202：Accepted，表示服务器已经收到请求，但还未进行处理，会在未来再处理，通常用于异步操作。
+
+在收到 3xx 状态码后，浏览器不会自动跳转，而会让用户自己决定下一步怎么办。下面是一个例子。
+
+1. 302、307：See Other，表示参考另一个 URL，用于 GET 请求。
+2. 303：See Other，表示参考另一个 URL，用于 POST、PUT、DELETE 请求。
+
+4xx 状态码表示客户端错误，主要有下面几种
+
+1. 400 Bad Request：服务器不理解客户端的请求，未做任何处理。
+2. 401 Unauthorized：用户未提供身份验证凭据，或者没有通过身份验证。
+3. 403 Forbidden：用户通过了身份验证，但是不具有访问资源所需的权限。
+4. 404 Not Found：所请求的资源不存在，或不可用。
+5. 405 Method Not Allowed：用户已经通过身份验证，但是所用的 HTTP 方法不在他的权限之内。
+6. 410 Gone：所请求的资源已从这个地址转移，不再可用。
+7. 415 Unsupported Media Type：客户端要求的返回格式不支持。比如，API 只能返回 JSON 格式，但是客户端要求返回 XML 格式。
+8. 422 Unprocessable Entity：客户端上传的附件无法处理，导致请求失败。
+9. 429 Too Many Requests：客户端的请求次数超过限额。
+
+5xx 状态码表示服务端错误。一般来说，API 不会向用户透露服务器的详细信息，所以只要两个状态码就够了：
+
+1. 500 Internal Server Error：客户端请求有效，服务器处理时发生了意外。
+2. 503 Service Unavailable：服务器无法处理请求，一般用于网站维护状态。
+
+
+
+**统一接口返回格式**
+
+我们在开发中经常会涉及到 server 和 client 的交互，目前比较流行的是基于 json 格式的数据交互，但是 json 只是消息的格式，其中的内容还需要我们自行设计；不管是 HTTP 接口还是 RPC 接口保持返回值格式统一很重要，这将大大降低 client 的开发成本。
+
+返回值 json 的四要素：
+
+1. boolean success ；是否成功。
+2. T data ；成功时具体返回值，失败时为 null 。
+3. Integer code ；成功时返回 0 ，失败时返回具体错误码。
+4. String message ；成功时返回 null ，失败时返回具体错误消息。
+
+在 SpringBoot 中，实现统一 API 格式返回：
+
+1. 定义枚举类：
+
+   ~~~java
+   @Getter
+   public enum ResultStatus {
+   
+       SUCCESS(200, "OK"),
+       FAIL(500, "服务器异常");
+   
+       private Integer code;
+   
+       private String message;
+   
+       ResultStatus(Integer code, String message) {
+           this.code = code;
+           this.message = message;
+       }
+   }
+   ~~~
+
+2. 定义返回对象结构：
+
+   ~~~java
+   @Data
+   public class Result<T> {
+       private boolean success;
+       private Integer code;
+       private String message;
+       private T data;
+   
+       public static <T> Result<T> success(T data){
+           Result<T> result = new Result<>();
+           result.setSuccess(true);
+           result.setCode(ResultStatus.SUCCESS.getCode());
+           result.setMessage(ResultStatus.SUCCESS.getMessage());
+           result.setData(data);
+           return result;
+       }
+   
+       public static Result<Void> failure(ResultStatus status){
+           Result<Void> result = new Result<>();
+           result.setSuccess(false);
+           result.setCode(status.getCode());
+           result.setMessage(status.getMessage());
+           return result;
+       }
+   }
+   ~~~
+
+3. 使用 AOP 对 Controller 的返回值进行全局处理，不用再每一个方法中进行 Result 包装，只需要定义我们自己想要返回的格式即可
+
+   ~~~java
+   @RestControllerAdvice
+   public class ResultAdvice implements ResponseBodyAdvice<Object> {
+   
+       private static final Class<? extends Annotation> TARGET_ANNOTATION = ResponseBody.class;
+   
+       @Override
+       //方法返回 true 时，执行 beforeBodyWrite 方法
+       public boolean supports(MethodParameter methodParameter, Class<? extends HttpMessageConverter<?>> aClass) {
+           //方法所在类是否标有注解 TARGET_ANNOTATION
+           boolean classHasAnnotation = AnnotatedElementUtils.hasAnnotation(methodParameter.getContainingClass(), TARGET_ANNOTATION);
+           //方法是否标有注解 TARGET_ANNOTATION
+           boolean methodHasAnnotation = methodParameter.hasMethodAnnotation(TARGET_ANNOTATION);
+           return classHasAnnotation || methodHasAnnotation;
+       }
+   
+       @Override
+       public Object beforeBodyWrite(Object o, MethodParameter methodParameter, MediaType mediaType, Class<? extends HttpMessageConverter<?>> aClass, ServerHttpRequest serverHttpRequest, ServerHttpResponse serverHttpResponse) {
+           //如果返回的对象已经是 Result 对象，则直接返回
+           if (o instanceof Result){
+               return o;
+           }
+           //返回由 Result 包装的结果
+           return Result.success(o);
+       }
+   }
+   ~~~
+
+   当 supports 返回 true 时，beforeBodyWrite 将会被运行，最终返回由 Result 包装的对象。
+
+
+
+**SpringBoot 错误处理**
+
+SpringBoot 将对错误的处理逻辑封装在 *ErrorMvcAutoConfiguration* 中，向容器中添加了以下组件：
+
+​	DefaultErrorAttributes、BasicErrorController、ErrorPageCustomizer、DefaultErrorViewResolver
+
+错误处理步骤：
+
+1. 一旦系统出现 4xx 或 5xx，就会通过 ErrorPageCustomizer 定制的错误处理来到 /error 请求
+
+2. 来到 /error 请求后，由 BasicErrorController 进行处理（如果是浏览器则返回错误页面，其他客户端返回 json 格式数据）
+
+   ~~~java
+   @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
+   public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse response) {
+       HttpStatus status = getStatus(request);
+       Map<String, Object> model = Collections
+           .unmodifiableMap(getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.TEXT_HTML)));
+       response.setStatus(status.value());
+       ModelAndView modelAndView = resolveErrorView(request, response, status, model);
+       return (modelAndView != null) ? modelAndView : new ModelAndView("error", model);
+   }
+   
+   @RequestMapping
+   public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
+       HttpStatus status = getStatus(request);
+       if (status == HttpStatus.NO_CONTENT) {
+           return new ResponseEntity<>(status);
+       }
+       Map<String, Object> body = getErrorAttributes(request, getErrorAttributeOptions(request, MediaType.ALL));
+       return new ResponseEntity<>(body, status);
+   }
+   ~~~
+
+   在 BasicErrorController 中有 2 个不同的方法，标有同样的 RequestMapping：
+
+   1. 当浏览器发送请求时，在 Request Header 中会带有 Accept:text/html，将会与标有 produces = MediaType.TEXT_HTML_VALUE 相匹配，错误页面
+   2. 当其他客户端发送请求时，如果不是优先接收 text/html 返回，将会调用 error 方法返回 json 数据。
+
+   在返回错误响应时，DefaultErrorAttributes 负责封装错误信息，DefaultErrorViewResolver 负责错误视图的解析。
+
+自定义错误处理器：
+
+~~~java
+@ResponseBody
+@ControllerAdvice
+public class MyExceptionHandler {
+    @ExceptionHandler(Exception.class)
+    public Result<Void> exception(Exception e){
+        return Result.failure(ResultStatus.FAIL);
+    }
+}
+~~~
+
+1. 使用 @ControllerAdvice 注解进行标注，表示对 Controller 进行切面处理。
+2. 在每一个方法中使用 @ExceptionHandler 表示此方法用来处理何种异常信息。
+3. 在同一的异常返回中，可以添加 @ResponseBody 返回 json 数据，也可以返回视图对象。
+
+
+
+**JSR303 异常处理**
+
+在开发过程中的接口传参时，往往对接口参数都有一些特殊的限制，我们可以通过 JSR303 注解进行参数校验
+
+1. 引入依赖：spring-boot-starter-validation
+
+   ~~~xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-validation</artifactId>
+   </dependency>
+   ~~~
+
+2. 在接口的方法参数上或者方法参数对象中标注注解并加入 BindingResult 参数：
+
+   ~~~java
+   @GetMapping("/{id}")
+   public Employee getEmployee(@PathVariable @Validated @Min(2) int id, BindingResult result){
+       return service.getEmployeeById(id);
+   }
+   ~~~
+
+   1. @Validated - 表示对参数启用校验。
+   2. @Min(2) - 参数的校验规则。
+   3. BindingResult - 当参数校验不通过时，将会包错误信息绑定到此参数中，在方法中可以对结果进行处理。
+
+3. 此时如果参数错误，返回的数据为：
+
+   ~~~json
+   {
+       "code": 500,
+       "message": "An Errors/BindingResult argument is expected to be declared immediately after the model attribute, the @RequestBody or the @RequestPart arguments to which they apply: public com.star.cache.bean.Employee com.star.cache.controller.EmployeeController.getEmployee(int,org.springframework.validation.BindingResult)",
+       "data": null
+   }
+   ~~~
+
+
+
+结合 ExceptionHandler 对参数校验错误的优雅处理：
+
+1. 单个参数校验时：
+
+   1. 在 Controller 上标注 @Validated（单一参数校验时，此注解必须标注在 Controller 上），类上面标注此注解后，方法参数前面可以省略
+
+      ~~~java
+      @Validated
+      @RestController
+      @RequestMapping("/employee")
+      public class EmployeeController {
+          //......
+      }
+      ~~~
+
+   2. 在参数上添加校验逻辑：
+
+      ~~~java
+      @PatchMapping("/{id}")
+      public Employee updateLoginName(@PathVariable @Min(value = 2, message = "id 至少大于等于 2") int id, @NotBlank(message = "登录名不能为空") String loginName){
+          return service.updateLoginName(id, loginName);
+      }
+      ~~~
+
+   3. 当参数不满足校验逻辑时，将会抛出 *ConstraintViolationException*，我们需要在 ExceptionHandler 对此错误进行处理：
+
+      ~~~java
+      @ExceptionHandler(ConstraintViolationException.class)
+          public Result<Void> singleParamError(ConstraintViolationException e){
+              Set<ConstraintViolation<?>> violationSet = e.getConstraintViolations();
+              //将参数校验结果通过 ; 进行拼接
+              String message = violationSet.stream().map(ConstraintViolation::getMessage).collect(Collectors.joining(";"));
+              return Result.failure(message);
+          }
+      ~~~
+
+   4. 返回结果示例：
+
+      ~~~json
+      {
+          "code": 500,
+          "message": "登录名不能为空;id 至少大于等于 2",
+          "data": null
+      }
+      ~~~
+
+2. 使用 Java Bean 封装对象时，的参数校验
+
+   1. 需要在 Java Bean 中添加校验逻辑即可
+
+      ~~~java
+      @Data
+      public class Employee implements Serializable{
+          private int id;
+          @NotBlank(message = "登录名不能为空")
+          private String loginName;
+          //0-女，1-男
+          private byte gender;
+          @Email(message = "邮箱格式输入错误")
+          private String email;
+          private int deptId;
+      }
+      ~~~
+
+   2. 在方法的参数中添加 @Validated 注解（使用对象接收参数时，@Validated 必须添加在方法参数前）
+
+      ~~~java
+      @PostMapping
+      public Integer addEmployee(@RequestBody @Validated Employee employee){
+          return service.addEmployee(employee).getId();
+      }
+      ~~~
+
+   3. 当参数不满足校验逻辑时，将会抛出 *BindException*，我们需要在 ExceptionHandler 对此错误进行处理：
+
+      ~~~java
+      @ExceptionHandler(BindException.class)
+      public Result<Void> paramError(BindException e){
+          BindingResult bindingResult = e.getBindingResult();
+          String message = bindingResult.getFieldErrors().stream().map(FieldError::getDefaultMessage).collect(Collectors.joining(";"));
+          return Result.failure(message);
+      }
+      ~~~
+
+   4. 返回结果示例：
+
+      ~~~java
+      {
+          "code": 500,
+          "message": "登录名不能为空;邮箱格式输入错误",
+          "data": null
+      }
+      ~~~
+
+
+
+**嵌入式 Servlet 容器**
+
+SpringBoot 默认使用 Tomcat 作为嵌入式的 Servlet 容器，如果需要修改 server 相关配置，则在 application.properties 中修改以 server 开头的属性即可
+
+~~~properties
+# 通用 server 配置
+server.port=8080
+# tomcat 配置
+server.tomcat.uri-encoding=UTF-8
+# jetty 配置
+server.jetty.uri-encoding=UTF-8
+# undertow 配置
+server.undertow.uri-encoding=UTF-8
+~~~
+
+除此之外，还可以像容器中添加 *EmbeddedServletContainerCustomizer* 组件自定义 server 的属性。
+
+
+
+在 SpringBoot 中，除了 Tomcat 外，还支持 Jetty 和 Undertow：
+
+- Tomcat：成熟稳定的一款 Web 容器，过了多年的市场考验，应用也相当广泛，如果不涉及高并发，可以使用 Tomcat 容器。
+- Jetty：基于 NIO 实现，轻量级，很好的支持长连接，性能与 Tomcat 相近，支持 JSP，易于扩展。
+- Undertow：基于 NIO 实现，并发性能高，但不支持 JSP。
+
+替换其他的嵌入式 Web 容器：
+
+1. 排除 spring-boot-starter-tomcat：
+
+   ~~~xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-web</artifactId>
+       <exclusions>
+           <exclusion>
+               <artifactId>spring-boot-starter-tomcat</artifactId>
+               <groupId>org.springframework.boot</groupId>
+           </exclusion>
+       </exclusions>
+   </dependency>
+   ~~~
+
+2. 加入其他容器的依赖（以 Untertow 为例）：
+
+   ~~~xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-undertow</artifactId>
+   </dependency>
+   ~~~
+
+3. 此时 SpringBoot 应用将以 Untertow 作为 Web 容器。
+
+
+
+---
+
+### 8.SpringBoot 数据访问
+
+**SpringBoot 与 JDBC**
+
+SpringBoot2.x 默认使用 com.zaxxer.hikari.HikariDataSource 数据源。
+
+配置数据源通用信息：
+
+~~~properties
+# 数据源相关配置
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+spring.datasource.url=jdbc:mysql://192.168.253.128:3306/mybatis?serverTimezone=UTC
+spring.datasource.username=root
+spring.datasource.password=TinyStar0920
+~~~
+
+数据源的相关配置在 DataSourceProperties 中进行绑定。
+
+具体数据源的配置（如：hikari）通过 spring.datasource.hikari.xxx 进行配置：
+
+~~~properties
+spring.datasource.hikari.connection-test-query=select 1 from dual
+spring.datasource.hikari.idle-timeout=60000
+~~~
+
+> 在 SpringBoot 的 DataSourceInitializer 中，在数据源初始化完成后，会帮助我们运行 sql 脚本
+>
+> 默认的脚本位置检查规则：classpath\*:schema-all.sql、classpath\*:schema.sql
+>
+> 也可以在配置文件中手动指定位置：
+>
+> ~~~properties
+> spring.datasource.schema=classpath*:employee.sql,classpath*:department.sql
+> ~~~
+
+在 *JdbcTemplateAutoConfiguration* 中 SpringBoot 默认还帮我们自动注入了 JdbcTemplate 和 NamedParameterJdbcTemplate 组件，我们可以直接进行使用：
+
+~~~java
+@SpringBootTest
+class CacheApplicationTests {
+    
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+    
+	@Test
+	void contextLoads() {
+		System.out.println(jdbcTemplate.queryForList("select * from employee").get(0));
+	}
+}
+~~~
+
+
+
+**整合 Druid 数据源**
+
+Druid 的 GitHub 地址：https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter/
+
+SpringBoot 集成 Druid：
+
+1. 添加 POM 依赖：
+
+   ~~~xml
+   <dependency>
+       <groupId>com.alibaba</groupId>
+       <artifactId>druid-spring-boot-starter</artifactId>
+       <version>1.1.17</version>
+   </dependency>
+   ~~~
+
+   注：如果是 SpringBoot2.x 版本，druid-spring-boot-starter 的版本必须为 1.1.10+
+
+2. 数据源相关配置：
+
+   ~~~properties
+   # 数据源基本信息相关配置
+   spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+   spring.datasource.url=jdbc:mysql://192.168.253.128:3306/mybatis?serverTimezone=UTC
+   spring.datasource.username=root
+   spring.datasource.password=TinyStar0920
+   # Druid 连接池相关配置
+   spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+   ~~~
+
+   
+
 
 
 
@@ -1053,4 +1583,4 @@ setSystemProperty(resolver, FILE_LOG_PATTERN, "pattern.file");
 
 ---
 
-### 8.SpringBoot 数据访问
+### 9.SpringBoot 原理
