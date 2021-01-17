@@ -1561,7 +1561,52 @@ SpringBoot 集成 Druid：
    spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
    ~~~
 
+   此时，数据源就已经变为了 Druid 数据源。
    
+3. 数据源的其他配置可以省略，详情信息可以参考：https://github.com/alibaba/druid/wiki
+
+
+
+**配置 Druid 监控**
+
+要开启 Druid 监控，需要向容器中加入一个 servlet 组件和一个 filter 组件：
+
+创建 DruidConfig 配置类，加上 @Configuration 注解。
+
+配置 servlet：
+
+~~~java
+/**
+* 配置 Druid 管理台的 Servlet
+* @return 管理台 Servlet
+*/
+@Bean
+public ServletRegistrationBean<StatViewServlet> statViewServlet(){
+    ServletRegistrationBean<StatViewServlet> servlet = new ServletRegistrationBean<>(new StatViewServlet(), "/druid/*");
+    servlet.addInitParameter("loginUsername", "star");
+    servlet.addInitParameter("loginPassword", "123456");
+    return servlet;
+}
+~~~
+
+配置 filter：
+
+~~~java
+/**
+* 配置 Druid 的 Web 监控 Filter
+* @return Web 监控 Filter
+*/
+@Bean
+public FilterRegistrationBean<StatViewFilter> statViewFilter(){
+    FilterRegistrationBean<StatViewFilter> filter = new FilterRegistrationBean<>();
+    filter.setFilter(new StatViewFilter());
+    //拦截所有请求
+    filter.setUrlPatterns(Collections.singleton("/*"));
+    //放行下列请求，交由 StatViewServlet 进行处理
+    filter.addInitParameter("exclusions", "*.js,*.css,/druid/*");
+    return filter;
+}
+~~~
 
 
 
