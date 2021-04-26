@@ -220,6 +220,32 @@ Spring，SpringBoot 与 SpringCloud：
 
 
 
+SpringBoot 自定义 Starter：
+
+需要用到的注解：
+
+1. @Configuration：指定配置类
+2. @ConditionalOnXxx：在指定条件成立的情况下自动配置类生效 
+3. @AutoConfigureAfter：指定自动配置类的顺序 
+4. @Bean：给容器中添加组件
+5. @ConfigurationPropertie：结合相关 xxxProperties 类来绑定相关的配置 
+6. @EnableConfigurationProperties：让 xxxProperties 生效加入到容器中 
+
+此外，还要将需要启动就加载的自动配置类，配置在 META‐INF/spring.factories 中。
+
+启动器设计规约：
+
+1. 通常来说，SpringBoot Starter 启动器应该只用来做依赖导入，它是一空的 jar 包，用来提供辅助性依赖管理，不应该存在任何的 java 代码。
+2. 命名：
+   1. 官方启动器：spring-boot-starter-xxx，如：spring-boot-starter-web
+   2. 自定义启动器：xxx-spring-boot-starter，如：druid-spring-boot-starter
+
+
+
+
+
+
+
 ---
 
 ### 4.SpringBoot AutoConfiguration
@@ -1610,19 +1636,141 @@ public FilterRegistrationBean<StatViewFilter> statViewFilter(){
 
 
 
+**结合 MyBatis 配置多数据源**
 
+1. 搭建项目：创建 SpringBoot 项目，引入需要的项目依赖（不同数据库时需要引入不同的数据库 Driver）。
 
+2. 编写项目配置：
 
+   ~~~properties
+   # 服务端口
+   server.port=8080
+# MySQL 数据源连接相关信息
+   spring.datasource.mysql.driver-class-name=com.mysql.cj.jdbc.Driver
+   spring.datasource.mysql.url=jdbc:mysql://192.168.253.128:3306/common?serverTimezone=UTC
+   spring.datasource.mysql.username=root
+   spring.datasource.mysql.password=TinyStar0920
+   # Oracle 数据源连接相关信息
+   spring.datasource.oracle.driver-class-name=oracle.jdbc.OracleDriver
+   spring.datasource.oracle.url=jdbc:oracle:thin:@192.168.253.128:1521:ORCLCDB
+   spring.datasource.oracle.username=C##STAR
+   spring.datasource.oracle.password=123456
+   # Druid 相关配置
+   spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
+   spring.datasource.druid.initial-size=5
+   # 配置 Druid 监控
+   spring.datasource.druid.filter.commons-log.connection-logger-name=stat,wall,log4j
+   spring.datasource.druid.stat-view-servlet.enabled=true
+   # 日志相关配置
+   logging.level.com.star.md=debug
+   ~~~
+   
+3. 添加作用在 mapper 上的注解用来使用不同的数据源：
 
+   ~~~java
+   @Documented
+   @Repository
+   @Target({ElementType.TYPE})
+   @Retention(RetentionPolicy.RUNTIME)
+   public @interface MysqlRepository {
+       @AliasFor(annotation = Repository.class)
+       String value() default "";
+   }
+   ~~~
 
+   同理，添加 OracleRepository 注解。
 
+4. 使用 MysqlProperties 封装 Mysql 配置属性：
 
+   ~~~java
+   @Data
+   @Component
+   @ConfigurationProperties(prefix = "spring.datasource.mysql")
+   public class MysqlProperties {
+       private String url;
+       private String username;
+       private String password;
+       private String driverClassName;
+   }
+   ~~~
 
+   同理，使用 OracleProperties 封装 Oracle 配置属性。
 
+5. 配置 DataSource，SessionFactory，SessionTemplate 组件：
 
+   ~~~java
+   @Data
+   @Configuration
+   @MapperScan(basePackages = "com.star.md.dao", annotationClass = MysqlRepository.class,
+           sqlSessionFactoryRef = "mysqlSessionFactory", sqlSessionTemplateRef = "mysqlSessionTemplate")
+   @MapperScan(basePackages = "com.star.md.dao", annotationClass = OracleRepository.class,
+           sqlSessionFactoryRef = "oracleSessionFactory", sqlSessionTemplateRef = "oracleSessionTemplate")
+   public class DataSourceConfig {
+   
+       @Bean
+       @Primary
+       public DataSource mysqlDataSource(MysqlProperties properties) {
+           DruidDataSource mysqlDataSource = DruidDataSourceBuilder.create().build();
+           mysqlDataSource.setDriverClassName(properties.getDriverClassName());
+           mysqlDataSource.setUrl(properties.getUrl());
+           mysqlDataSource.setUsername(properties.getUsername());
+           mysqlDataSource.setPassword(properties.getPassword());
+           return mysqlDataSource;
+       }
+       
+       @Bean
+       public SqlSessionFactory mysqlSessionFactory(@Qualifier("mysqlDataSource") DataSource dataSource) throws Exception {
+           final SqlSessionFactoryBean mysqlSessionFactoryBean = new SqlSessionFactoryBean();
+           //配置数据源
+           mysqlSessionFactoryBean.setDataSource(dataSource);
+           //配置 mysql mapper 文件位置
+           mysqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
+                   .getResources("classpath:/mapper/mysql/*Mapper.xml"));
+           SqlSessionFactory sessionFactory = mysqlSessionFactoryBean.getObject();
+           assert sessionFactory != null;
+           sessionFactory.getConfiguration().setMapUnderscoreToCamelCase(true);
+           return sessionFactory;
+       }
+   
+       @Bean
+       public SqlSessionTemplate mysqlSessionTemplate(@Qualifier("mysqlSessionFactory") SqlSessionFactory sessionFactory) {
+           return new SqlSessionTemplate(sessionFactory);
+       }
+   
+       @Bean
+       public DataSource oracleDataSource(OracleProperties properties) {
+           DruidDataSource oracleDataSource = DruidDataSourceBuilder.create().build();
+           oracleDataSource.setDriverClassName(properties.getDriverClassName());
+           oracleDataSource.setUrl(properties.getUrl());
+           oracleDataSource.setUsername(properties.getUsername());
+           oracleDataSource.setPassword(properties.getPassword());
+           return oracleDataSource;
+       }
+   
+       @Bean
+       public SqlSessionFactory oracleSessionFactory(@Qualifier("oracleDataSource") DataSource dataSource) throws Exception {
+           final SqlSessionFactoryBean oracleSessionFactoryBean = new SqlSessionFactoryBean();
+           //配置数据源
+           oracleSessionFactoryBean.setDataSource(dataSource);
+           //配置 oracle mapper 位置
+           oracleSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
+                   .getResources("classpath:/mapper/oracle/*Mapper.xml"));
+           SqlSessionFactory sessionFactory = oracleSessionFactoryBean.getObject();
+           assert sessionFactory != null;
+           org.apache.ibatis.session.Configuration sessionConfiguration = sessionFactory.getConfiguration();
+           sessionConfiguration.setMapUnderscoreToCamelCase(true);
+           return sessionFactory;
+       }
+   
+       @Bean
+       public SqlSessionTemplate oracleSessionTemplate(@Qualifier("oracleSessionFactory") SqlSessionFactory sessionFactory) {
+           return new SqlSessionTemplate(sessionFactory);
+       }
+   }
+   ~~~
 
-
-
+   1. 向容器中添加了 2 个数据源， 2 个 SqlSessionFactory，2 个 SqlSessionTemplate。
+   2. 使用 **@MapperScan** 标注了要扫描的 mapper 组件，由于容器中存在多个 SqlSessionFactory 和多个 SqlSessionTemplate 组件，所以还要额外为扫描到的 mapper 指定要使用的 SqlSessionFactory 和 SqlSessionTemplate。
 
 
 
