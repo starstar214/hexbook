@@ -1,5 +1,3 @@
-安装 Nginx：[CentOS 8 下安装 Nginx](../../软件安装手册/中间件安装/CentOS8下安装Nginx.md)
-
 Nginx 官网：https://www.nginx.com/
 
 Nginx 官方文档：http://nginx.org/en/docs/
@@ -95,7 +93,6 @@ Nginx 官方文档：http://nginx.org/en/docs/
   [root@localhost nginx]# ps -ef|grep nginx
   root       2373   2181  0 02:08 pts/0    00:00:00 grep --color=auto nginx
   ~~~
-
 
 ---
 
@@ -256,6 +253,8 @@ http {
 
 虚拟主机配置段（包含在 http 之内）：配置代理服务的虚拟主机的各项参数。
 
+<u>一般来说，每部署一个服务，都在 /etc/nginx/conf.d 目录下新增一个 xxxx.conf 配置 server 信息，每个服务的文件互不干扰</u>。
+
 ~~~nginx
 server {
         listen       80 default_server;
@@ -303,6 +302,28 @@ server {
 > server 中还可以配置 index（缺省为 nginx 根目录下的 index.html），代理服务响应时间，缓存等多种参数。
 
 
+
+常见错误记录：
+
+1. 启动时报错：nginx: [emerg] bind() to 0.0.0.0:82 failed (13: Permission denied)
+
+   原因：系统不允许访问 82 端口，需要手动进行开通，
+
+   - 查询 http 允许访问的端口：
+
+     ~~~shell
+     [root@localhost nginx]# semanage port -l | grep http_port_t
+     http_port_t                    tcp      80, 81, 443, 488, 8008, 8009, 8443, 9000
+     pegasus_http_port_t            tcp      5988
+     ~~~
+
+   - 开通 82 端口允许 http 访问：
+
+     ~~~shell
+     [root@localhost nginx]# semanage port -a -t http_port_t  -p tcp 82
+     ~~~
+
+     
 
 ---
 

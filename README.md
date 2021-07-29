@@ -158,9 +158,8 @@
 
    SVN
 
-4. 研发流程
+   [Jenkins持续集成](notes/编码实践/项目工具/Jenkins.md)
 
-   Jenkins 持续集成
 
 ## :bar_chart: Python语言
 
