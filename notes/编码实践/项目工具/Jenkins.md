@@ -67,7 +67,7 @@ Jenkins 起源于 Hudson。Hudson 在商业软件的路上继续前行，而 Jen
 
 1. 传统部署方式
 
-   <img src="D:\GitRepository\HexBook\notes\编码实践\项目工具\img\008206ahu.jpg" style="zoom:80%;" />
+   <img src="./img/008206ahu.jpg" style="zoom:80%;" />
 
    
 
@@ -77,7 +77,7 @@ Jenkins 起源于 Hudson。Hudson 在商业软件的路上继续前行，而 Jen
 
    
 
-   ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\info_201908_2.jpg)
+   ![](./img/info_201908_2.jpg)
 
    
 
@@ -111,7 +111,7 @@ Jenkins 可以与 SVN 和 Git 进行集成，下面将采用 Jenkins + Git 进�
 
    - 选择「安装推荐的插件」进行必要的插件安装。
 
-     <img src="D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-27_22-36-58.png" style="zoom:80%;" />
+     <img src="./img/Snipaste_2021-07-27_22-36-58.png" style="zoom:80%;" />
 
    - 部分插件可能安装失败，这是由于国外的官方镜像源不稳定或不可用，可以尝试一下解决方法：
 
@@ -137,17 +137,17 @@ Jenkins 可以与 SVN 和 Git 进行集成，下面将采用 Jenkins + Git 进�
 
      1. 配置 Maven 的 settings.xml 地址。
 
-        ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_00-43-31.png)
+        ![](./img/Snipaste_2021-07-28_00-43-31.png)
 
      2. 配置 JDK（需要去掉 Install automatacally 选项输入 JAVA_HOME）
 
-        ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_00-44-00.png)
+        ![](./img/Snipaste_2021-07-28_00-44-00.png)
 
      3. 配置 Git 名称。
 
      4. 配置 Maven（需要去掉 Install automatacally 选项输入 MAVEN_HOME）
 
-        ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_00-44-17.png)
+        ![](./img/Snipaste_2021-07-28_00-44-17.png)
 
    
 
@@ -169,7 +169,7 @@ Jenkins 可以与 SVN 和 Git 进行集成，下面将采用 Jenkins + Git 进�
 
   
 
-  ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-27_23-45-25.png)
+  ![](./img/Snipaste_2021-07-27_23-45-25.png)
 
   
 
@@ -187,7 +187,7 @@ Jenkins 工作任务创建：
 
    - 「首页」 -> 「新建Item」/「Create a job」 -> 输入任务名称 -> 「Freestyle project」 -> 点击确定。
 
-     ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_22-33-23.png)
+     ![](./img/Snipaste_2021-07-28_22-33-23.png)
 
    - 添加项目描述。
 
@@ -195,15 +195,15 @@ Jenkins 工作任务创建：
 
    - 添加凭证（Gitee 的账户和密码）
 
-     ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_00-14-06.png)
+     ![](./img/Snipaste_2021-07-28_00-14-06.png)
 
    - 指定需要构建的分支名称：
 
-     ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_21-29-25.png)
+     ![](./img/Snipaste_2021-07-28_21-29-25.png)
 
    - 在「构建环境」模块增加构建步骤，选择「Invoke top-level Marven targets」输入 Maven 版本和执行目标（clean install）
 
-     ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_21-32-00.png)
+     ![](./img/Snipaste_2021-07-28_21-32-00.png)
 
    - 保存任务。
 
@@ -211,7 +211,7 @@ Jenkins 工作任务创建：
 
    - 构建完成后，可以在「工作空间」查看工作区文件。
 
-     ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_22-38-48.png)
+     ![](./img/Snipaste_2021-07-28_22-38-48.png)
 
    
 
@@ -235,13 +235,13 @@ Jenkins 自动发布构建：
 
 1. 点击「Manage Jenkins」 -> 「Configure System」添加 SSH Server：
 
-   ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-28_23-49-14.png)
+   ![](./img/Snipaste_2021-07-28_23-49-14.png)
 
    注意：需要勾选「Use password authentication, or use a different key」然后在「Passphrase / Password」栏位中输入虚拟机用户登录的密码，点击「Test Configuration」显示成功即可。
 
 2. 配置项目 SSH 信息，添加构建后操作选择「Send build artifacts over SSH」进行配置：
 
-   ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-29_00-02-13.png)
+   ![](./img/Snipaste_2021-07-29_00-02-13.png)
 
    > :biking_man: 注意：需要点击「高级」选项勾选 **Exec in pty**（虚拟终端），否则执行 nohup 命令后不能正常退出命令，导致 **UNSTABLE** 的构建结果，日志信息也不能正常输出。
 
@@ -279,13 +279,13 @@ Jenkins 与 Gitee 的集成文档可以参考：https://gitee.com/help/articles/
 
 然后需要点击「Manage Jenkins」 -> 「Configure System」配置 Gitee：
 
-![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-29_23-36-54.png)
+![](./img/Snipaste_2021-07-29_23-36-54.png)
 
 > 配置 Gitee 时需要添加 Gitee APIV5 私人令牌，具体教程可参考链接：https://gitee.com/help/articles/4193
 
 Gitee 配置完成后，在项目配置中添加 WebHook 信息：
 
-![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-30_00-41-19.png)
+![](./img/Snipaste_2021-07-30_00-41-19.png)
 
 选择 Gitee webhook 触发构建，此时会给出 WebHook 的 url：http://localhost:9090/gitee-project/jenkins
 
@@ -295,7 +295,7 @@ Gitee 配置完成后，在项目配置中添加 WebHook 信息：
 >
 > 下载解压后运行 ngrok.exe 程序，执行命令 ngrok.exe http 9090 即可将内网 9090 端口映射至外网。
 >
-> ![](D:\GitRepository\HexBook\notes\编码实践\项目工具\img\Snipaste_2021-07-30_00-51-16.png)
+> ![](./img/Snipaste_2021-07-30_00-51-16.png)
 >
 > 如图：访问 http://6d98e99e6d7b.ngrok.io 即可访问到 http://localhost:9090 。
 
