@@ -41,7 +41,7 @@ Spring Boot 采用约定大于配置的思想，大大的简化了 Spring 应用
 
 IDEA 中 SpringBoot 项目目录结构：
 
-![](../../img/Java语言/Snipaste_2020-10-31_01-47-11.png)
+![](../img/Snipaste_2020-10-31_01-47-11.png)
 
 - `.mvn`：存放 *maven wrapper* 相关的文件及 jar 包，可删除。
 - `src/main/java`：Java 文件存放路径。
@@ -1645,27 +1645,47 @@ public FilterRegistrationBean<StatViewFilter> statViewFilter(){
    ~~~properties
    # 服务端口
    server.port=8080
-# MySQL 数据源连接相关信息
+   ~~~
+
+3. MySQL 数据源连接相关信息
+
+   ~~~properties
    spring.datasource.mysql.driver-class-name=com.mysql.cj.jdbc.Driver
    spring.datasource.mysql.url=jdbc:mysql://192.168.253.128:3306/common?serverTimezone=UTC
    spring.datasource.mysql.username=root
    spring.datasource.mysql.password=TinyStar0920
-   # Oracle 数据源连接相关信息
+   ~~~
+
+4. Oracle 数据源连接相关信息
+
+   ~~~properties
    spring.datasource.oracle.driver-class-name=oracle.jdbc.OracleDriver
    spring.datasource.oracle.url=jdbc:oracle:thin:@192.168.253.128:1521:ORCLCDB
    spring.datasource.oracle.username=C##STAR
    spring.datasource.oracle.password=123456
-   # Druid 相关配置
+   ~~~
+
+5. Druid 相关配置
+
+   ~~~properties
    spring.datasource.type=com.alibaba.druid.pool.DruidDataSource
    spring.datasource.druid.initial-size=5
-   # 配置 Druid 监控
+   ~~~
+
+6. 配置 Druid 监控
+
+   ~~~properties
    spring.datasource.druid.filter.commons-log.connection-logger-name=stat,wall,log4j
    spring.datasource.druid.stat-view-servlet.enabled=true
-   # 日志相关配置
+   ~~~
+
+7. 日志相关配置
+
+   ~~~properties
    logging.level.com.star.md=debug
    ~~~
-   
-3. 添加作用在 mapper 上的注解用来使用不同的数据源：
+
+8. 添加作用在 mapper 上的注解用来使用不同的数据源：
 
    ~~~java
    @Documented
@@ -1680,7 +1700,7 @@ public FilterRegistrationBean<StatViewFilter> statViewFilter(){
 
    同理，添加 OracleRepository 注解。
 
-4. 使用 MysqlProperties 封装 Mysql 配置属性：
+9. 使用 MysqlProperties 封装 Mysql 配置属性：
 
    ~~~java
    @Data
@@ -1696,7 +1716,7 @@ public FilterRegistrationBean<StatViewFilter> statViewFilter(){
 
    同理，使用 OracleProperties 封装 Oracle 配置属性。
 
-5. 配置 DataSource，SessionFactory，SessionTemplate 组件：
+10. 配置 DataSource，SessionFactory，SessionTemplate 组件：
 
    ~~~java
    @Data

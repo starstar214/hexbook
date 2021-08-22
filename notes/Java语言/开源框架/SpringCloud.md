@@ -309,7 +309,7 @@ public class EurekaServerApplication {
    
    启动项目后，访问 http://localhost:7001/ 将会看到 Eureka 服务注册中心。
    
-   ![](D:\GitRepository\HexBook\notes\Java语言\开源框架\img\Snipaste_2021-07-31_23-47-10.png)
+   ![](../img/Snipaste_2021-07-31_23-47-10.png)
    
 2. 将 cloud-provider 注册到 EurekaServer 中：
 
@@ -333,7 +333,7 @@ public class EurekaServerApplication {
    
    先启动 eureka-server，再启动 cloud-provider 即可在配置中心的服务列表上查看到 cloud-provider 服务。
    
-   ![](D:\GitRepository\HexBook\notes\Java语言\开源框架\img\Snipaste_2021-08-01_01-41-01.png)
+   ![](../img/Snipaste_2021-08-01_01-41-01.png)
 
 
 
@@ -482,7 +482,7 @@ Eureka 集群搭建：
 
 4. 配置 jenkins，通过 jenkins 将 Eureka 集群发布在虚拟机中：
 
-   ![](D:\GitRepository\HexBook\notes\Java语言\开源框架\img\Snipaste_2021-08-01_18-40-53.png)
+   ![](../img/Snipaste_2021-08-01_18-40-53.png)
 
    确认防火墙端口开启后，在外部浏览器输入 http://192.168.253.128:7001/ 即可查看集群状况。
 
@@ -521,7 +521,7 @@ ACID 模型要求一个事务必须满足上面的四点，这是对关系型传
 
 常见的数据库产品的 CAP 占有图：
 
-<img src="D:\GitRepository\HexBook\notes\Java语言\开源框架\img\wwianshen.jpg" style="zoom:80%;" />
+<img src="../img/wwianshen.jpg" style="zoom:80%;" />
 
 由于传统的数据库追求数据的高一致性，且数据库不具有分区容错性，所以一般是满足 CA 特性的。 
 
@@ -696,6 +696,8 @@ public class XxxConfiguration {
 同样的，SpringCloud 还支持自定义其他负载均衡模式（通过 ServiceInstanceListSupplier 来进行定义）。
 
 ##### TODO
+
+自定义负载均衡模式
 
 
 

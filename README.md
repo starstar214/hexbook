@@ -24,7 +24,9 @@
 
 ## :computer: ​计算机基础
 
- 1. 计算机硬件基础
+ 1. 计算机基本原理
+
+    [计算机组成与设计](notes/计算机基础/计算机基本原理/计算机组成与设计.md)
 
  2. 数据结构
 
@@ -33,6 +35,8 @@
  3. 算法导论
 
  4. 编程思想
+
+    [代码整洁之道](notes/计算机基础/编程思想/代码整洁之道.md)
 
     设计模式
 
@@ -62,29 +66,29 @@
 
 ## :penguin: Linux系统
 
- 1. Linux基础
+ 1. Linux 基础
 
     初识 Linux
 
-    [Linux常用命令]()
+    Linux 常用命令
 
-    [文本编辑器Vim](notes/Linux系统/Linux基础/文本编辑器Vim.md)
+    [文本编辑器 Vim](notes/Linux系统/Linux基础/文本编辑器Vim.md)
 
- 2. Linux系统管理
+ 2. Linux 系统管理
 
     用户及用户组管理
 
-    Linux权限管理
+    Linux 权限管理
 
-3. Linux高级应用
+3. Linux 高级应用
 
-   [Shell编程](notes/Linux系统/Linux高级应用/Shell编程.md)
+   [Shell 编程](notes/Linux系统/Linux高级应用/Shell编程.md)
 
 ##  :coffee: Java语言
 
-1. Java基础
+1. Java 基础
 
-   [Java8 新特性](notes/Java语言/Java基础/Java8新特性.md)
+   Java8 新特性
 
    Java9 新特性
 
@@ -92,11 +96,13 @@
 
 3. 开源框架
    
-    [安全管理框架-Shiro](notes/Java语言/开源框架/安全管理框架-Shiro.md)
+    安全管理框架-Shiro
     
     [SpringBoot 核心基础](notes/Java语言/开源框架/SpringBoot核心基础.md)
     
     [SpringBoot 高级整合](notes/Java语言/开源框架/SpringBoot高级整合.md)
+    
+    [SpringCloud](notes/Java语言/开源框架/SpringCloud.md)
 
 ## :floppy_disk: 数据库
 
@@ -126,6 +132,8 @@
 
    [分布式缓存中间件-Redis](notes/中间件/NoSQL数据库/分布式缓存中间件-Redis.md)
 
+   [分布式搜索引擎-Elasticsearch](notes/中间件/NoSQL数据库/分布式搜索引擎-Elasticsearch.md)
+
 4. 容器化技术
 
    Docker
@@ -140,30 +148,28 @@
 
    [反向代理服务器-Nginx](notes/中间件/Web应用服务器/反向代理服务器-Nginx.md)
 
-##  :bulb: ​编码实践
+##  :bulb: ​项目开发
 
-1. 编码规范
-
-2. 编码实践
-
-3. 项目工具
+1. 开发工具
 
    IDEA
 
-   [Maven]()
+   Maven
 
-   [Gradle]()
+   Gradle
 
    Git
 
    SVN
 
-   [Jenkins持续集成](notes/编码实践/项目工具/Jenkins.md)
+2. 项目部署
+
+   [Jenkins 持续集成](notes/编码实践/项目工具/Jenkins.md)
 
 
 ## :bar_chart: Python语言
 
-1. Python基础 
+1. Python 基础 
 
    [Python 基础](notes/Python语言/Python基础/Python基础.md)
 

@@ -793,8 +793,9 @@ and went into his hole.
 正则表达式匹配示例（以示例文件为匹配文件）：
 
 <div align="center">
-	<img src="Image/Snipaste_2020-09-15_00-16-12.png"/>
+	<img src="../img/Snipaste_2020-09-15_00-16-12.png"/>
 </div>
+
 
 
 ---
