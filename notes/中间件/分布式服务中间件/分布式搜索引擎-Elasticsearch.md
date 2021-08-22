@@ -626,7 +626,7 @@ client.close();
 
 ---
 
-#### 7.Elasticsearch 高级查询
+#### 7.Elasticsearch 查询
 
 全量查询：
 
@@ -709,6 +709,14 @@ for (SearchHit hit : hits) {
 client.close();
 ~~~
 
+
+
+聚合查询：Elasticsearch 中聚合分为了 3 种
+
+1. 桶聚合：将文档按照特定条件的进行分组聚合。
+2. 指标聚合：对分组内的文档进行统计计算，如总和、平均值等。
+3. 管道聚合：对其他聚合产生的输出进行进一步的处理
+
 最大值查询：
 
 ~~~java
@@ -742,9 +750,13 @@ client.close();
 
 
 
+> :horse_racing: 如果需要对大数据量进行聚合，Elasticsearch 提供了`cardinality`和`percentiles`这两种近似聚合算法，它们会提供准确但不是 100% 精确的结果，为我们换来高速的执行效率和极小的内存消耗。
+
+
+
 ---
 
-#### 8.Elasticsearch 集群
+#### 9.Elasticsearch 集群
 
 Elasticsearch 集群概念：
 
@@ -879,34 +891,326 @@ Elasticsearch 集群分配：
 
 
 
+路由计算：当存储数据时，Elasticsearch 会根据文档数据的 Hash 值取主分片数量的余数作为存放数据的主分片的序号，所以在创建索引时就要确定好主分片数量并且不能改变，因为如果数量变化了，那么所有之前路由的值都会无效，文档也再也找不到了。
+
+> :currency_exchange: Elasticsearch 的任意节点都可以作为协调节点（coordinating node）接受请求，然后将请求转发到应该执行请求的节点。
+
+
+
+Elasticsearch 写入数据、删除数据流程：
+
+1. 客户端向 Node-1 发送新建、索引或者删除请求。
+
+2. 节点使用文档的 _id 确定文档属于分片 0。请求会被转发到 Node-3，因为分片 0 的主分片目前被分配在 Node-3 上。
+
+3. Node-3 在主分片上面执行请求，成功后将请求并行转发到 Node-1 和 Node-2 的副本分片上。
+
+   > :biking_man: 默认情况下 Elasticsearch 不会等到数据写入到所有副本分片后再向客户端报告成功，它会在数据写入到`int((primary + number_of_replicas)/2) + 1`个副本分片后就向客户端报告成功（此数据可以进行调整）。
+   >
+   > 如：设定 number_of_replicas 为 2，则计算结果为 int((1 + 2)/2) + 1 = 2。
+   >
+   > 如果没有足够的副本分片 Elasticsearch 会进行等待，希望更多的分片出现。默认情况下它最多等待1分钟。也可以使用 timeout 参数进行调整。
+
+Elasticsearch 读取数据流程：
+
+1. 客户端向 Node-1 发送获取请求。
+
+2. 节点使用文档的 _id 来确定文档属于分片 0，分片 0 的副本分片存在于所有的三个节点上，在这种情况下，它将请求转发到 Node-2。
+
+3. Node-2 将文档返回给 Node-1，然后将文档返回给客户端。
+
+   > :zap: 在处理读取请求时，协调结点在每次请求的时候都会通过轮询所有的副本分片来达到负载均衡。
+
+Elasticsearch 更新数据流程：
+
+1. 客户端向 Node-1 发送更新请求。
+
+2. 它将请求转发到主分片所在的 Node-3，Node-3 从主分片检索文档，修改 _source 字段中的 JSON，并且尝试重新索引主分片的文档。如果文档已经被另一个进程占用，它会进行重试直到超过 retry_on_conflict 次后放弃。
+
+3. 如果 Node-3 成功地更新文档，它将新版本的文档并行转发到 Node-1 和 Node-2 上的副本分片，重新建立索引。所有副本分片都返回成功再向客户端返回成功。
+
+   > :dango: 当主分片把更改转发到副本分片时，它不会转发更新请求而是转发完整文档的新版本。
+
+
+
+> :jeans: 将多节点集群改为单节点集群时，需要删除所有的节点数据（`/var/lib/elasticsearch/nodes`），否则集群不能正常工作。
+
+
+
 ---
 
-#### 9.数据读写原理
+#### 10.Elasticsearch 搜索原理
 
-
-
-
-
-作为一个全文检索工具，为数据建立查询索引是必不可少的步骤，索引主要分为 2 种：
+在搜索工具中为数据建立查询索引是必不可少的步骤，数据索引主要分为 2 种：
 
 1. 正排索引：在向数据库中插入数据时，每一条数据都有一个 ID，以此 ID 作为索引就是正排索引，也是传统的 DBMS 数据库中的索引。
 2. 倒排索引：当我们存储以文本形式存在的存储对象时，很多时候我们需要以关键字来进行搜索，这时候我们提取文档中的关键字作为索引，而以文档的 ID 作为值，这样的索引就称为倒排索引。
 
-> :yen: Elasticsearch 中就使用了倒排索引的原理进行全文检索。
+<u>Elasticsearch 中就使用了倒排索引的原理进行全文检索</u>，例：
+
+文档 001：The quick dog. 
+
+文档 002：The lazy dog.
+
+Elasticsearch 会将文档内容拆分为词条，创建一个包含所有不重复词条的排序列表，然后列出每个词条出现在哪个文档：
+
+| Term  | Doc_001 | Doc_002 | Doc_... |
+| ----- | ------- | ------- | ------- |
+| The   | √       | √       | ...     |
+| quick | √       |         | ...     |
+| dog   | √       | √       | ...     |
+| lazy  |         | √       | ...     |
+
+例如搜索 The quick，两个 Doc 都会被匹配到，但 Doc_001 的匹配度更高。
+
+> :eggplant: Elasticsearch 内置了分词器对文档进行分词处理，还包括过滤字符，大小写转换等：
+>
+> - 词条：索引中最小存储和查询单元。
+> - 词典：词条的集合，Elasticsearch 中使用 B+ Tree。
+> - 倒排表：倒排索引与<u>文档 ID、单词出现的位置信息</u>的对应关系表。
 
 
 
+在 Lucene 中，为了实现高索引速度，使用了 Segment 分段（Lucene 中单个倒排索引文件被称为`Segment`）架构存储，数据的存储步骤为：
+
+1. 客户端传入新的文档数据（一个或多个），Elasticsearch 将其写入到内存缓存中。
+
+2. 每隔 1s 时间（可配置），Elasticsearch 将打开一个新的 Segment 并将内存缓存中的数据 refresh 到这个新的 segment 中，此时这一部分数据对搜索可见（这就是 Elasticsearch 近实时搜索的原因）。
+
+   每一个 Segment 中都维护了一个 .del 文件，如果是删除数据，也是在新的分段中的 .del 文件中加入已删除文档的信息；如果是更新文档，则是删除旧的文档，在新的 Segment 中加入更新后的新版本文档数据。
+
+   > :japanese_ogre: 由于 Segment 是位于内存当中，如果断电会产生数据丢失，所以 Elasticsearch 采用 translog（事务日志）来记录每一次对 Elasticsearch 的操作，如果发生了故障则可以通过 translog 来恢复数据。
+
+3. 每隔一段时间（默认 30 分钟）或者 translog 变得越来越大时，Elasticsearch 就会启动 flush 操作，创建一个 Commit point，将所有已知的段持久化到磁盘当中并删除旧的 translog。
+
+   
+
+**段合并**：由于每秒钟 refresh 都会产生一个新的 segment（段），段数量过多会导致过多的消耗文件句柄、内存和 CPU 时间，影响查询速度。基于这个原因，Lucene 通过合并段来解决这个问题，即将一小部分大小相似的段合并为一个更大的段：
+
+![](./Image/elas_1110.png)
+
+如图：段合并将两个已经提交了的段和一个没有提交的段合并为了一个更大的段，合并时已删除的文档不会被合并到大的分段当中。
+
+![](./Image/elas_1111.png)
+
+合并完成后，老的段被删除，新的段被 flush 到磁盘。
+
+> :articulated_lorry: Elasticsearch 按段搜索：当一个查询被触发，Elasticsearch 将会查询所有已知的段然后对所有段的结果进行聚合并计算结果。
 
 
 
+---
+
+#### 10.SpringData 框架集成
+
+使用 SpringBoot 的方式加入 Elasticsearch 依赖并进行配置。
 
 
 
+1. 配置集群地址：
+
+   ~~~properties
+   # Elasticsearch 配置
+   spring.elasticsearch.rest.uris=http://192.168.253.136:9200
+   ~~~
+
+2. 新建实体类与 Index 相对应：
+
+   ~~~java
+   @Data
+   @Accessors(chain = true)
+   @Document(indexName = "score")
+   public class Score {
+       @Id
+       private long id;
+       @Field(type = FieldType.Keyword)
+       private String name;
+       @Field(type = FieldType.Integer_Range)
+       private int chinese;
+       @Field(type = FieldType.Integer_Range)
+       private int math;
+       @Field(type = FieldType.Integer_Range)
+       private int english;
+       @Field(type = FieldType.Integer_Range)
+       private int total;
+   }
+   ~~~
+
+   配置完成后，就可使用 Spring 提供的相关组件对 Elasticsearch 数据进行相关操作。
+
+> :dark_sunglasses: SpringBoot 应用启动后会扫描应用中的实体类，创建缺省的索引。
 
 
-3.可视化组件
 
-开源分析和可视化平台 Kibana
+操作 Elasticsearch 数据：
 
-安装 Elasticsearch 可视化组件 Kibana：
+1. 使用 ElasticsearchRestTemplate：向应用组件注入 ElasticsearchRestTemplate 便可进行操作。
 
+   ~~~java
+   @Autowired
+   private ElasticsearchRestTemplate template;
+   
+   @Test
+   void contextLoads() {
+       Score s = template.get("0", Score.class, IndexCoordinates.of("score"));
+       System.out.println(s);
+   }
+   
+   @Test
+   void findByPage() {
+       Sort sort = Sort.by(Sort.Direction.DESC,"chinese");
+       // 每页 3 个，第一页
+       PageRequest pageRequest = PageRequest.of(0, 3, sort);
+       for (Score score : dao.findAll(pageRequest)) {
+           System.out.println(score);
+       }
+   }
+   ~~~
+
+2. 使用 SpringBoot 内置的 Repository 进行默认操作：
+
+   ~~~java
+   @Repository
+   public interface ScoreDao extends ElasticsearchRepository<Score, Long> {
+   }
+   ~~~
+
+   此接口后指定 Elasticsearch 中使用 Long 作为对象 ID，创建此接口后便可进行 Elasticsearch 的一部分基础操作。除此之外，还可以在 ScoreDao 中定义其他方法以执行其他操作（不需要实现）：
+
+   ~~~java
+   @Repository
+   public interface ScoreDao extends ElasticsearchRepository<Score, Long> {
+       Score findByName(String name);
+   }
+   ~~~
+
+   
+
+---
+
+#### 11.Elasticsearch 优化
+
+:carousel_horse: 硬件选择
+
+Elasticsearch 所有的索引和文档数据是存储在本地的磁盘中，具体的路径可在 ES 的配置文件 elasticsearch.yml 中进行配置：
+
+~~~yaml
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+~~~
+
+Elasticsearch 重度使用磁盘，磁盘能处理的吞吐量越大，节点就越稳定。优化磁盘 I/O 的技巧如下：
+
+1. 使用 SSD（固态硬盘）代替机械硬盘。
+2. 使用磁盘阵列提高磁盘的 I/O 性能。
+3. 不要使用远程挂载的存储，其引入的延迟对性能来说完全是背道而驰的。
+
+
+
+:dragon_face: 分片策略：分片和副本的设计为 Elasticsearch 提供了支持分布式和故障转移的特性，但并不意味着分片和副本是可以无限分配的。而且索引的分片完成分配后由于索引的路由机制，我们是不能重新修改分片数的。
+
+过多的分片会导致以下后果：
+
+1. 一个分片的底层即为一个 Lucene 索引，会消耗一定文件句柄、内存、以及 CPU 运转。
+2. 每一个搜索请求都需要命中索引中的一些分片，如果每一个分片都处于不同的节点还好，但如果多个分片都需要在同一个节点上就会竞争使用相同的资源。
+3. 用于计算相关度的词项统计信息是基于分片的，如果有许多分片，每一个都只有很少的数据会导致很低的相关度。
+
+一个业务索引具体需要分配多少分片可能需要架构师和技术人员对业务的增长有个预先的判断，然后遵循以下规则进行分配：
+
+1. 控制每个分片占用的硬盘容量不超过 Elasticsearch 的最大 JVM 的堆空间设置（在`jvm.options`文件中查看）。例：如过索引的总容量在 10G 左右，最大堆内存设置为 4G，那么分片大小数量为 3 较为合适。
+
+   > :derelict_house: 注意：任何情况下每个分片的容量不得超过 31-32G（临界值）。
+
+2. 分片数不超过节点数的 3 倍，否则一个节点上存在过多的分片，会加大数据丢失的风险。
+
+3. 主分片，副本和节点最大数之间数量可以参考以下关系：`节点数 <= 主分片数 *（副本数 + 1）`。
+
+   
+
+:desert_island: 其他设置：
+
+1. 推迟分片分配：当节点中断时，集群默认会等待一分钟来查看节点是否会重新加入，超过这个时间后才会触发新的分片分配。这样就可以减少 ES 在自动再平衡可用分片时所带来的极大开销。通过修改参数`delayed_timeout`，可以延长这个时间，可以全局设置也可以在索引级别进行修改:
+
+   ~~~json
+   PUT /_all/_settings 
+   {
+     "settings": {
+       "index.unassigned.node_left.delayed_timeout": "5m" 
+     }
+   }
+   ~~~
+
+2. 根据业务规则选择路由：默认情况下，Elasticsearch 使用文档 ID 进行 Hash 计算数据的分片序号。
+
+   但是在实际使用中，很多时候我们使用关键字而不是文档的 ID 进行查询，这样 Elasticsearch 就会对每一个分片都进行查询然后聚合结果。
+
+   通过修改路由规则（例如使用文档某个字段名进行路由），在查询时就只会命中特定的分片而不是对所有分片都进行查询。
+
+
+
+:elephant: 写入速度的优化：Elasticsearch 的默认配置是综合了数据可靠性、写入速度、搜索实时性等因素。实际使用时，我们需要根据公司要求，进行偏向性的优化。针对于搜索性能要求不高，但是对写入要求较高的场景，我们需要尽可能的选择恰当写优化策略：
+
+1. 加大 Translog 日志`index.translog.flush_threshold_size`触发 flush 的临界值大小和自动 flush 的间隔时间`index.translog.flush_threshold_period`。
+
+2. 增加 Refresh 间隔，这样就能减少 Segment Merge（段合并）的次数从而减少 I/O 开销（按索引进行设置）：
+
+   ~~~json
+   PUT /my_logs/_settings
+   {
+   	"index": {
+   		"refresh_interval": "1s"
+   	}
+   }
+   ~~~
+
+3. 批量数据提交：Elasticsearch 使用 Bulk 线程池和队列来进行批量数据的写入，默认情况下批量提交的数据量不能超过 100M。数据条数一般根据文档的大小和服务器性能而定的，实际使用中单次批处理的数据应从 5MB～15MB 中进行测试然后选择性能更好的数据大小（最好不要超过15MB）。
+
+4. 优化节点间的任务分布：节点数较多时，将节点分为主节点、数据节点和客户端节点进行更合理的任务分配。
+
+5. 减少副本的数量：写入数据时，需要把写入的数据都同步到副本节点，副本节点越多，写索引的效率就越慢。在保证数据安全的情况下尽量使用更是的副本数量，同时，在大批量写入数据之前，调整`index.number_of_replicas: 0`禁用副本提高写入效率，过后再修改回来同步数据。
+
+
+
+:hear_no_evil: 内存分配：Elasticsearch 的内存设置定义在安装文件 jvm.option 中。
+
+1. 确保堆内存 Xmx 和 Xms 的大小是相同的，其目的是为了能够在 Java 垃圾回收机制清理完堆区后不需要重新分隔计算堆区的大小而浪费资源，可以减轻伸缩堆大小带来的压力。
+2. 堆内存最大不要超过物理内存的 50%，因为 Lucene 的设计目的是把底层 OS 里的数据缓存到内存中，如果 Elasticsearch 占用的内存过大，那么底层能利用的系统内存就会偏小从而影响查询性能。
+3. 堆内存的大小最好不要超过 32GB，超过这个值后，内存寻址的指针就会偏大，导致查询性能下降，硬件资源足够的情况下，可以设置为 31G。
+
+
+
+---
+
+#### 12.相关面试题
+
+常见的 Elasticsearch 使用场景？
+系统中的数据常常需要采用模糊查询进行数据的搜索，而模糊查询会导致传统的数据库放弃索引进行全表扫描，查询效率非常低下的，我们使用 Elasticsearch 做一个全文索引，将经常查询的系统功能的某些字段放入 Elasticsearch 索引库里，通过 Elasticsearch 查询出 ID，再去数据库中查询具体的数据。
+
+
+
+Elasticsearch 集群脑裂问题？
+
+集群脑裂：集群中的节点在选择主节点上出现分歧导致一个集群出现多个主节点从而使集群分裂，使得集群处于异常状态。
+
+脑裂问题产生原因：
+
+1. 网络： 集群间的网络延迟导致一些节点访问不到 master，认为 master 挂掉从而选举出新的 master（内网一般不会出现此问题）。
+2. 节点负载： 由于 master 节点与 data 节点都是混合在一起的， 所以当节点的负载较大时， 导致对应的 Elasticsearch 实例停止响应，那么一部分节点就会认为这个 master 节点失效了，故重新选举新的节点。
+3. 内存回收：由于 data 节点上 es 进程占用的内存较大，较大规模的内存回收操作也可能造成 Elasticsearch 进程失去响应。
+
+脑裂问题解决办法：
+
+1. 调大参数`discovery.zen.ping_timeout`，可适当减少网络延迟导致的误判。
+2. 角色分离：将 master 节点与 data 节点分离，可以防止节点负载和内存回收导致的 Elasticsearch 进程失去响应。
+3. 选举触发条件：默认情况下 Elasticsearch 设置的`discovery.zen.minimum_master_nodes`的值为 1，将其设置为`int(nodes/2) + 1`，即节点至少被一半以上的节点投票才能成为主节点。
+
+
+
+在并发情况下，Elasticsearch 如何保证读写一致？
+
+1. Elasticsearch 通过版本号使用乐观锁进行并发控制，以确保新版本不会被旧版本覆盖，由应用层来处理具体的冲突。
+
+2. 对于写操作，一致性级别支持 quorum/one/all，默认为 quorum，即只有当大多数分片可用时才允许写操作。
+3. 在写的过程中如果因为网络等原因导致写入副本失败，这样该副本被认为故障，分片将会在一个不同的节点上重建。
+4. 对于读操作，可以设置 replication 为 sync（默认），这使得写操作在主分片和副本分片都完成后才会返回。
+5. 如果设置 replication 为 async 时，也可以通过设置搜索请求参数 _preference 为 primary 来强制查询主分片，确保文档是最新版本。
