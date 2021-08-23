@@ -4,14 +4,6 @@ Spring Boot makes it easy to create stand-alone, production-grade Spring based A
 
 
 
-**目录**
-
-1. [SpringBoot 与缓存](#1springboot 与缓存)
-
-
-
-
-
 ---
 
 #### 1.SpringBoot 与缓存
@@ -216,3 +208,20 @@ public class CacheConfiguration {
 >     }
 > }
 > ~~~
+
+
+
+---
+
+#### 2.SpringBoot 与消息
+
+
+
+
+
+
+
+---
+
+#### 2.SpringBoot 与邮件
+

@@ -236,13 +236,75 @@ SpringBoot 自定义 Starter：
 启动器设计规约：
 
 1. 通常来说，SpringBoot Starter 启动器应该只用来做依赖导入，它是一空的 jar 包，用来提供辅助性依赖管理，不应该存在任何的 java 代码。
-2. 命名：
+2. 专门来写一个自动配置模块 xxx-starter-autoconfigure 用来向容器当中添加组件，启动器来依赖自动配置模块，使用时直接引入 starter 即可。
+3. 另外具体的场景业务代码也放在单独的模块中，由自动配置模块引入。
+4. 命名：
    1. 官方启动器：spring-boot-starter-xxx，如：spring-boot-starter-web
    2. 自定义启动器：xxx-spring-boot-starter，如：druid-spring-boot-starter
+   3. 官方自动配置类：spring-boot-autoconfigure-xxx，如：spring-boot-autoconfigure-processor
+   4. 自定义自动配置类：xxx-spring-boot-autoconfigure，如：mybatis-spring-boot-autoconfigure
 
+自定义 Starter 步骤：
 
+1. 使用`Spring Initializr`添加 demo-spring-boot-autoconfigure 模块，引入需要的业务依赖。
 
+   1. 添加 properties 文件：
 
+      ~~~java
+      @Data
+      @Component
+      @ConfigurationProperties("demo.greet")
+      public class GreetProperties {
+          private String title;
+          private String greeting;
+      }
+      ~~~
+
+   2. 编写业务代码：
+
+      ~~~java
+      @Data
+      public class GreetService {
+          private GreetProperties properties;
+      
+          public String greet(String name) {
+              String title;
+              if ((title = properties.getTitle()) == null) {
+                  title = "";
+              }
+              return properties.getGreeting() + "，" + name + title;
+          }
+      }
+      ~~~
+
+   3. 编写自动配置类将 GreetService 加入到容器中：
+
+      ~~~java
+      @Configuration
+      @ConditionalOnWebApplication
+      @EnableConfigurationProperties(GreetProperties.class)
+      public class GreetAutoConfiguration {
+          @Autowired
+          private GreetProperties greetProperties;
+          @Bean
+          public GreetService greetService() {
+              GreetService service = new GreetService();
+              service.setProperties(greetProperties);
+              return service;
+          }
+      }
+      ~~~
+
+   4. 在 spring.factories 中添加 GreetAutoConfiguration：
+
+      ~~~properties
+      org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+      com.star.demo.autoconfigure.GreetAutoConfiguration
+      ~~~
+
+2. 添加 maven 模块 demo-spring-boot-starter 引入 demo-spring-boot-autoconfigure。
+
+3. 在其他项目中引入 demo-spring-boot-starter 并进行 GreetProperties 配置即可使用 GreetService 组件。
 
 
 
@@ -1718,82 +1780,292 @@ public FilterRegistrationBean<StatViewFilter> statViewFilter(){
 
 10. 配置 DataSource，SessionFactory，SessionTemplate 组件：
 
-   ~~~java
-   @Data
-   @Configuration
-   @MapperScan(basePackages = "com.star.md.dao", annotationClass = MysqlRepository.class,
-           sqlSessionFactoryRef = "mysqlSessionFactory", sqlSessionTemplateRef = "mysqlSessionTemplate")
-   @MapperScan(basePackages = "com.star.md.dao", annotationClass = OracleRepository.class,
-           sqlSessionFactoryRef = "oracleSessionFactory", sqlSessionTemplateRef = "oracleSessionTemplate")
-   public class DataSourceConfig {
-   
-       @Bean
-       @Primary
-       public DataSource mysqlDataSource(MysqlProperties properties) {
-           DruidDataSource mysqlDataSource = DruidDataSourceBuilder.create().build();
-           mysqlDataSource.setDriverClassName(properties.getDriverClassName());
-           mysqlDataSource.setUrl(properties.getUrl());
-           mysqlDataSource.setUsername(properties.getUsername());
-           mysqlDataSource.setPassword(properties.getPassword());
-           return mysqlDataSource;
-       }
+    ~~~java
+    @Data
+       @Configuration
+       @MapperScan(basePackages = "com.star.md.dao", annotationClass = MysqlRepository.class,
+               sqlSessionFactoryRef = "mysqlSessionFactory", sqlSessionTemplateRef = "mysqlSessionTemplate")
+       @MapperScan(basePackages = "com.star.md.dao", annotationClass = OracleRepository.class,
+               sqlSessionFactoryRef = "oracleSessionFactory", sqlSessionTemplateRef = "oracleSessionTemplate")
+       public class DataSourceConfig {
        
-       @Bean
-       public SqlSessionFactory mysqlSessionFactory(@Qualifier("mysqlDataSource") DataSource dataSource) throws Exception {
-           final SqlSessionFactoryBean mysqlSessionFactoryBean = new SqlSessionFactoryBean();
-           //配置数据源
-           mysqlSessionFactoryBean.setDataSource(dataSource);
-           //配置 mysql mapper 文件位置
-           mysqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
-                   .getResources("classpath:/mapper/mysql/*Mapper.xml"));
-           SqlSessionFactory sessionFactory = mysqlSessionFactoryBean.getObject();
-           assert sessionFactory != null;
-           sessionFactory.getConfiguration().setMapUnderscoreToCamelCase(true);
-           return sessionFactory;
+           @Bean
+           @Primary
+           public DataSource mysqlDataSource(MysqlProperties properties) {
+               DruidDataSource mysqlDataSource = DruidDataSourceBuilder.create().build();
+               mysqlDataSource.setDriverClassName(properties.getDriverClassName());
+               mysqlDataSource.setUrl(properties.getUrl());
+               mysqlDataSource.setUsername(properties.getUsername());
+               mysqlDataSource.setPassword(properties.getPassword());
+               return mysqlDataSource;
+           }
+           
+           @Bean
+           public SqlSessionFactory mysqlSessionFactory(@Qualifier("mysqlDataSource") DataSource dataSource) throws Exception {
+               final SqlSessionFactoryBean mysqlSessionFactoryBean = new SqlSessionFactoryBean();
+               //配置数据源
+               mysqlSessionFactoryBean.setDataSource(dataSource);
+               //配置 mysql mapper 文件位置
+               mysqlSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
+                       .getResources("classpath:/mapper/mysql/*Mapper.xml"));
+               SqlSessionFactory sessionFactory = mysqlSessionFactoryBean.getObject();
+               assert sessionFactory != null;
+               sessionFactory.getConfiguration().setMapUnderscoreToCamelCase(true);
+               return sessionFactory;
+           }
+       
+           @Bean
+           public SqlSessionTemplate mysqlSessionTemplate(@Qualifier("mysqlSessionFactory") SqlSessionFactory sessionFactory) {
+               return new SqlSessionTemplate(sessionFactory);
+           }
+       
+           @Bean
+           public DataSource oracleDataSource(OracleProperties properties) {
+               DruidDataSource oracleDataSource = DruidDataSourceBuilder.create().build();
+               oracleDataSource.setDriverClassName(properties.getDriverClassName());
+               oracleDataSource.setUrl(properties.getUrl());
+               oracleDataSource.setUsername(properties.getUsername());
+               oracleDataSource.setPassword(properties.getPassword());
+               return oracleDataSource;
+           }
+       
+           @Bean
+           public SqlSessionFactory oracleSessionFactory(@Qualifier("oracleDataSource") DataSource dataSource) throws Exception {
+               final SqlSessionFactoryBean oracleSessionFactoryBean = new SqlSessionFactoryBean();
+               //配置数据源
+               oracleSessionFactoryBean.setDataSource(dataSource);
+               //配置 oracle mapper 位置
+               oracleSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
+                       .getResources("classpath:/mapper/oracle/*Mapper.xml"));
+               SqlSessionFactory sessionFactory = oracleSessionFactoryBean.getObject();
+               assert sessionFactory != null;
+               org.apache.ibatis.session.Configuration sessionConfiguration = sessionFactory.getConfiguration();
+               sessionConfiguration.setMapUnderscoreToCamelCase(true);
+               return sessionFactory;
+           }
+       
+           @Bean
+           public SqlSessionTemplate oracleSessionTemplate(@Qualifier("oracleSessionFactory") SqlSessionFactory sessionFactory) {
+               return new SqlSessionTemplate(sessionFactory);
+           }
        }
-   
-       @Bean
-       public SqlSessionTemplate mysqlSessionTemplate(@Qualifier("mysqlSessionFactory") SqlSessionFactory sessionFactory) {
-           return new SqlSessionTemplate(sessionFactory);
-       }
-   
-       @Bean
-       public DataSource oracleDataSource(OracleProperties properties) {
-           DruidDataSource oracleDataSource = DruidDataSourceBuilder.create().build();
-           oracleDataSource.setDriverClassName(properties.getDriverClassName());
-           oracleDataSource.setUrl(properties.getUrl());
-           oracleDataSource.setUsername(properties.getUsername());
-           oracleDataSource.setPassword(properties.getPassword());
-           return oracleDataSource;
-       }
-   
-       @Bean
-       public SqlSessionFactory oracleSessionFactory(@Qualifier("oracleDataSource") DataSource dataSource) throws Exception {
-           final SqlSessionFactoryBean oracleSessionFactoryBean = new SqlSessionFactoryBean();
-           //配置数据源
-           oracleSessionFactoryBean.setDataSource(dataSource);
-           //配置 oracle mapper 位置
-           oracleSessionFactoryBean.setMapperLocations(new PathMatchingResourcePatternResolver()
-                   .getResources("classpath:/mapper/oracle/*Mapper.xml"));
-           SqlSessionFactory sessionFactory = oracleSessionFactoryBean.getObject();
-           assert sessionFactory != null;
-           org.apache.ibatis.session.Configuration sessionConfiguration = sessionFactory.getConfiguration();
-           sessionConfiguration.setMapUnderscoreToCamelCase(true);
-           return sessionFactory;
-       }
-   
-       @Bean
-       public SqlSessionTemplate oracleSessionTemplate(@Qualifier("oracleSessionFactory") SqlSessionFactory sessionFactory) {
-           return new SqlSessionTemplate(sessionFactory);
-       }
-   }
-   ~~~
+    ~~~
 
-   1. 向容器中添加了 2 个数据源， 2 个 SqlSessionFactory，2 个 SqlSessionTemplate。
-   2. 使用 **@MapperScan** 标注了要扫描的 mapper 组件，由于容器中存在多个 SqlSessionFactory 和多个 SqlSessionTemplate 组件，所以还要额外为扫描到的 mapper 指定要使用的 SqlSessionFactory 和 SqlSessionTemplate。
+    1. 向容器中添加了 2 个数据源， 2 个 SqlSessionFactory，2 个 SqlSessionTemplate。
+    2. 使用 **@MapperScan** 标注了要扫描的 mapper 组件，由于容器中存在多个 SqlSessionFactory 和多个 SqlSessionTemplate 组件，所以还要额外为扫描到的 mapper 指定要使用的 SqlSessionFactory 和 SqlSessionTemplate。
 
 
 
 ---
 
 ### 9.SpringBoot 原理
+
+SpringBoot 启动流程：
+
+1. 创建 SpringApplication 对象：
+
+   ```java
+   public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySources) {
+       this.resourceLoader = resourceLoader;
+       Assert.notNull(primarySources, "PrimarySources must not be null");
+       this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+       // 判断当前 SpringApplication 的类型（是否为 Web 应用程序）
+       this.webApplicationType = WebApplicationType.deduceFromClasspath();
+       // 从 jar 的类路径下查找 META‐INF/spring.factories 文件读取文件中的 Initializers
+       this.bootstrapRegistryInitializers = getBootstrapRegistryInitializersFromSpringFactories();
+       // 通过读取到的 Initializers 初始化所有的 ApplicationContextInitializer 并保存
+       setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
+       // 通过读取到的 Initializers 初始化所有的 ApplicationListener 并保存
+       setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
+       // 从多个配置类中找到有 main 方法的主配置类
+       this.mainApplicationClass = deduceMainApplicationClass();
+   }
+   ```
+
+   在创建 SpringApplication 对象的过程中初始化 Initializers、Listeners 等组件。
+
+2. 执行 run 方法：
+
+   ~~~java
+   public ConfigurableApplicationContext run(String... args) {
+       // 创建计时器
+       StopWatch stopWatch = new StopWatch();
+       // 计时器启动
+       stopWatch.start();
+       DefaultBootstrapContext bootstrapContext = createBootstrapContext();
+       ConfigurableApplicationContext context = null;
+       configureHeadlessProperty();
+       // 获取 META‐INF/spring.factories 下所有的 SpringApplicationRunListeners
+       SpringApplicationRunListeners listeners = getRunListeners(args);
+       // 回调所有的获取到的 SpringApplicationRunListener 的 starting 方法
+       listeners.starting(bootstrapContext, this.mainApplicationClass);
+       try {
+           // 封装命令行参数
+           ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+           // 准备环境、回调 listeners 的 environmentPrepared 方法
+           ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
+           configureIgnoreBeanInfo(environment);
+           // 打印 Banner 信息
+           Banner printedBanner = printBanner(environment);
+           // 创建 ApplicationContext
+           context = createApplicationContext();
+           context.setApplicationStartup(this.applicationStartup);
+           /**
+            * 准备 ApplicationContext 上下文环境
+            * 1.设置环境、对 ApplicationContext 进行后置处理（postProcessApplicationContext）
+            * 2.回调之前保存的所有的 ApplicationContextInitializer 的 initialize 方法（applyInitializers）
+            * 3.回调 listeners 的 contextPrepared 方法
+            * 4.创建 boot 环境所需要的特殊的 singleton beans
+            * 5.回调 listeners 的 contextLoaded 方法
+            */ 
+           prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
+           // 刷新容器、创建 BeanFactory、如果是 Web 应用还会创建内嵌的 Server 容器（createWebServer）
+           refreshContext(context);
+           afterRefresh(context, applicationArguments);
+           // 计时器结束
+           stopWatch.stop();
+           if (this.logStartupInfo) {
+               new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), stopWatch);
+           }
+           // 回调 listeners 的 started 方法
+           listeners.started(context);
+           // 从 ioc 容器中获取所有的 ApplicationRunner 和 CommandLineRunner 进行回调
+           callRunners(context, applicationArguments);
+       }catch (Throwable ex) {
+           handleRunFailure(context, ex, listeners);
+           throw new IllegalStateException(ex);
+       }
+   
+       try {
+           // 回调 listeners 的 running 方法
+           listeners.running(context);
+       }catch (Throwable ex) {
+           handleRunFailure(context, ex, null);
+           throw new IllegalStateException(ex);
+       }
+       return context;
+   }
+   ~~~
+
+   
+
+在 SpringBoot 主程序中，在一些步骤调用了 Initializer、Listener、Runner 的回调方法，我们也可以利用 SpringBoot 的事件监听机制在容器启动过程中来执行我们自定义的业务逻辑：
+
+1. **ApplicationContextInitializer**：监听 ApplicationContext 的初始化动作。
+
+   自定义 ApplicationContextInitializer：
+
+   ~~~java
+   public class MyApplicationContextInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+       @Override
+       public void initialize(ConfigurableApplicationContext applicationContext) {
+           System.out.println("MyApplicationContextInitializer...initialize");
+       }
+   }
+   ~~~
+
+2. **SpringApplicationRunListener**：监听 SpringApplication 的启动过程。
+
+   自定义 SpringApplicationRunListener：
+
+   ~~~java
+   public class MySpringApplicationRunListener implements SpringApplicationRunListener {
+   
+       // 添加必要的构造器
+       public MySpringApplicationRunListener(SpringApplication application, String[] args) {
+           super();
+       }
+   
+       @Override
+       public void starting(ConfigurableBootstrapContext bootstrapContext){
+           System.out.println("MySpringApplicationRunListener...starting...");
+       }
+   
+       @Override
+       public void environmentPrepared(ConfigurableBootstrapContext bootstrapContext, ConfigurableEnvironment environment) {
+           System.out.println("MySpringApplicationRunListener...environmentPrepared...");
+       }
+   
+       @Override
+       public void contextPrepared(ConfigurableApplicationContext context) {
+           System.out.println("MySpringApplicationRunListener...contextPrepared...");
+       }
+   
+       @Override
+       public void contextLoaded(ConfigurableApplicationContext context) {
+           System.out.println("MySpringApplicationRunListener...contextLoaded...");
+       }
+   
+       @Override
+       public void started(ConfigurableApplicationContext context) {
+           System.out.println("MySpringApplicationRunListener...started...");
+       }
+   
+       @Override
+       public void running(ConfigurableApplicationContext context) {
+           System.out.println("MySpringApplicationRunListener...running...");
+       }
+   }
+   ~~~
+
+:zap: 注意：ApplicationContextInitializer 和 SpringApplicationRunListener 两种组件需要加入到 spring.factories 中才能生效：
+
+在当前项目的 resources 目录下新建 META-INF/spring.factories 文件，加入内容：
+
+~~~properties
+org.springframework.context.ApplicationContextInitializer=\
+  com.star.demo.listener.MyApplicationContextInitializer
+org.springframework.boot.SpringApplicationRunListener=\
+  com.star.demo.listener.MySpringApplicationRunListener
+~~~
+
+3. 自定义 ApplicationRunner：
+
+   ~~~java
+   @Component
+   public class MyApplicationRunner implements ApplicationRunner {
+       @Override
+       public void run(ApplicationArguments args) throws Exception {
+           System.out.println("MyApplicationRunner...run");
+       }
+   }
+   ~~~
+
+4. 自定义 CommandLineRunner：
+
+   ~~~java
+   @Component
+   public class MyCommandLineRunner implements CommandLineRunner {
+       @Override
+       public void run(String... args) throws Exception {
+           System.out.println("MyCommandLineRunner...run");
+       }
+   }
+   ~~~
+
+启动容器后，它们的执行顺序如下：
+
+~~~tex
+MySpringApplicationRunListener...starting...
+MySpringApplicationRunListener...environmentPrepared...
+MyApplicationContextInitializer...initialize
+MySpringApplicationRunListener...contextPrepared...
+MySpringApplicationRunListener...contextLoaded...
+MySpringApplicationRunListener...started...
+MyApplicationRunner...run
+MyCommandLineRunner...run
+MySpringApplicationRunListener...running...
+~~~
+
+
+
+> :alarm_clock: 除此之外，Spring 还提供了大量的 Listener 实现和大量的 Event 实现，帮助我们更好的介入到应用的各个活动之中。
+>
+> 例如，通过 ApplicationReadyEvent 介入到程序启动之后：
+>
+> ~~~java
+> 
+> ~~~
+>
+
+##### TODO
