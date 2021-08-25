@@ -76,6 +76,8 @@
 
  2. Linux 系统管理
 
+    [Linux 系统管理](notes/Linux系统/Linux系统管理/Linux系统管理.md)
+
     用户及用户组管理
 
     Linux 权限管理
@@ -125,6 +127,8 @@
    ShardingSphere
 
 2. 消息队列中间件
+
+   [消息队列中间件-RabbitMQ](notes/中间件/消息队列中间件/消息队列中间件-RabbitMQ.md)
 
    [消息队列中间件-Kafka](notes/中间件/消息队列中间件/消息队列中间件-Kafka.md)
 
