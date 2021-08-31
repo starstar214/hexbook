@@ -195,7 +195,7 @@ passwd：所有的身份验证令牌已经成功更新。
    3. TEMPLATE_NAME：数据库模板，General_Purpose.dbc（普通数据库）、Data_Warehouse.dbc（数据仓库）
    4. CHARSET：字符集，AL32UTF8 是 UTF-8 的升级版，此处不需要修改。
    5. PDB_NAME：可拔插数据库名字（保持默认，多实例之间不重复）
-   6. LISTENER_NAME：监听器，此处需要修改，不要与已存在的监听器相同，建议修改为 "LISTENER-实例名称"
+   6. LISTENER_NAME：监听器，此处需要修改，不要与已存在的监听器相同，建议修改为 "LISTENER_实例名称"
    7. NUMBER_OF_PDBS：可拔插数据库数量，无需修改。
    8. CREATE_AS_CDB：数据库实例作为 CDB 容器，无需修改。
 
@@ -241,7 +241,7 @@ passwd：所有的身份验证令牌已经成功更新。
    >
    >    修改完毕后，运行脚本进行配置即可。
 
-4. 配置数据库实例：
+4. 配置数据库实例（root 用户）：
 
    ~~~shell
    [root@localhost init.d]# ./oracledb_ORCLCDB-19c configure
@@ -330,7 +330,7 @@ SQL>
 创建数据库用户：
 
 ~~~sql
-SQL> create user C##SCOTT IDENTIFIED BY 123456;
+SQL> create user C##STAR IDENTIFIED BY 123456;
 ~~~
 
 > 注意：从 Oracle 12c 之后，增加了 CDB 和 PDB 的概念，数据库引入的多组用户环境（Multitenant Environment）中，允许一个数据库容器（CDB）承载多个可插拔数据库（PDB）;
@@ -340,13 +340,14 @@ SQL> create user C##SCOTT IDENTIFIED BY 123456;
 创建表空间：
 
 ~~~sql
-SQL> create tablespace STAR_TEST_DATA datafile '/opt/oracle/oradata/ORCLCDB/star_test.dbf' size 2048M;
+SQL> create tablespace STAR_TEST_DATA datafile '/opt/oracle/oradata/ORCLCDB/star_test.dbf' size 5120M;
 ~~~
 
 重新启动数据库：
 
 ~~~sql
 SQL> shutdown immediate;
+SQL> startup;
 ~~~
 
 为用户分配默认表空间：
@@ -373,7 +374,7 @@ User altered.
 
    ~~~sql
    SQL> grant unlimited tablespace to C##STAR;
-   SQL> grant create tablespace to C##STAR;                  
+   SQL> grant create tablespace to C##STAR;             
    SQL> grant alter tablespace to C##STAR;
    SQL> grant drop tablespace to C##STAR;
    SQL> grant manage tablespace to C##STAR;
@@ -449,6 +450,69 @@ success
 连接方式选择 Basic，输入 IP、端口、用户名、密码即可连接成功。
 
 进入数据库后点击用户名，即可查看当前用户的表空间以及其下的数据表。
+
+
+
+---
+
+### 7.添加 Oracle 为系统服务
+
+找到文件`/etc/oratab`，修改文件内容：
+
+~~~properties
+ORCLCDB:/opt/oracle/product/19c/dbhome_1:Y
+~~~
+
+将最后的 N 修改为 Y。
+
+在`/etc/init.d`目录下编写启动脚本`oracle`
+
+~~~shell
+#!/bin/sh
+# chkconfig: 2345 20 80
+# description: Oracle dbstart / dbshut
+# 以上两行为 chkconfig 所需
+ORA_HOME=/opt/oracle/product/19c/dbhome_1
+ORA_OWNER=oracle
+LOG_FILE=/var/log/oracle/oracle.log
+echo  "==================================================================================="
+date +"### %T %a %D: Run Oracle... "
+if [ ! -f ${ORA_HOME}/bin/dbstart ] || [ ! -f ${ORA_HOME}/bin/dbshut ]; then
+    echo "Error: Missing the script file ${ORA_HOME}/bin/dbstart or ${ORA_HOME}/bin/dbshut!"
+    echo "==================================================================================="
+    exit
+fi
+start(){
+        echo "### Startup Database..."
+        su - ${ORA_OWNER} -c "${ORA_HOME}/bin/dbstart ${ORA_HOME}"
+        echo "### Done."
+}
+stop(){
+        echo "### Shutdown Database..."
+        su - ${ORA_OWNER} -c "${ORA_HOME}/bin/dbshut ${ORA_HOME}"
+        echo "### Done."
+}
+case "$1" in
+        "start")
+                start
+                ;;
+        "stop")
+                stop
+                ;;
+        "restart")
+                stop
+                start
+                ;;
+esac
+
+date +"### %T %a %D: Finished."
+echo "==================================================================================="
+echo ""
+~~~
+
+编写完成后即可使用此脚本进行服务启停。
+
+
 
 
 

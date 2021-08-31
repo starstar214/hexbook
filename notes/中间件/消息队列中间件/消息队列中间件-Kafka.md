@@ -111,7 +111,6 @@ Kafka 基本操作：
 >2. Partitions（分区）：消息的实际存储单位。
 >3. Producer（生产者）：消息生产者。
 >4. Consumer（消费者）：消息消费者。
->5. Broker（代理）：服务器上运行的 Kafka 的实例，在 Kafka 集群中每一个 Broker 对应一个唯一的 ID，即 BrokerId。
 
 
 
@@ -776,7 +775,13 @@ Kafka Connect 是 Kafka 流式计算的一部分，主要用来跟其他中间�
 
 Kafka Connect 提供了一套统一的 API 用来与其他系统的集成，目前已经有很多开源的和商业版本的 Kafka Connect 实现。
 
+> :koala: Kafka Connect API 不需要我们自己开发，使用开源的 connector 即可。
+>
+> Kafka Connect 开源社区：https://www.confluent.io/hub/
 
+
+
+Kafka Connect 使用场景：搭建实时数据集成平台，实时的监控数据源的数据变化，并将变化经过一系列处理输出到其他数据中心。
 
 
 
@@ -784,7 +789,27 @@ Kafka Connect 提供了一套统一的 API 用来与其他系统的集成，目�
 
 #### 8.Kafka 集群
 
+Kafka 集群特点：
 
+1. Kafka 集群依赖于 Zookeeper 进行协调。
+2. Kafka 通过 BrokerId 来区分集群中的各个节点。
+
+Kafka 集群基本概念：
+
+1. Broker（代理）：服务器上运行的 Kafka 的实例，在 Kafka 集群中每一个 Broker 对应一个唯一的 ID，即 BrokerId。
+
+
+
+
+
+
+
+kafka 节点故障原因：
+
+1. Kafka 未与 Zookeeper 保持心跳。
+2. follower 消息落后 leader 太多。
+
+Kafka 节点故障处理：
 
 
 
@@ -792,7 +817,7 @@ Kafka Connect 提供了一套统一的 API 用来与其他系统的集成，目�
 
 ---
 
-#### 9.Kafka 集群监控
+#### 9.Kafka 集成微服务
 
 
 
@@ -800,12 +825,4 @@ Kafka Connect 提供了一套统一的 API 用来与其他系统的集成，目�
 
 ---
 
-#### 10.Kafka 集成微服务
-
-
-
-
-
----
-
-#### 11.Kafka 常见面试题
+#### 10.Kafka 常见面试题
