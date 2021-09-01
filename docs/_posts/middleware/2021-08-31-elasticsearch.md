@@ -239,7 +239,7 @@ Elasticsearch 中常用的 HTTP 方法：
 
    由于在手动添加了 ID 后，无论发送了多少次请求，产生的结果都是一样的，满足了请求的幂等性，所以该请求也可以使用 PUT 请求进行发送。
 
-   > :chart_with_downwards_trend: 指定 ID 发送请求时，如果存在该 ID 的数据，就是在原基础上进行更新（会更改 version 值）
+   <table><tr><td bgcolor=PowderBlue>指定 ID 发送请求时，如果存在该 ID 的数据，就是在原基础上进行更新（会更改 version 值）</td></tr></table>
 
    指定 id 进行文档添加/更新的 url 也可以是：
 
