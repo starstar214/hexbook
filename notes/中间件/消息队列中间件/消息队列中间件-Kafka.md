@@ -76,8 +76,8 @@ Kafka 配置文件：配置文件是位于 config 目录下 server.properties �
 1. 配置 listeners 监听： 
 
    ~~~properties
-   listeners=PLAINTEXT://localhost:9092
-   advertised.listeners=PLAINTEXT://localhost:9092
+   listeners=PLAINTEXT://192.168.253.136:9092
+   advertised.listeners=PLAINTEXT://192.168.253.136:9092
    ~~~
 
    如果这里配置的 localhost 后续命令中则使用 localhost，如果这里配置具体 IP，后面命令则使用具体的 IP 地址。
@@ -108,7 +108,7 @@ Kafka 基本操作：
 >:closed_lock_with_key: Kafka 基本概念：
 >
 >1. Topic（主题）：消息主题，一个消息主题包含多个 Partitions。
->2. Partitions（分区）：消息的实际存储单位。
+>2. Partitions（分区）：消息的实际存储单位，将一个 Topic 的消息按分区进行存储，大大的提高了 Kafka 集群的负载能力。
 >3. Producer（生产者）：消息生产者。
 >4. Consumer（消费者）：消息消费者。
 
@@ -668,6 +668,8 @@ Consumer 端对着三种语义的支持：
    
 
 > :ear_of_rice: 综上所述：Kafka 默认是保证`至少一次`传递，并允许用户通过禁止生产者重试和处理一批消息前提交它的偏移量来实现`最多一次`传递，而`正好一次`传递需要与目标存储系统合作，但 Kafka 提供了偏移量，实现起来也比较简单。
+>
+> 附：Producer、Consumer 所有配置项参考[配置项](../data/Kafka配置全解析.pdf)。
 
 
 
@@ -794,30 +796,183 @@ Kafka 集群特点：
 1. Kafka 集群依赖于 Zookeeper 进行协调。
 2. Kafka 通过 BrokerId 来区分集群中的各个节点。
 
-Kafka 集群基本概念：
+> Kafka 集群基本概念：
+>
+> 1. Broker（代理）：服务器上运行的 Kafka 的实例，在 Kafka 集群中每一个 Broker 对应一个唯一的 ID，即 BrokerId（Interger）。
+>
+> 2. Leader：负责消息读写的 Partition，所有的读写操作只能发生于 Leader 分区上。
+>
+> 3. Follower：负责从 Leader 同步消息，Follower 与 Leader 始终保持消息同步。
+>
+> 4. Replicas（副本）：Kafka 将日志复制多份来形成数据冗余，避免单点故障引起数据丢失，默认副本集数量可以在配置文件中进行配置：
+>
+>    ~~~properties
+>    default.replication.factor=2
+>    ~~~
+>
+>    除此之外，在创建 Topic 时也可以单独指定副本集数量。
+>
+> 5. AR：分区的所有副本列表。
+>
+> 6. ISR：AR 的一个子集，由 Leader 负责维护，是一个保持一定程度同步的副本集合，如果 follower 落后 leader 太多就会被踢出 ISR 列表。
+>
 
-1. Broker（代理）：服务器上运行的 Kafka 的实例，在 Kafka 集群中每一个 Broker 对应一个唯一的 ID，即 BrokerId。
+
+
+在三台机器上安装 Kafka（不能直接复制文件夹，会有权限问题）并修改配置文件，需要修改的信息如下：
+
+1. `broker.id`：分别修改为 0、1、2。
+
+2. 修改 listener 地址：
+
+   ~~~properties
+   listeners=PLAINTEXT://192.168.253.136:9092
+   advertised.listeners=PLAINTEXT://192.168.253.136:9092
+   ~~~
+
+   IP 地址改为本机的 IP 地址（不要使用 localhost）。
+
+3. 修改 Zookeeper 的连接地址：
+
+   ~~~properties
+   zookeeper.connect=192.168.253.136:2181
+   ~~~
+
+   三个 Kafka 都连接同一个 Zookeeper 会自动组成集群。
 
 
 
+集群测试：
 
+1. 创建多个分区、副本集的 Topic：
+
+   ~~~java
+   public class AdminClientTest {
+       public static void main(String[] args) throws ExecutionException, InterruptedException {
+           Properties properties = new Properties();
+           properties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "192.168.253.136:9092");
+           AdminClient adminClient = AdminClient.create(properties);
+           NewTopic cluster = new NewTopic("cluster", 3, (short) 3);
+           adminClient.createTopics(Collections.singleton(cluster));
+           adminClient.close();
+       }
+   }
+   ~~~
+
+2. 获取 DescribeTopics 信息：
+
+   ~~~json
+   (name=cluster, 
+    internal=false, 
+    partitions=
+   	(partition=0, leader=192.168.253.137:9092 (id: 1 rack: null), 
+   		replicas=192.168.253.137:9092 (id: 1 rack: null), 192.168.253.135:9092 (id: 2 rack: null), 192.168.253.136:9092 (id: 0 rack: null), 
+   		isr=192.168.253.137:9092 (id: 1 rack: null), 192.168.253.135:9092 (id: 2 rack: null), 192.168.253.136:9092 (id: 0 rack: null)),
+   	(partition=1, leader=192.168.253.136:9092 (id: 0 rack: null), 
+   		replicas=192.168.253.136:9092 (id: 0 rack: null), 192.168.253.137:9092 (id: 1 rack: null), 192.168.253.135:9092 (id: 2 rack: null), 
+   		isr=192.168.253.136:9092 (id: 0 rack: null), 192.168.253.137:9092 (id: 1 rack: null), 192.168.253.135:9092 (id: 2 rack: null)),
+   	(partition=2, leader=192.168.253.135:9092 (id: 2 rack: null), 
+   		replicas=192.168.253.135:9092 (id: 2 rack: null), 192.168.253.136:9092 (id: 0 rack: null), 192.168.253.137:9092 (id: 1 rack: null), 
+   		isr=192.168.253.135:9092 (id: 2 rack: null), 192.168.253.136:9092 (id: 0 rack: null), 192.168.253.137:9092 (id: 1 rack: null)), 
+    authorizedOperations=null)
+   ~~~
+
+   分配了 3 个分区和 3 个副本后，Kafka 将不同的分区 leader 分配在不同的节点上，此外，同一个分区的不同副本也分布在不同的节点下，这样可以最大程度的减少因为节点故障带来的数据丢失。
 
 
 
 kafka 节点故障原因：
 
 1. Kafka 未与 Zookeeper 保持心跳。
-2. follower 消息落后 leader 太多。
+2. follower 消息落后 leader 太多（多的判定可以在配置文件中进行指定）。
 
-Kafka 节点故障处理：
+> LEO 和 HW 概念
+>
+> LEO：指的是每个副本最大的 offset；
+> HW：指的是消费者能读到的最大的 offset，ISR 队列中最小的 LEO。
+>
+> ![](../img/43cc8bce55c129453a0e1595b7241193.png)
+
+Kafka 节点故障的故障处理：
+
+1. follower 故障处理：follower 发生故障后会被临时踢出 ISR，待该 follower 恢复后，follower 会读取本地磁盘记录的上次的 HW，并将 log 文件高于 HW 的部分截取掉，从 HW 开始向 leader 进行同步。等该 follower 的 LEO 大于等于该 Partition 的 HW，就重新加入 ISR。
+
+2. leader 故障处理：在 ISR 列表中选择一个最快的节点作为新的 leader。为保证多个副本之间的数据一致性，其余的 follower 会先将各自的 log 文件高于 HW 的部分截掉，然后从新的 leader 同步数据。
+
+   注：<u>这只能保证副本之间的数据一致性，并不能保证数据不丢失或者不重复</u>。
+
+   > 脏选举（unclean leader）：在极端情况下，如果 ISR 列表中的副本全部宕机，Kafka 可以通过脏选举的方式从非 ISR 列表中的节点中选出新的 leader，但是此种方式可能造成较大的数据丢失；一般来说，在生产环境中要禁用此功能：
+   >
+   > ~~~properties
+   > unclean.leader.election.enable=false
+   > ~~~
+   >
+   > 此外，最好手动指定最小的 ISR 列表节点个数：
+   >
+   > ~~~properties
+   > transaction.state.log.min.isr=3
+   > ~~~
 
 
 
+Kafka 集群监控：可以通过开源组件`Kafka Manager`进行集群监控。
 
+
+
+Kafka 最佳实践配置：
+
+1. 服务端必要参数：
+
+   ~~~properties
+   broker.id=0
+   log.dirs=/var/log/kafka  # 最好不要使用默认的 /tmp/kafka-logs
+   zookeeper.connect=192.168.253.136:2181
+   ~~~
+
+2. 服务端推荐参数：
+
+   1. `advertised.host.name`和`advertised.port`：如果配置了这两个值，Kafka 将会以这两个值配置的 IP 和端口注册到 zookeeper 而不会暴露自己的真实 IP 和 port，外网环境建议配置。
+   2. `default.replication.factor`：创建 topic 时默认的副本数量，建议至少为 2。
+   3. `unclean.leader.election.enable`：是否允许脏选举，建议 false，默认为 true。
+   4. `controlled.shutdown.enable`：配置为 true 时 broker 关闭之前会尝试转移自己的 leader 到其他的 broker 上；除此之外，我们还可以还可以设置`controlled.shutdown.max.retries`和`controlled.shutdown.retry.backoff.ms`来控制在执行过程中的最大耗费时间和重试次数；建议配置为 true。
+
+3. 动态调整参数：
+
+   1. `num.partitions`：创建 topic 时默认的 partition 数量，默认是 1。
+
+   2. `min.insync.replicas`：当 producer 的 ack 为 -1 或 all 时，如果 ISR 列表中的副本数量少于此值，消息生产将不成功，默认为 1。
+
+   3. `max.message.bytes`：单条消息的最大长度，此条消息修改后`replica.fetch.max.bytes`和`fetch.message.max.bytes`也要同步修改。
+
+   4. 日志清理相关配置：
+
+      ~~~properties
+      # 启用日志清理
+      log.cleaner.enable=true
+      # 对符合条件的日志进行删除，还可配置 compact（压缩）
+      log.cleanup.policy=delete
+      # 清理超过指定时间的日志
+      log.retention.hours=16
+      # 超过指定大小后，删除旧的消息
+      log.retention.bytes=1073741824
+      ~~~
+
+   5. 消息存储的配置：
+
+      ~~~properties
+      # 当内存消息达到多少条后，将消息刷新到磁盘
+      log.flush.interval.messages=10000	
+      # 当间隔时间达到多少 ms 后，将消息刷新到磁盘。如果未设置则使用 log.flush.scheduler.interval.ms 中的值
+      log.flush.interval.ms=1000		
+      # 日志刷新器检查是否需要将所有日志刷新到磁盘的频率
+      log.flush.scheduler.interval.ms=3000	
+      ~~~
+
+      
 
 ---
 
-#### 9.Kafka 集成微服务
+#### 9.Kafka 与
 
 
 

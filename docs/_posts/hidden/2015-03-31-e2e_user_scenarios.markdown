@@ -4,6 +4,7 @@ title:      "Definition of End to End User Scenarios"
 date:       2015-03-31 
 author:     "Hux"
 header-img: "img/post-bg-e2e-ux.jpg"
+header-bg-css: "linear-gradient(to right, #24b94a, #38ef7d);"
 lang: en
 tags:
   - UX/UI

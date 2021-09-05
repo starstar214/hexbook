@@ -1223,7 +1223,7 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
 
 #### 10.Redis配置文件
 
-默认安装的 Redis 的配置文件位于 ***/etc/redis.conf*** ：[Example](data/redis.conf)。
+默认安装的 Redis 的配置文件位于 ***/etc/redis.conf*** ：[Example](../data/redis.conf)。
 
 redis.conf 默认单位介绍：单位大小写不敏感。
 
@@ -1873,7 +1873,7 @@ Redis 哨兵的作用：
 
 
 
-***redis-sentinel.conf*** 配置文件：[Example](data/redis-sentinel.conf)
+***redis-sentinel.conf*** 配置文件：[Example](../data/redis-sentinel.conf)
 
 - 网络配置：默认情况下，sentinel 无法通过不同于 localhost 的网络接口进行访问，当 sentinel 与 Redis 集群不在同一台机器上时，sentinel 与 Redis 集群将会出现通信问题，此时需要手动配置一下两个选项之一：
 
