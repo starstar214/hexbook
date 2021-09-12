@@ -192,20 +192,20 @@ public class CacheConfiguration {
 > @Service
 > public class EmployeeService {
 > 
->     @Autowired
->     private EmployeeMapper mapper;
->     @Autowired
->     private EmployeeService self;
+>  @Autowired
+>  private EmployeeMapper mapper;
+>  @Autowired
+>  private EmployeeService self;
 > 
->     @Cacheable(value = "employee", key = "#id")
->     public Employee getEmployeeById(int id) {
->         return mapper.getEmployeeById(id);
->     }
+>  @Cacheable(value = "employee", key = "#id")
+>  public Employee getEmployeeById(int id) {
+>      return mapper.getEmployeeById(id);
+>  }
 > 
->     public void demo(int id) {
->         //通过 self 自我调用
->         Employee employee = self.getEmployeeById(id);
->     }
+>  public void demo(int id) {
+>      //通过 self 自我调用
+>      Employee employee = self.getEmployeeById(id);
+>  }
 > }
 > ~~~
 
@@ -213,15 +213,281 @@ public class CacheConfiguration {
 
 ---
 
-#### 2.SpringBoot 与消息
+#### 2.SpringBoot 与任务
+
+异步任务：SpringBoot 允许使用异步的方法进行方法调用：
+
+1. 在配置类上添加`@EnableAsync`注解。
+
+2. 在方法上添加`@Async`注解。
+
+   ~~~java
+   @Async
+   @Override
+   public void asyncAction() {
+       System.out.println("Start async Task...");
+       try {
+           Thread.sleep(15 * 1000L);
+       } catch (InterruptedException e) {
+           e.printStackTrace();
+       }
+       System.out.println("Async Task execute finished!");
+   }
+   ~~~
+
+   此时，调用此方法时为异步调用。
 
 
 
+定时任务：SpringBoot 允许定时任务的设置与执行
 
+1. SpringBoot 的 cron 表达式（共使用 6 个 位置进行表达）：
+
+   | 位置 | 字段意义     | 允许值                           | 允许的特殊符号  |
+   | ---- | ------------ | -------------------------------- | --------------- |
+   | 1    | 秒           | 0-59                             | , - * /         |
+   | 2    | 分           | 0-59                             | , - * /         |
+   | 3    | 小时         | 0-23                             | , - * /         |
+   | 4    | 月份中的日期 | 1-31                             | , - * ? / L W C |
+   | 5    | 月份         | 1-12                             | , - * /         |
+   | 6    | 星期         | 0-7 或 SUN-SAT，其中 0、7 是 SUN | , - * ? / L C # |
+
+2. 常用 cron 表达式：
+
+   1. `0 0 * * * *`：每小时整点执行一次。
+   2. `0 */30 * * * *`：每半小时执行一次（将在整点和 30 分时进行执行）。
+   3. `0 15 10 ? * 6#3`：每月的第三个星期五上午 10:15 触发。
+   4. `0 15 10 ? * 6L`：每月的最后一个星期五上午 10:15 触发。
+   5. `0 15 10 W * *`：每个工作日上午 10:15 触发。
+
+   > `/` 不会以项目启动为时间起点，例如`*/11 * * * * *`表示在每一分钟的 0、11、22、33、44、55 秒时进行执行。
+
+3. SpringBoot 中使用定时任务：
+
+   1. 在配置类上添加`@EnableScheduling`注解。
+
+   2. 在 SpringBoot 的组件需要定时执行的方法上标注`@Scheduled`注解。
+
+      ~~~java
+      @Override
+      @Scheduled(cron = "*/7 * * * * *")
+      public void cronAction() {
+          System.out.println("Cron task executed at " + Instant.now().toString());
+      }
+      ~~~
 
 
 
 ---
 
-#### 2.SpringBoot 与邮件
+#### 3.SpringBoot 与邮件
 
+常见的邮件协议：
+
+1. SMTP（Simple Mail Transfer Protocol）：简单邮件传输协议，它是一组用于从源地址到目的地址传输邮件的规范，通过它来控制邮件的中转方式；SMTP 认证要求必须提供账号和密码才能登陆服务器，其设计目的在于避免用户受到垃圾邮件的侵扰。
+2. IMAP（Internet Message Access Protocol）：互联网邮件访问协议，IMAP 允许从邮件服务器上获取邮件的信息、下载邮件等。IMAP 与 POP 类似，都是一种邮件获取协议。
+3. POP3（Post Office Protocol 3）：邮局协议，POP3 支持客户端远程管理服务器端的邮件。POP3 常用于离线邮件处理，即允许客户端下载服务器邮件，然后服务器上的邮件将会被删除。目前很多 POP3 的邮件服务器只提供下载邮件功能，服务器本身并不删除邮件，这种属于改进版的 POP3 协议。
+
+
+
+SpringBoot 的邮件集成：在 SpringBoot 中通过`javaMailSender`和`JavaMailSenderImpl`来实现邮件服务，目前是 Java 后端发送邮件和集成邮件服务的主流工具。我们通过 JavaMailSenderImpl 来发送相对比较简单的邮件，而相对比较复杂的邮件（例如：添加附件等）可以借助 MimeMessageHelper 来构建MimeMessage 进行发送。
+
+1. 邮件发送需要引入依赖：
+
+   ~~~xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-mail</artifactId>
+   </dependency>
+   ~~~
+
+2. 进行邮件客户端配置：
+
+   ![](D:\GitRepository\HexBook\notes\Java语言\img\Snipaste_2021-09-12_23-11-32.png)
+
+   开通 POP3/SMTP/IMAP/SMTP 服务并生成授权码。
+
+3. 项目中进行配置：
+
+   ~~~properties
+   # 用于发送邮件的邮箱
+   spring.mail.username=2402477643@qq.com
+   # 邮件服务授权码
+   spring.mail.password=zckgxidzvhzwdieg
+   # 使用 SMTP 发送邮件（此地址在设置中进行查看）
+   spring.mail.host=smtp.qq.com
+   ~~~
+
+   
+
+发送简单邮件：
+
+~~~java
+@SpringBootTest
+class SpringBootTaskApplicationTests {
+	@Value("${spring.mail.username}")
+	private String fromUser;
+	@Autowired
+	private JavaMailSender mailSender;
+
+	@Test
+	void simpleMail() {
+		SimpleMailMessage simpleMessage = new SimpleMailMessage();
+		simpleMessage.setSubject("开会通知");
+		simpleMessage.setText("今天晚上 18:30 在 505 会议室开会，请按时参加。");
+		simpleMessage.setTo("hex_1112@163.com");
+		simpleMessage.setFrom(fromUser);
+		mailSender.send(simpleMessage);
+	}
+}
+~~~
+
+发送复杂邮件：
+
+~~~java
+@Test
+void mimeMail() throws MessagingException {
+    MimeMessage mimeMessage = mailSender.createMimeMessage();
+    MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
+    messageHelper.setSubject("开会通知");
+    // 第二个参数表示进行 html 编码
+    messageHelper.setText("今天晚上 <span style='font-weight:bold'>18:30</span> 在 <span style='font-weight:bold'>505</span> 会议室开会，请按时参加。" +
+                          "<br>会议内容见附件。", true);
+    // 添加附件（可以上传文本、图片等附件）
+    messageHelper.addAttachment("会议内容.txt", new File("C:\\Users\\star\\Desktop\\会议内容.txt"));
+    messageHelper.setTo("hex_1112@163.com");
+    messageHelper.setFrom(fromUser);
+    mailSender.send(mimeMessage);
+}
+~~~
+
+
+
+---
+
+#### 4.SpingBoot 与监控
+
+通过引入 spring-boot-starter-actuator，可以使用 SpringBoot 为我们提供的准生产环境下的应用监控和管理功能。我们可以通过 HTTP、JMX、SSH 协议来进行操作，自动得到审计、健康及指标信息等。
+
+引入 SpringBoot 监控模块：
+
+~~~xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+~~~
+
+此时启动项目后，访问`http://127.0.0.1:8080/actuator`即可看到 actuator 默认所暴露的监控端点:
+
+~~~json
+{
+	"_links": {
+		"self": {
+			"href": "http://127.0.0.1:8080/actuator",
+			"templated": false
+		},
+		"health-path": {
+			"href": "http://127.0.0.1:8080/actuator/health/{*path}",
+			"templated": true
+		},
+		"health": {
+			"href": "http://127.0.0.1:8080/actuator/health",
+			"templated": false
+		}
+	}
+}
+~~~
+
+
+
+SpringBoot actuator 常见的监控和管理端点：
+
+| 端点名称    | 作用                                 |
+| ----------- | ------------------------------------ |
+| autoconfig  | 所有自动配置信息                     |
+| auditevents | 审计事件                             |
+| beans       | 所有 Bean 的信息                     |
+| configprops | 所有配置属性                         |
+| dump        | 线程状态信息                         |
+| env         | 当前环境信息                         |
+| health      | 应用健康状况                         |
+| info        | 当前应用信息                         |
+| metrics     | 应用的各项指标                       |
+| mappings    | 应用 @RequestMapping 映射路径        |
+| shutdown    | 关闭当前应用（需要进行配置才能开启） |
+| trace       | 追踪信息（最新的 http 请求）         |
+
+配置监控和管理端点开启与关闭：
+
+~~~properties
+# 第一种方式控制 info 端点的开启
+management.endpoint.info.enabled=true
+# 第二种方式控制 info 端点的开启
+management.endpoints.web.exposure.include=health,info
+# 排除 shutdown 端点（关闭此端点）
+management.endpoints.web.exposure.exclude=shutdown
+# 定制 info 信息
+info.author=Hex
+# 在配置文件中进行单独配置才能生效（可以使用 Post 请求远程停止应用）
+management.endpoint.shutdown.enabled=true
+~~~
+
+
+
+SpringBoot 健康检查：SpringBoot 的健康检查通过在容器中注入 HealthIndicator 组件来进行健康检查，常见的实现如：`RedisHealthIndicator`、`ElasticsearchRestHealthIndicator` 等。
+
+> 默认情况下，SpringBoot 只展示健康状况的简略信息，如果需要展示详细信息需要配置：
+>
+> ~~~properties
+> management.endpoint.health.show-details=always
+> ~~~
+
+在开发过程中，如果我们有自定义组件需要进行健康检查，我们可以实现 HealthIndicator 来定制我们自己的健康检查：
+
+~~~java
+@Component
+public class ApplicationHealthIndicator implements HealthIndicator {
+    @Override
+    public Health health() {
+        // 根据逻辑返回对应结果
+        return Health.up().withDetail("status", "没得毛病").build();
+    }
+}
+~~~
+
+注意：健康检查的 Indicator 必须命名为 xxxHealthIndicator。
+
+此时访问健康端点结果：
+
+~~~json
+{
+	"status": "UP",
+	"components": {
+		"application": {
+			"status": "UP",
+			"details": {
+				"status": "没得毛病"
+			}
+		},
+		"diskSpace": {
+			"status": "UP",
+			"details": {
+				"total": 536870907904,
+				"free": 302631677952,
+				"threshold": 10485760,
+				"exists": true
+			}
+		},
+		"mail": {
+			"status": "UP",
+			"details": {
+				"location": "smtp.qq.com:-1"
+			}
+		},
+		"ping": {
+			"status": "UP"
+		}
+	}
+}
+~~~
