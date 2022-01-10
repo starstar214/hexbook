@@ -1315,6 +1315,20 @@ HTTP 状态码就是一个三位数，分成五个类别：1xx（相关信息，
 
 
 
+**SpringBoot 文件上传**
+
+在 SpringBoot 中通常使用 MultipartFile 来实现文件上传功能：
+
+~~~java
+@PostMapping("/upload")
+public String upload(@RequestPart("img") MultipartFile photo) throws IOException {
+    // do something...
+    return "success";
+}
+~~~
+
+
+
 **SpringBoot 错误处理**
 
 SpringBoot 将对错误的处理逻辑封装在 *ErrorMvcAutoConfiguration* 中，向容器中添加了以下组件：
@@ -2061,11 +2075,42 @@ MySpringApplicationRunListener...running...
 
 > :alarm_clock: 除此之外，Spring 还提供了大量的 Listener 实现和大量的 Event 实现，帮助我们更好的介入到应用的各个活动之中。
 >
-> 例如，通过 ApplicationReadyEvent 介入到程序启动之后：
->
-> ~~~java
-> 
-> ~~~
->
+> 例如，通过 ApplicationReadyEvent 介入到程序启动之后，同时也可以实现自定义的事件监控机制。
 
-##### TODO
+实现自定义事件监听：
+
+1. 定义事件：
+
+   ~~~java
+   public class MyApplicationEvent extends ApplicationEvent {
+       public MyApplicationEvent(Object source) {
+           super(source);
+       }
+   }
+   ~~~
+
+2. 定义监听器：
+
+   ~~~java
+   @Component
+   public class MyApplicationEventListener implements ApplicationListener<MyApplicationEvent> {
+       @Override
+       public void onApplicationEvent(MyApplicationEvent event) {
+           System.out.println("监听到事件:" + event.getTimestamp());
+       }
+   }
+   ~~~
+
+3. 使用 context 发布事件：
+
+   ~~~java
+   @Autowired
+   private ApplicationContext context;
+   
+   @Test
+   void myEventListener() {
+       context.publishEvent(new MyApplicationEvent(new Object()));
+   }
+   ~~~
+
+   

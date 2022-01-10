@@ -130,7 +130,7 @@ public Employee getUserById(int id) {
 
 SpringBoot 缓存的工作原理：容器启动时，SpringBoot 通过 *CacheAutoConfiguration* 进行自动配置，在未进行其他配置时，默认 *SimpleCacheConfiguration* 配置类生效，缓存数据将会放在内存中。
 
-*CacheAutoConfiguration* 会想容器中注册一个 *ConcurrentMapCacheManager* 缓存管理器，用来获取，创建和储存 *ConcurrentMapCache*，底层使用 `ConcurrentMap<String, Cache>` 来存储数据。
+*CacheAutoConfiguration* 会向容器中注册一个 *ConcurrentMapCacheManager* 缓存管理器，用来获取，创建和储存 *ConcurrentMapCache*，底层使用 `ConcurrentMap<String, Cache>` 来存储数据。
 
 *ConcurrentMapCache* 用来存储具体的缓存数据，底层采用 `ConcurrentMap<Object, Object>` 存储，默认使用 *SimpleKeyGenerator* 来生成 key，value 为方法的返回结果（也可以向容器中加入自定义的 *KeyGenerator*，然后在 *@Cacheable* 注解中指定自定义的 *KeyGenerator* 的 ID 进行使用）。
 
@@ -191,23 +191,57 @@ public class CacheConfiguration {
 > @Slf4j
 > @Service
 > public class EmployeeService {
-> 
->  @Autowired
->  private EmployeeMapper mapper;
->  @Autowired
->  private EmployeeService self;
-> 
->  @Cacheable(value = "employee", key = "#id")
->  public Employee getEmployeeById(int id) {
->      return mapper.getEmployeeById(id);
+>     @Autowired
+>      private EmployeeMapper mapper;
+>      @Autowired
+>      private EmployeeService self;
+>  
+>     @Cacheable(value = "employee", key = "#id")
+>      public Employee getEmployeeById(int id) {
+>        return mapper.getEmployeeById(id);
+>        }
+>  
+>     public void demo(int id) {
+>        //通过 self 自我调用
+>          Employee employee = self.getEmployeeById(id);
+>        }
 >  }
-> 
->  public void demo(int id) {
->      //通过 self 自我调用
->      Employee employee = self.getEmployeeById(id);
->  }
-> }
 > ~~~
+
+
+
+缓存数据一致性：在分布式多并发场景下，为了保证缓存数据的一致性，我们有两种方法
+
+1. 双写模式：在写入或修改数据库信息时，同时修改缓存。
+   1. 当多并发进行写操作时，由于不能保证写数据库和写缓存为原子操作，会引起脏数据。
+2. 失效模式：在写入或修改数据库信息时，删除缓存数据，下次主动查询时再写入缓存。
+   1. 当多并发进行读写操作时，在写数据库还未删除缓存的过程中，如果其他的读操作读到了还未来得及删除的缓存，也会读到脏数据。
+
+解决方式：
+
+1. 如果不要求数据的强一致性，对缓存设置过期时间，待过期时间后，即保持了系统的最终一致性。
+2. 如果对数据的实时性和一致性有较高的要求，那么在业务处理的过程中应当添加读写锁，但是此方法也会对系统性能造成一定影响。
+3. 如果对数据的实时性和一致性有较高的要求，我们应当考虑数据放入缓存的合理性，不应当过度设计，增加系统的复杂性。
+
+其他解决方式：使用阿里开源中间件 Canal，它是一个基于 MySQL 的数据同步中间件，通过订阅 MySQL 的二进制日志 binlog，获取数据库的每一次更新操作实时的对其他数据源如 Redis 进行更新，保证了数据的强一致性。
+
+同时 Canal 还支持带业务逻辑的增量数据处理，可以用来解决数据异构等问题，如通过读取个人访问历史记录信息分析计算生成猜你喜欢页面。
+
+
+
+缓存使用过程中的常见问题：
+
+1. 缓存穿透：当大量并发同时查询一个不存在的值，如果未缓存空值，查询还是会下发到数据库造成数据库压力激增。
+
+   解决办法：进行相应配置 `spring.cache.redis.cache-null-values=true`（默认就是 true）。
+
+2. 缓存击穿：当大量并发同时查询一个未缓存的值，由于缓存还未完成，所以同一时间都去请求了数据库，造成数据库压力。
+
+   解决办法：对目标方法进行加锁， Spring 注解也同样支持 `@Cacheable(cacheNames = "category",key = "#root.methodName", sync = true)`
+
+3. 缓存雪崩：由于某一时间大量缓存集体失效而导致的数据库压力激增。
+
+   解决方法：正常情况下不会有这样的业务情形，但是如果业务上缓存是集中生成和集中修改失效时且用户会进行大并发集中访问，可以自定义一个 DefaultRedisCacheWriter，重写其方法为每一个缓存 key 指定随机过期时间。
 
 
 
@@ -491,3 +525,40 @@ public class ApplicationHealthIndicator implements HealthIndicator {
 	}
 }
 ~~~
+
+
+
+---
+
+#### 5.SpringBoot 整合 Swagger
+
+
+
+
+
+
+
+
+
+---
+
+#### 6.SpringBoot 整合 MyBatis-Plus
+
+MyBatis-Plus 是一个 MyBatis 的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。
+
+MyBatis-Plus 官网：https://baomidou.com/。
+
+引入依赖：
+
+
+
+
+
+
+
+
+
+---
+
+#### 7.MyBatis 整合 PageHelper
+

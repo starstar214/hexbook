@@ -492,11 +492,407 @@ Eureka 集群搭建：
    eureka.client.service-url.defaultZone=http://erueka-01:7001/eureka，http://erueka-02:7002/eureka，http://erueka-03:7003/eureka
    ~~~
 
-   
+
 
 ---
 
-#### 6.Eureka 与 CAP 理论
+#### 6.Nacos 注册中心
+
+Nacos 是阿里巴巴旗下的开源微服务管理配置平台，帮助我们发现、配置和管理微服务。Nacos 提供了一组简单易用的特性集，帮助您快速实现动态服务发现、服务配置、服务元数据及流量管理。
+
+Nacos 主要的功能有：
+
+1. 服务发现和服务健康监测。
+2. 动态配置服务。
+3. 动态 DNS 服务。
+4. 服务及其元数据管理。
+
+
+
+Nacos 安装：
+
+1. 安装 Java 环境：
+
+   ~~~shell
+   [root@localhost ~]# dnf install java-1.8.0-openjdk-devel.x86_64
+   ~~~
+
+2. 下载 Nacos server 安装包：https://github.com/alibaba/nacos/releases，下载 zip 压缩包（非源码包）并解压到 Linux 目录。
+
+3. 在 nacos 的 bin 目录下运行命令启动服务：
+
+   ~~~shell
+   [root@localhost ~]# sh startup.sh -m standalone
+   ~~~
+
+   此时服务在 8848 端口启动。
+
+4. 关闭 Linux 的 8848 和 9848 端口对应防火墙。
+
+   > :zap: 9848 端口的访问权限也必须开启，否则服务将无法注册到 Nacos。
+   >
+   > 原因：GrpcClient.connectToServer() 方法中 createNewChannelStub 的时候，实际上加了一个 rpcPortOffset，这个值在 GrpcSdkClient 中是 1000。
+
+5. 此时，可以访问 `ip:8848/nacos` 进入到 Nacos 提供的可视化界面，用户名和密码均为 nacos。
+
+
+
+使用 Nacos 作为注册中心：
+
+1. 在公共模块引入依赖管理：
+
+   ~~~xml
+   <dependencyManagement>
+       <dependencies>
+           <dependency>
+               <groupId>com.alibaba.cloud</groupId>
+               <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+               <version>2.2.7.RELEASE</version>
+               <type>pom</type>
+               <scope>import</scope>
+           </dependency>
+       </dependencies>
+   </dependencyManagement>
+   ~~~
+
+   指定整个项目的 spring-cloud-alibaba 微服务版本。
+
+2. 引入 Nacos Discovery starter：
+
+   ~~~xml
+   <dependency>
+       <groupId>com.alibaba.cloud</groupId>
+       <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+   </dependency>
+   ~~~
+
+3. 使用 @EnableDiscoveryClient 注解开启应用的服务注册与发现功能。
+
+4. 配置 Nacos 服务地址，并为应用起一个名称：
+
+   ~~~properties
+   spring.application.name=MEMBER
+   spring.cloud.nacos.discovery.server-addr=192.168.253.136:8848
+   ~~~
+
+5. 启动应用后 ，即可在 Nacos 可视化界面看到注册到 Nacos 的服务。
+
+
+
+---
+
+#### 7.使用 OpenFeign 调用远程服务
+
+使用步骤：
+
+1. 引入 Feign 和负载均衡依赖（高版本中，feign 要结合 loadbalancer 进行使用）：
+
+   ~~~xml
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-openfeign</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+   </dependency>
+   ~~~
+
+2. 调用方声明 feign 调用接口，例如调用优惠券的接口：
+
+   ~~~java
+   @RequestMapping("/sale/sale-coupon")
+   public class SaleCouponController {
+       @RequestMapping("/test")
+       public R test() {
+           SaleCouponEntity coupon = new SaleCouponEntity();
+           coupon.setAmount(BigDecimal.valueOf(20L));
+           coupon.setCouponName("12.12 满 200 减 20 优惠");
+           return R.ok().put("orderMsg", coupon);
+       }
+   }
+   ~~~
+
+   则声明对应的 feign 接口为：
+
+   ~~~java
+   @FeignClient("SALE")
+   public interface CouponFeignService {
+       @RequestMapping("/sale/sale-coupon/test")
+       R test();
+   }
+   ~~~
+
+3. 开启应用的远程调用功能：`@EnableFeignClients(basePackages = "com.star.gmall.member.feign")`
+
+4. 在需要用到 coupon 的地方注入 CouponFeignService 进行使用：
+
+   ~~~java
+   @RestController
+   @RequestMapping("/member/member-msg")
+   public class MemberMsgController {
+       @Autowired
+       private CouponFeignService couponFeignService;
+   
+       @RequestMapping("/test")
+       public R list(){
+           R test = couponFeignService.test();
+           return R.ok().put("coupon", test.get("coupon"));
+       }
+   }
+   ~~~
+
+> :closed_umbrella: 注意：使用 loadbalancer 时必须排除 Nacos 包含的 Ribbon，否则会报错
+>
+> ~~~xml
+> <dependency>
+>     <groupId>com.alibaba.cloud</groupId>
+>     <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+>     <!-- Nacos 中的  Ribbon 会使 loadbalancer 失效，必须进行排除 -->
+>     <exclusions>
+>         <exclusion>
+>             <groupId>org.springframework.cloud</groupId>
+>             <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+>         </exclusion>
+>     </exclusions>
+> </dependency>
+> ~~~
+
+
+
+---
+
+#### 8.Nacos 配置中心
+
+Nacos 配置示例：
+
+1. 引入 nacos config 依赖：
+
+   ~~~xml
+   <!-- 必须引入此依赖，bootstrap.properties 文件才会生效 -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-bootstrap</artifactId>
+   </dependency>
+   <dependency>
+       <groupId>com.alibaba.cloud</groupId>
+       <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+   </dependency>
+   ~~~
+
+2. 在 bootstrap.properties 配置 Nacos 地址：
+
+   ~~~properties
+   # 配置发布的 data ID 前缀，后缀默认是 properties
+   spring.cloud.nacos.config.prefix=member
+   # 配置中心地址
+   spring.cloud.nacos.config.server-addr=192.168.253.136:8848
+   ~~~
+
+   > :alembic: 在 SpringBoot 项目中，bootstrap.properties 的优先级高于 application.properties，Bootstrap 属性有高优先级，默认情况下，它们不会被本地配置覆盖，因此把 config server 信息放在 bootstrap.properties，用来加载重要的配置信息。
+
+3. 自定义配置信息用于测试：
+
+   ~~~properties
+   # 自定义配置
+   root.member.name=JackMa
+   ~~~
+
+   在 controller 中进行使用：
+
+   ~~~java
+   @RefreshScope
+   @RestController
+   @RequestMapping("/member/member-msg")
+   public class MemberMsgController {
+       @Autowired
+       private CouponFeignService couponFeignService;
+       @Value("${root.member.name}")
+       private String rootMemberName;
+   
+       @RequestMapping("/test")
+       public R list(){
+           R test = couponFeignService.test();
+           return R.ok().put("coupon", test.get("coupon")).put("root-member", rootMemberName);
+       }
+   }
+   ~~~
+
+   注意：一定要加上 `@RefreshScope` 注解，在每次请求时才会去配置中心获取最新的配置信息。
+
+4. 在 Nacos 配置列表界面添加要修改的配置内容，重新请求接口即可发现变化。
+
+
+
+Nacos 配置中心基本概念：
+
+- 命名空间：用来进行配置隔离，默认的命名空间为 public，一般用来隔离不同的微服务
+
+  1. 在 Nacos 管理界面新建命名空间。
+
+  2. 在应用的 bootstrap.properties 中指定命名空间的 ID。
+
+     ~~~properties
+     spring.cloud.nacos.config.namespace=2dc01f5d-3771-45a9-ab2a-5565df4d4f71
+     ~~~
+
+- 配置集：一组相关的或不相关的配置集合称为配置集（例如一个配置文件中的所有配置项）。
+
+- 配置集 ID：Nacos 中某个配置集的 ID。
+
+- 配置分组：可以建立不同分组的同一个配置集 ID，然后在配置文件中指定使用的分组，一般用来区分各个环境。
+
+最佳实践：以命名空间区分注册中心的不同微服务，以配置分组来区分不同的环境：
+
+<img src="..\img\Snipaste_2021-12-13_21-13-51.png" style="zoom:100%;" />
+
+
+
+加载额外的配置文件：有时候我们并没有将所有配置项放在一个配置文件中，例如将数据源信息配置在 datasource.properties 中，在 Nacos 中同样也可以这样做。
+
+1. 在 Nacos 界面新增 datasource.properties，mybatis.properties 配置集。
+
+2. 在 bootstrap.properties 中指定额外配置：
+
+   ~~~properties
+   spring.cloud.nacos.config.extension-configs[0].data-id=datasource.properties
+   spring.cloud.nacos.config.extension-configs[0].group=dev
+   # 指定其自动刷新，默认为 false
+   spring.cloud.nacos.config.extension-configs[0].refresh=true
+   
+   spring.cloud.nacos.config.extension-configs[1].data-id=mybatis.properties
+   spring.cloud.nacos.config.extension-configs[1].group=dev
+   spring.cloud.nacos.config.extension-configs[1].refresh=true
+   ~~~
+
+   这样应用在启动时就能读取到所有的配置文件。
+
+
+
+---
+
+#### 9.SpringCloud-Gateway 网关
+
+网关的作用：
+
+1. 路由转发：应用之间相互调用时无需知道应用的具体 IP，由网关进行转发，当集群中的某一台应用宕机时也能够自动切换到另外的应用。
+2. 鉴权，限流、日志输出等。
+
+SpringCloud-Gateway 网关的主要功能：
+
+1. 动态路由。
+2. 支持 Predicates 和 Filters 作用于特定路由。
+3. 集成 Hystrix 断路器和 Spring Cloud DiscoveryClient。
+4. 限流和路径重写功能。
+
+SpringCloud-Gateway 基本概念：
+
+1. 路由（Route）：这是网关的基本构建块。它由一个 ID，一个目标 URI，一组断言和一组过滤器定义。如果断言为真，则路由匹配。
+2. 断言（Predicate）：输入类型是一个 ServerWebExchange，我们可以使用它来匹配来自 HTTP 请求的任何内容（例如 headers 或参数）得到断言结果然后路由到指定位置。
+3. 过滤器（Filter）：org.springframework.cloud.gateway.filter.GatewayFilter 的实例，我们可以使用它修改请求和响应。
+
+SpringCloud Gateway 官方文档地址：https://docs.spring.io/spring-cloud-gateway/docs/current/reference/html/
+
+
+
+SpringCloud Gateway 的使用：
+
+1. 新建 module 引入 gateway 依赖作为专门的网关应用。
+
+   > 注意：gateway 应用不能与 web 包共存，如果依赖公共包，则需要排除其他依赖：
+   >
+   > ~~~xml
+   > <dependency>
+   >     <groupId>com.star</groupId>
+   >     <artifactId>gmall-common</artifactId>
+   >     <version>0.0.1-SNAPSHOT</version>
+   >     <exclusions>
+   >         <exclusion>
+   >             <groupId>org.springframework.boot</groupId>
+   >             <artifactId>spring-boot-starter-web</artifactId>
+   >         </exclusion>
+   >         <exclusion>
+   >             <groupId>com.baomidou</groupId>
+   >             <artifactId>mybatis-plus-boot-starter</artifactId>
+   >         </exclusion>
+   >         <exclusion>
+   >             <groupId>com.alibaba</groupId>
+   >             <artifactId>druid-spring-boot-starter</artifactId>
+   >         </exclusion>
+   >     </exclusions>
+   > </dependency>
+   > ~~~
+
+2. 在启动类上加上 @EnableDiscoveryClient 注解。
+
+3. 配置 Nacos 注册中心地址：
+
+   ~~~yaml
+   # 应用信息
+   server:
+     port: 8000
+   spring:
+     application:
+       name: GATEWAY
+     # 微服务配置
+     cloud:
+       nacos:
+         discovery:
+           server-addr: 192.168.253.136:8848
+   ~~~
+
+4. 新建 Nacos 命名空间和配置集并进行配置：
+
+   ~~~properties
+   # 配置发布的 data ID 前缀，后缀默认是 properties
+   spring.cloud.nacos.config.prefix=gateway
+   # 配置中心地址
+   spring.cloud.nacos.config.server-addr=192.168.253.136:8848
+   # 配置集信息
+   spring.cloud.nacos.config.namespace=41d32305-cae1-4e3a-a989-c117ca52c997
+   spring.cloud.nacos.config.group=dev
+   ~~~
+
+   
+
+SpringCloud Gateway 代码示例：通过 url 参数将请求路由到不同网站
+
+1. 进行 yml 配置（路由规则为数组，最好使用 yaml 进行配置）
+
+   ~~~yaml
+   # 应用信息
+   server:
+     port: 8000
+   spring:
+     application:
+       name: GATEWAY
+     # 微服务配置
+     cloud:
+       nacos:
+         discovery:
+           server-addr: 192.168.253.136:8848
+       gateway:
+         routes:
+           - id: baidu_route
+             uri: https://www.baidu.com
+             predicates:
+               - Query=url, baidu
+           - id: qq_route
+             uri: https://im.qq.com
+             predicates:
+               - Query=url, qq
+   ~~~
+
+2. 启动项目后再浏览器中输入地址进行测试：
+
+   1. 输入 http://127.0.0.1:8000?url=baidu 将会路由到 https://www.baidu.com 页面
+   2. 输入 http://127.0.0.1:8000/index?url=qq 将会路由到 https://im.qq.com/index 页面
+
+
+
+---
+
+#### 6.分布式系统 CAP 理论
 
 在传统数据库（如：MySQL、Oracle）中，**ACID** 是常用的设计理念，它追求强一致性模型：
 
@@ -707,6 +1103,4 @@ public class XxxConfiguration {
 
 
 
-
-
-许多以前处于维护模式的Netflix-related模块在Spring Cloud2020 中被删除。这包括您正在使用的Ribbon和Zuul。Spring Cloud团队建议用Spring Cloud Loadbalancer替换Ribbon，用Spring Cloud Gateway替换Zuul。
+许多以前处于维护模式的 Netflix 模块在 Spring Cloud2020 中被删除。包括正在使用的 Ribbon 和 Zuul。Spring Cloud 团队建议用 Spring Cloud Loadbalancer 替换Ribbon，用 Spring Cloud Gateway 替换 Zuul。

@@ -1201,27 +1201,80 @@ public class RedisCheck implements ApplicationListener<ApplicationStartedEvent> 
   ~~~
 
   多个不同客户端上的线程同时调用 spike 方法时，能够保证同一时间只有一个客户端持有锁。
+  
+  > 注：此种方式实现的简单分布式锁还存在相当一部分的问题如机器断电、网络传输过慢引起的 BUG 不能避免。
 
 
 
-在 SpringBoot 中，推荐我们使用 ***Redisson*** 分布式锁！
+---
+
+#### 10.Redisson分布式锁框架
+
+在实际应用中，我们应该使用 ***Redisson*** 分布式锁！
 
 引入依赖：
 
 ~~~xml
 <dependency>
     <groupId>org.redisson</groupId>
-    <artifactId>redisson-spring-boot-starter</artifactId>
+    <artifactId>redisson</artifactId>
+    <version>3.16.7</version>
 </dependency>
 ~~~
 
 *Redisson* 适应集群模式或单机模式，效率高，更安全，可以实现分布式锁更多的相关功能（可重入锁、自动延期等）。
 
+Redisson 文档地址：https://github.com/redisson/redisson/wiki/%E7%9B%AE%E5%BD%95
 
+使用代码配置 Redisson：
+
+~~~java
+@Configuration
+public class MyRedissonConfiguration {
+    @Bean(destroyMethod="shutdown")
+    public RedissonClient redisson() {
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://192.168.253.136:6379");
+        return Redisson.create(config);
+    }
+}
+~~~
+
+使用示例：
+
+~~~java
+private ProductCategoryEntity getRootTree() {
+    RLock myLock = redisson.getLock("MY_LOCK");
+    myLock.lock();
+    try {
+        // 执行业务代码
+    }finally {
+        myLock.unlock();
+    }
+    return root;
+}
+~~~
+
+Redisson 内部提供了一个监控锁的看门狗，它的作用是在 Redisson 实例被关闭前，不断的延长锁的有效期。如果在执行业务代码的过程中程序闪断，未执行解锁代码，看门狗也不会给锁进行续期，在过一段时间后，锁自动失效，也不会造成程序死锁（默认 30 秒，可配置）。
+
+此外，也可以加指定失效时间的锁，如果指定了失效时间，将不会有自动续期。
+
+读写锁：允许同时有多个读锁和一个写锁处于加锁状态。
+
+1. 读 + 读：相当于无锁状态。
+2. 读 + 写：写操作等待读操作完成后进行。
+3. 写 + 写：后者写操作等待前者写操作完成后进行。
+4. 写 + 读：后者读操作等待前者写操作完成后进行。
+
+
+
+除此之外，Redisson 还提供了公平锁、联锁、红锁、闭锁（CountDownLatch）、信号量（Semaphore）的实现。
+
+> 信号量（Semaphore）可以实现分布式系统的限流工作。
 
 ---
 
-#### 10.Redis配置文件
+#### 11.Redis配置文件
 
 默认安装的 Redis 的配置文件位于 ***/etc/redis.conf*** ：[Example](../data/redis.conf)。
 
@@ -1483,7 +1536,7 @@ redis.conf 默认单位介绍：单位大小写不敏感。
 
 ---
 
-#### 11.持久化之RDB与AOF
+#### 12.持久化之RDB与AOF
 
 RDB：**R**edis **D**ata**B**ase，在指定的时间间隔内将内存中的数据集以快照的形式保存在磁盘上，是默认的持久化方式，默认的文件名为 ***dump.rdb***，恢复时将快照文件放入到配置文件中 dir 配置的目录下，Redis 就会自动读取文件当中的数据到内存中。
 
@@ -1621,7 +1674,7 @@ RDB 和 AOF 使用建议：
 
 ---
 
-#### 12.Redis发布订阅
+#### 13.Redis发布订阅
 
 Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）发送消息，订阅者（sub）接收消息，每一个 Redis 客户端可以订阅任意数量的频道。订阅者订阅一个或多个频道，发布者发送消息到频道，每个该频道的订阅者都会接收到该消息。
 
@@ -1700,7 +1753,7 @@ Redis 发布订阅（pub/sub）是一种消息通信模式：发布者（pub）�
 
 ---
 
-#### 13.Redis主从与哨兵
+#### 14.Redis主从与哨兵
 
 Redis 主从复制：将一台 Redis 服务器的数据，复制到其他的 Redis 服务器。前者称为主节点-master，后者称为从节点-slave，数据的复制是单向的，只能由主节点到从节点，master 以写为主，slave 以读为主。
 
@@ -2152,7 +2205,7 @@ SpringBoot 与 Redis 集成 *application.properties* 配置文件：
 
 ---
 
-#### 14.Redis集群模式
+#### 15.Redis集群模式
 
 通过主从复制与哨兵模式，能够有效的分担单台 Redis 服务器的负载，并基本实现 Redis 服务器的高可用，但是此种方式多个服务器存储同一份数据，大大的浪费了服务器资源，当服务器内存使用达到上限时，无法进行横向扩展（无法通过新增服务器扩大内存空间），纵向扩展（在线扩容）也会变得及其复杂（需要扩展多台服务器内存容量，并且涉及到主从切换相关操作），单个节点的性能压力问题仍然没有解决。
 

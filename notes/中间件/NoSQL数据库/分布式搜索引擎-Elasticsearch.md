@@ -119,7 +119,7 @@ network.host: 0.0.0.0  # 允许任何 IP 地址进行访问
 cluster.initial_master_nodes: ["node-1"]  # Elasticsearch 默认节点名
 ~~~
 
-然后就可以从其他 IP 地址对 Elasticsearch 进行访问。
+开启虚拟机 9200、9300 端口的防火墙对应端口，然后就可以从其他 IP 地址对 Elasticsearch 进行访问。
 
 
 
@@ -968,6 +968,8 @@ Elasticsearch 会将文档内容拆分为词条，创建一个包含所有不重
 > - 词条：索引中最小存储和查询单元。
 > - 词典：词条的集合，Elasticsearch 中使用 B+ Tree。
 > - 倒排表：倒排索引与<u>文档 ID、单词出现的位置信息</u>的对应关系表。
+>
+> 注意：默认分词器不支持中文分词，需要自行安装 ik 分词器。
 
 
 
